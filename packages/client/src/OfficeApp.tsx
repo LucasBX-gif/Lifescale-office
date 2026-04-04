@@ -20,7 +20,7 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
     connected, room, myUser,
     joinRoom, move, toggleMute, toggleDeafen, setStatus,
     privateOfficeDoorClosed, togglePrivateOfficeDoor,
-    knock, knockQueue, respondToKnock,
+    knock, knockQueue, respondToKnock, speakingNames,
   } = useOffice();
 
   useEffect(() => {
@@ -66,6 +66,7 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
           onDoorToggle={togglePrivateOfficeDoor}
           onKnock={knock}
           isDark={theme === "dark"}
+          speakingNames={speakingNames}
         />
       </main>
 

@@ -359,9 +359,29 @@ function drawAvatar(
   x: number, y: number,
   user: User,
   isMe: boolean,
-  p: ReturnType<typeof palette>
+  p: ReturnType<typeof palette>,
+  isSpeaking: boolean,
+  now: number
 ) {
   const statusColor = STATUS_COLORS[user.status];
+
+  // Speaking pulse ring
+  if (isSpeaking) {
+    const pulse = 0.55 + 0.45 * Math.sin(now / 180);
+    const ringR = AVATAR_R + 6 + 4 * Math.sin(now / 220);
+    ctx.beginPath();
+    ctx.arc(x, y, ringR, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(61, 255, 160, ${pulse})`;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Second outer ring (fainter, larger)
+    ctx.beginPath();
+    ctx.arc(x, y, ringR + 6, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(61, 255, 160, ${pulse * 0.35})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
 
   // Shadow
   ctx.shadowColor = p.shadow;
@@ -464,13 +484,14 @@ interface Props {
   onDoorToggle: () => void;
   onKnock: (targetUserIds: string[]) => void;
   isDark: boolean;
+  speakingNames: Set<string>;
 }
 
 export function OfficeCanvas({
   room, myUserId, myPosition,
   onMove, onZoneChange,
   privateOfficeDoorClosed, onDoorToggle, onKnock,
-  isDark,
+  isDark, speakingNames,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const posRef = useRef({ x: CANVAS_W / 2, y: CANVAS_H / 2 });
@@ -493,6 +514,9 @@ export function OfficeCanvas({
 
   const isDarkRef = useRef(isDark);
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
+
+  const speakingNamesRef = useRef(speakingNames);
+  useEffect(() => { speakingNamesRef.current = speakingNames; }, [speakingNames]);
 
   useEffect(() => {
     if (myPosition && !syncedRef.current) {
@@ -563,14 +587,17 @@ export function OfficeCanvas({
     drawFurniture(ctx, p);
 
     const myId = myUserIdRef.current;
+    const speaking = speakingNamesRef.current;
     for (const user of roomRef.current.users) {
       if (user.id === myId) continue;
       const { x: ux, y: uy } = pctToPx(user.position);
-      drawAvatar(ctx, ux, uy, user, false, p);
+      const isSpeaking = speaking.has(user.name);
+      drawAvatar(ctx, ux, uy, user, false, p, isSpeaking, time);
     }
 
     const meUser = roomRef.current.users.find((u) => u.id === myId);
-    if (meUser) drawAvatar(ctx, x, y, meUser, true, p);
+    const iAmSpeaking = meUser ? speaking.has(meUser.name) : false;
+    if (meUser) drawAvatar(ctx, x, y, meUser, true, p, iAmSpeaking, time);
 
     drawZoneIndicator(ctx, zone, p);
 

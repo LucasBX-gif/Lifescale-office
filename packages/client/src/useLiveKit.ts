@@ -1,9 +1,10 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import {
   Room,
   RoomEvent,
   RoomOptions,
   ConnectionState,
+  Participant,
 } from "livekit-client";
 
 const MAX_HEAR_DISTANCE = 700; // canvas pixels (1200x800 virtual space)
@@ -24,6 +25,7 @@ export interface PeerAudioInfo {
 
 export function useLiveKit() {
   const roomRef = useRef<Room | null>(null);
+  const [speakingNames, setSpeakingNames] = useState<Set<string>>(new Set());
 
   const connect = useCallback(async (token: string) => {
     const room = new Room(ROOM_OPTIONS);
@@ -34,9 +36,14 @@ export function useLiveKit() {
     });
     room.on(RoomEvent.Disconnected, () => {
       console.log("[LiveKit] disconnected");
+      setSpeakingNames(new Set());
     });
     room.on(RoomEvent.MediaDevicesError, (err: Error) => {
       console.error("[LiveKit] media device error:", err);
+    });
+    room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
+      const names = new Set(speakers.flatMap((s) => [s.name, s.identity].filter(Boolean) as string[]));
+      setSpeakingNames(names);
     });
 
     await room.connect(LIVEKIT_URL, token);
@@ -113,5 +120,5 @@ export function useLiveKit() {
     []
   );
 
-  return { connect, disconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes };
+  return { connect, disconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes, speakingNames };
 }

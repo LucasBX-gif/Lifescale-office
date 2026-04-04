@@ -105,7 +105,7 @@ export function useOffice() {
   // Pending knock notifications (may receive several before responding)
   const [knockQueue, setKnockQueue] = useState<KnockNotification[]>([]);
 
-  const { connect: lkConnect, disconnect: lkDisconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes } =
+  const { connect: lkConnect, disconnect: lkDisconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes, speakingNames } =
     useLiveKit();
 
   // Door state is now server-derived; use a ref so the 50ms interval stays current
@@ -270,5 +270,6 @@ export function useOffice() {
     knock,
     knockQueue,
     respondToKnock,
+    speakingNames,
   };
 }
