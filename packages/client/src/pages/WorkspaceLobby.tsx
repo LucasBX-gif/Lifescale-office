@@ -53,6 +53,13 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
     user.email?.split("@")[0] ||
     "there";
 
+  function greeting() {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  }
+
   const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
 
   async function loadWorkspaces() {
@@ -132,6 +139,13 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
 
   return (
     <div className="lobby-screen">
+      {/* Ambient background orbs */}
+      <div className="lobby-orbs" aria-hidden="true">
+        <div className="lobby-orb lobby-orb--1" />
+        <div className="lobby-orb lobby-orb--2" />
+        <div className="lobby-orb lobby-orb--3" />
+      </div>
+
       {/* Nav */}
       <nav className="lobby-nav">
         <div className="lobby-nav-brand">
@@ -160,7 +174,8 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
         {/* Hero row */}
         <div className="lobby-hero-row">
           <div>
-            <h1 className="lobby-title">Your Offices</h1>
+            <p className="lobby-greeting-line">{greeting()}, <span className="lobby-greeting-name">{displayName}</span> 👋</p>
+            <h1 className="lobby-title">Your <span className="lobby-title-grad">Offices</span></h1>
             <p className="lobby-subtitle">Enter a workspace or create a new one and invite your team.</p>
           </div>
           <button className="btn-new-office" onClick={() => setShowCreate(true)}>
