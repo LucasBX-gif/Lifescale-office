@@ -42,10 +42,6 @@ type Action =
   | { type: "DOOR_CHANGED"; closed: boolean }
   | { type: "OFFICE_UPDATED"; officeIndex: 0 | 1; office: OfficeAssignment };
 
-function emptyOffice(): OfficeAssignment {
-  return { ownerId: "", ownerName: "", locked: false };
-}
-
 function reducer(state: OfficeState, action: Action): OfficeState {
   switch (action.type) {
     case "CONNECTED":
