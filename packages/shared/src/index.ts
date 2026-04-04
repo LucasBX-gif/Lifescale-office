@@ -18,11 +18,18 @@ export interface Position2D {
   y: number;
 }
 
+export interface OfficeAssignment {
+  ownerId: string;
+  ownerName: string;
+  locked: boolean;
+}
+
 export interface Room {
   id: string;
   name: string;
   users: User[];
-  privateOfficeDoorClosed: boolean; // tracked server-side so all clients see it
+  privateOfficeDoorClosed: boolean;
+  offices: [OfficeAssignment, OfficeAssignment];
 }
 
 export interface OfficeState {
@@ -32,35 +39,39 @@ export interface OfficeState {
 // Socket.io event names
 export const EVENTS = {
   // Client -> Server
-  JOIN_ROOM: "join_room",
-  LEAVE_ROOM: "leave_room",
-  MOVE: "move",
-  TOGGLE_MUTE: "toggle_mute",
-  TOGGLE_DEAFEN: "toggle_deafen",
-  SET_STATUS: "set_status",
-  TOGGLE_DOOR: "toggle_door",
-  KNOCK: "knock",
+  JOIN_ROOM:      "join_room",
+  LEAVE_ROOM:     "leave_room",
+  MOVE:           "move",
+  TOGGLE_MUTE:    "toggle_mute",
+  TOGGLE_DEAFEN:  "toggle_deafen",
+  SET_STATUS:     "set_status",
+  TOGGLE_DOOR:    "toggle_door",
+  KNOCK:          "knock",
   KNOCK_RESPONSE: "knock_response",
+  LOCK_OFFICE:    "lock_office",
 
   // Server -> Client
-  ROOM_STATE: "room_state",
-  USER_JOINED: "user_joined",
-  USER_LEFT: "user_left",
-  USER_MOVED: "user_moved",
-  USER_UPDATED: "user_updated",
-  DOOR_CHANGED: "door_changed",
-  KNOCKED: "knocked",
+  ROOM_STATE:     "room_state",
+  USER_JOINED:    "user_joined",
+  USER_LEFT:      "user_left",
+  USER_MOVED:     "user_moved",
+  USER_UPDATED:   "user_updated",
+  DOOR_CHANGED:   "door_changed",
+  KNOCKED:        "knocked",
   KNOCK_ANSWERED: "knock_answered",
+  OFFICE_UPDATED: "office_updated",
 } as const;
 
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];
 
 // Payload types
-export interface JoinRoomPayload   { roomId: string; name: string; roomName?: string; }
-export interface MovePayload       { position: Position2D; }
-export interface SetStatusPayload  { status: UserStatus; }
-export interface KnockPayload      { targetUserIds: string[]; }
-export interface KnockedPayload    { knockerId: string; knockerName: string; }
-export interface KnockResponsePayload { knockerId: string; accepted: boolean; }
-export interface KnockAnsweredPayload { accepted: boolean; responderName: string; }
-export interface DoorChangedPayload   { closed: boolean; }
+export interface JoinRoomPayload        { roomId: string; name: string; roomName?: string; }
+export interface MovePayload            { position: Position2D; }
+export interface SetStatusPayload       { status: UserStatus; }
+export interface KnockPayload           { targetUserIds: string[]; }
+export interface KnockedPayload         { knockerId: string; knockerName: string; }
+export interface KnockResponsePayload   { knockerId: string; accepted: boolean; }
+export interface KnockAnsweredPayload   { accepted: boolean; responderName: string; }
+export interface DoorChangedPayload     { closed: boolean; }
+export interface LockOfficePayload      { officeIndex: 0 | 1; }
+export interface OfficeUpdatedPayload   { officeIndex: 0 | 1; office: OfficeAssignment; }

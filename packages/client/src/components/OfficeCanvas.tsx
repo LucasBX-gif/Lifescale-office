@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback } from "react";
-import { Room, Position2D, UserStatus, User } from "@lifescale/shared";
+import { Room, Position2D, UserStatus, User, OfficeAssignment } from "@lifescale/shared";
 import {
-  CANVAS_W, CANVAS_H, ZONES, DOOR,
-  PRIVATE_OFFICE_ZONE, detectZone, pctToPx, pxToPct,
+  CANVAS_W, CANVAS_H, ZONES, DOOR, DOOR_2,
+  PRIVATE_OFFICE_ZONE, PRIVATE_OFFICE_2_ZONE, detectZone, pctToPx, pxToPct,
 } from "../zones";
 
 const AVATAR_R = 20;
@@ -254,12 +254,17 @@ function drawLights(ctx: CanvasRenderingContext2D, p: P) {
 }
 
 // ─── Zones — walls & labels ───────────────────────────────────────────────────
-function drawZones(ctx: CanvasRenderingContext2D, doorClosed: boolean, p: P) {
-  const WT = 7; // wall thickness
+function drawZones(
+  ctx: CanvasRenderingContext2D,
+  doorClosed: boolean,
+  p: P,
+  offices: [OfficeAssignment, OfficeAssignment]
+) {
+  const WT = 7;
 
   for (const z of ZONES) {
     // Floor texture
-    if (z.id === "private-office") {
+    if (z.id === "private-office" || z.id === "private-office-2") {
       drawWoodFloor(ctx, z.x, z.y, z.w, z.h, p);
     } else if (z.id === "war-room") {
       drawCarpet(ctx, z.x, z.y, z.w, z.h, p.warmCarpet, p.warmCarpetAlt, p.warmCarpetLine);
@@ -267,36 +272,64 @@ function drawZones(ctx: CanvasRenderingContext2D, doorClosed: boolean, p: P) {
       drawCarpet(ctx, z.x, z.y, z.w, z.h, p.coolCarpet, p.coolCarpetAlt, p.coolCarpetLine);
     }
 
-    // Zone label (subtle floor text)
+    // Room label — personalised for private offices
+    let label = z.name.toUpperCase();
+    if (z.id === "private-office" && offices[0].ownerName) {
+      label = `${offices[0].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
+    }
+    if (z.id === "private-office-2" && offices[1].ownerName) {
+      label = `${offices[1].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
+    }
     ctx.font = "bold 12px Inter, system-ui, sans-serif";
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.fillStyle = p.zoneLabel;
-    ctx.fillText(z.name.toUpperCase(), z.x + z.w / 2, z.y + z.h - 16);
+    ctx.fillText(label, z.x + z.w / 2, z.y + z.h - 16);
+
+    // Locked red tint overlay
+    const isLocked =
+      (z.id === "private-office" && offices[0].locked) ||
+      (z.id === "private-office-2" && offices[1].locked);
+    if (isLocked) {
+      ctx.fillStyle = "rgba(255,40,40,0.07)";
+      ctx.fillRect(z.x, z.y, z.w, z.h);
+    }
 
     // Thick walls
     ctx.fillStyle = p.wallFill;
     if (z.id === "private-office") {
       const { x, y, w, h } = PRIVATE_OFFICE_ZONE;
       const wallX = x + w;
-      // Top wall
       ctx.fillRect(x, y, w + WT, WT);
-      // Left wall
       ctx.fillRect(x, y, WT, h);
-      // Bottom wall
       ctx.fillRect(x, y + h, w + WT, WT);
-      // Right wall (with door gap)
-      ctx.fillRect(wallX, y, WT, DOOR.y - y);
-      ctx.fillRect(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h));
-      drawDoor(ctx, doorClosed, p);
+      // Right wall with door gap (or solid if locked)
+      if (isLocked) {
+        ctx.fillRect(wallX, y, WT, h);
+      } else {
+        ctx.fillRect(wallX, y, WT, DOOR.y - y);
+        ctx.fillRect(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h));
+        drawDoor(ctx, doorClosed, p, false);
+      }
+    } else if (z.id === "private-office-2") {
+      const { x, y, w, h } = PRIVATE_OFFICE_2_ZONE;
+      const wallX = x; // door is on LEFT wall
+      ctx.fillRect(x, y, w, WT);                 // top
+      ctx.fillRect(x, y, WT, h);                 // left placeholder (canvas edge at x=900)
+      ctx.fillRect(x + w, y, WT, h + WT);        // right (canvas edge)
+      ctx.fillRect(x, y + h, w + WT, WT);        // bottom
+      // Left wall with door gap (or solid if locked)
+      if (isLocked) {
+        ctx.fillRect(wallX, y, WT, h);
+      } else {
+        ctx.fillRect(wallX, y, WT, DOOR_2.y - y);
+        ctx.fillRect(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h));
+        drawDoor(ctx, doorClosed, p, true);
+      }
     } else {
-      // Top
       ctx.fillRect(z.x, z.y, z.w, WT);
-      // Bottom
       ctx.fillRect(z.x, z.y + z.h, z.w, WT);
-      // Left
       ctx.fillRect(z.x, z.y, WT, z.h);
-      // Right
       ctx.fillRect(z.x + z.w, z.y, WT, z.h + WT);
     }
 
@@ -313,6 +346,14 @@ function drawZones(ctx: CanvasRenderingContext2D, doorClosed: boolean, p: P) {
       ctx.moveTo(x + w, y + h + WT); ctx.lineTo(x + WT, y + h + WT);
       ctx.moveTo(x + WT, y + h + WT); ctx.lineTo(x + WT, y + WT);
       ctx.stroke();
+    } else if (z.id === "private-office-2") {
+      const { x, y, w, h } = PRIVATE_OFFICE_2_ZONE;
+      ctx.beginPath();
+      ctx.moveTo(x, y + WT); ctx.lineTo(x + w, y + WT);
+      ctx.moveTo(x, DOOR_2.y); ctx.lineTo(x, y + WT);
+      ctx.moveTo(x, DOOR_2.y + DOOR_2.h); ctx.lineTo(x, y + h);
+      ctx.moveTo(x, y + h + WT); ctx.lineTo(x + w, y + h + WT);
+      ctx.stroke();
     } else {
       ctx.strokeRect(z.x + WT, z.y + WT, z.w - WT, z.h - WT);
     }
@@ -320,29 +361,46 @@ function drawZones(ctx: CanvasRenderingContext2D, doorClosed: boolean, p: P) {
 }
 
 // ─── Door ─────────────────────────────────────────────────────────────────────
-function drawDoor(ctx: CanvasRenderingContext2D, closed: boolean, p: P) {
-  const { y, h } = DOOR;
-  const wallX = PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w;
+function drawDoor(ctx: CanvasRenderingContext2D, closed: boolean, p: P, isOffice2: boolean) {
+  const door = isOffice2 ? DOOR_2 : DOOR;
+  const { y, h } = door;
+  const wallX = isOffice2
+    ? PRIVATE_OFFICE_2_ZONE.x          // left wall of office 2
+    : PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w; // right wall of office 1
 
   if (closed) {
     ctx.fillStyle = p.doorFill;
-    rr(ctx, wallX - 10, y, 10, h, 2); ctx.fill();
-    ctx.font = "13px sans-serif";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText("🔒", wallX - 5, y + h / 2);
+    if (isOffice2) {
+      rr(ctx, wallX, y, 10, h, 2); ctx.fill();
+      ctx.font = "13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("🔒", wallX + 5, y + h / 2);
+    } else {
+      rr(ctx, wallX - 10, y, 10, h, 2); ctx.fill();
+      ctx.font = "13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("🔒", wallX - 5, y + h / 2);
+    }
   } else {
     ctx.strokeStyle = p.doorFill;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(wallX, y);
-    ctx.lineTo(wallX - 18, y + h * 0.65);
+    if (isOffice2) {
+      ctx.moveTo(wallX, y); ctx.lineTo(wallX + 18, y + h * 0.65);
+    } else {
+      ctx.moveTo(wallX, y); ctx.lineTo(wallX - 18, y + h * 0.65);
+    }
     ctx.stroke();
   }
 
   ctx.font = "10px Inter, system-ui, sans-serif";
   ctx.fillStyle = p.doorText;
-  ctx.textAlign = "left"; ctx.textBaseline = "middle";
-  ctx.fillText(closed ? "Open" : "Close", wallX + 10, y + h / 2);
+  ctx.textBaseline = "middle";
+  if (isOffice2) {
+    ctx.textAlign = "right";
+    ctx.fillText(closed ? "Open" : "Close", wallX - 4, y + h / 2);
+  } else {
+    ctx.textAlign = "left";
+    ctx.fillText(closed ? "Open" : "Close", wallX + 10, y + h / 2);
+  }
 }
 
 // ─── Furniture ────────────────────────────────────────────────────────────────
@@ -856,9 +914,134 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
     noShadow(ctx);
     ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1.5;
     rr(ctx, c.x - 12, c.y - 12, 24, 24, 2); ctx.stroke();
-    // Column highlight
     ctx.fillStyle = "rgba(255,255,255,0.05)";
     ctx.fillRect(c.x - 10, c.y - 10, 5, 20);
+  }
+
+  // ══ PRIVATE OFFICE 2 (900,0 → 1200,280) — mirrored layout ════════════════════
+
+  // Floor rug (mirrored)
+  ctx.fillStyle = p.rugWarm;
+  rr(ctx, 914, 55, 270, 210, 8); ctx.fill();
+
+  // ── Bookshelf — right wall ────────────────────────────────────────────────────
+  shadow(ctx, p.shadow, 8);
+  ctx.fillStyle = p.bookShelf;
+  rr(ctx, 1158, 8, 34, 260, 2); ctx.fill();
+  noShadow(ctx);
+  ctx.strokeStyle = p.bookEdge; ctx.lineWidth = 1;
+  rr(ctx, 1158, 8, 34, 260, 2); ctx.stroke();
+  for (let i = 0; i < 5; i++) {
+    ctx.fillStyle = p.bookEdge;
+    ctx.fillRect(1158, 58 + i * 50, 34, 3);
+  }
+  const bookCols2 = ["#06b6d4","#ff8c42","#a855f7","#3dffa0","#ffbe32","#6c63ff","#e05555","#06b6d4","#ff8c42","#a855f7"];
+  for (let shelf = 0; shelf < 5; shelf++) {
+    let bx = 1160;
+    const by = 10 + shelf * 50;
+    for (let b = 0; b < 6 && bx < 1190; b++) {
+      const bw = 3 + (b * 7 + shelf * 3) % 3;
+      ctx.fillStyle = bookCols2[(shelf * 6 + b) % bookCols2.length];
+      ctx.fillRect(bx, by + 2, bw, 44);
+      bx += bw + 1;
+    }
+  }
+
+  // ── L-desk (mirrored — main desk runs left, return goes right side) ───────────
+  shadow(ctx, p.shadow, 10);
+  ctx.fillStyle = p.deskDark;
+  rr(ctx, 950, 145, 195, 58, 4); ctx.fill();   // main desk
+  rr(ctx, 1081, 185, 64, 75, 4); ctx.fill();   // return
+  noShadow(ctx);
+  ctx.fillStyle = p.deskLight;
+  rr(ctx, 953, 148, 189, 8, 2); ctx.fill();
+  rr(ctx, 1084, 188, 58, 8, 2); ctx.fill();
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1.5;
+  rr(ctx, 950, 145, 195, 58, 4); ctx.stroke();
+  rr(ctx, 1081, 185, 64, 75, 4); ctx.stroke();
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = p.deskEdge;
+    rr(ctx, 1104, 200 + i * 18, 20, 5, 2); ctx.fill();
+  }
+
+  // ── Monitor (mirrored) ────────────────────────────────────────────────────────
+  shadow(ctx, p.shadow, 12);
+  ctx.fillStyle = p.screenFill;
+  rr(ctx, 1014, 150, 86, 50, 3); ctx.fill();
+  noShadow(ctx);
+  ctx.fillStyle = p.screenGlowOut;
+  rr(ctx, 1009, 145, 96, 60, 5); ctx.fill();
+  ctx.fillStyle = p.screenGlow;
+  rr(ctx, 1018, 153, 78, 42, 2); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.07)";
+  rr(ctx, 1020, 155, 50, 20, 1); ctx.fill();
+  rr(ctx, 1020, 178, 30, 8, 1); ctx.fill();
+  ctx.fillStyle = p.deskMid;
+  ctx.fillRect(1054, 200, 9, 8);
+  ctx.fillRect(1046, 207, 26, 4);
+
+  // Keyboard + mouse (mirrored)
+  ctx.fillStyle = p.chairFill;
+  rr(ctx, 984, 170, 56, 18, 2); ctx.fill();
+  rr(ctx, 964, 172, 14, 20, 5); ctx.fill();
+
+  // ── Chair (mirrored) ──────────────────────────────────────────────────────────
+  shadow(ctx, p.shadow, 12);
+  ctx.fillStyle = p.chairFill;
+  rr(ctx, 1086, 218, 44, 36, 6); ctx.fill();
+  rr(ctx, 1082, 240, 52, 22, 5); ctx.fill();
+  noShadow(ctx);
+  ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 1.5;
+  rr(ctx, 1086, 218, 44, 36, 6); ctx.stroke();
+  rr(ctx, 1082, 240, 52, 22, 5); ctx.stroke();
+  ctx.fillStyle = p.chairFill;
+  ctx.fillRect(1080, 236, 6, 20);
+  ctx.fillRect(1114, 236, 6, 20);
+  ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 2;
+  for (let a = 0; a < 5; a++) {
+    const ang = (a / 5) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(1108, 265);
+    ctx.lineTo(1108 + Math.cos(ang) * 16, 265 + Math.sin(ang) * 10);
+    ctx.stroke();
+  }
+
+  // ── Side table + lamp ─────────────────────────────────────────────────────────
+  shadow(ctx, p.shadow, 6);
+  ctx.fillStyle = p.deskMid;
+  rr(ctx, 935, 235, 40, 35, 3); ctx.fill();
+  noShadow(ctx);
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1;
+  rr(ctx, 935, 235, 40, 35, 3); ctx.stroke();
+  ctx.fillStyle = p.deskDark;
+  ctx.fillRect(953, 218, 4, 17);
+  ctx.fillStyle = p.mugFill;
+  rr(ctx, 945, 208, 22, 14, 3); ctx.fill();
+  ctx.fillStyle = p.mugFill;
+  rr(ctx, 948, 248, 12, 16, 2); ctx.fill();
+
+  // ── Corner plant (mirrored) ───────────────────────────────────────────────────
+  shadow(ctx, p.shadow, 8);
+  ctx.fillStyle = p.plantPot;
+  rr(ctx, 918, 240, 28, 28, 3); ctx.fill();
+  noShadow(ctx);
+  ctx.fillStyle = p.plantLeaf;
+  ctx.beginPath(); ctx.ellipse(930, 225, 20, 10, 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(922, 218, 16, 8, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(940, 222, 12, 7, -0.8, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = p.plantLeaf2;
+  ctx.beginPath(); ctx.ellipse(928, 230, 10, 5, 0.2, 0, Math.PI * 2); ctx.fill();
+
+  // ── Window (top wall, mirrored) ───────────────────────────────────────────────
+  ctx.fillStyle = p.glassBlue;
+  rr(ctx, 984, 7, 130, 22, 3); ctx.fill();
+  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
+  rr(ctx, 984, 7, 130, 22, 3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1049, 7); ctx.lineTo(1049, 29); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(984, 18); ctx.lineTo(1114, 18); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,0.06)"; ctx.lineWidth = 0.5;
+  for (let bx = 988; bx < 1112; bx += 8) {
+    ctx.beginPath(); ctx.moveTo(bx, 7); ctx.lineTo(bx, 29); ctx.stroke();
   }
 }
 
@@ -960,22 +1143,31 @@ function drawZoneIndicator(ctx: CanvasRenderingContext2D, zoneName: string, p: P
   ctx.fillText(text, px, py + h / 2 - 1);
 }
 
-// ─── Knock button ──────────────────────────────────────────────────────────────
-const KNOCK_BTN = { x: 308, y: 118, w: 72, h: 28 } as const;
-const DOOR_CENTER_PX = { x: PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w, y: DOOR.y + DOOR.h / 2 };
-const KNOCK_RANGE_PX = 100;
+// ─── Buttons near office doors ─────────────────────────────────────────────────
+// Office 1: door on right wall (x=300), outside is x>300
+const DOOR1_CENTER = { x: PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w, y: DOOR.y + DOOR.h / 2 };
+const KNOCK_BTN_1 = { x: 308, y: 118, w: 72, h: 28 } as const;
+const LOCK_BTN_1  = { x: 308, y: 82,  w: 88, h: 28 } as const;
 
-function drawKnockButton(ctx: CanvasRenderingContext2D) {
-  const { x, y, w, h } = KNOCK_BTN;
-  ctx.fillStyle = "rgba(108,99,255,0.9)";
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, 6);
-  ctx.fill();
+// Office 2: door on left wall (x=900), outside is x<900
+const DOOR2_CENTER = { x: PRIVATE_OFFICE_2_ZONE.x, y: DOOR_2.y + DOOR_2.h / 2 };
+const KNOCK_BTN_2 = { x: 820, y: 118, w: 72, h: 28 } as const;
+const LOCK_BTN_2  = { x: 804, y: 82,  w: 88, h: 28 } as const;
+
+const BTN_RANGE = 130;
+
+function drawCanvasBtn(
+  ctx: CanvasRenderingContext2D,
+  btn: { x: number; y: number; w: number; h: number },
+  label: string,
+  color: string
+) {
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 6); ctx.fill();
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 11px Inter, system-ui, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("🚪 Knock", x + w / 2, y + h / 2);
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(label, btn.x + btn.w / 2, btn.y + btn.h / 2);
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -983,20 +1175,24 @@ interface Props {
   room: Room;
   myUserId: string | null;
   myPosition: Position2D | null;
+  myOfficeIndex: -1 | 0 | 1;
+  offices: [OfficeAssignment, OfficeAssignment];
   onMove: (position: Position2D) => void;
   onStatusChange: (status: UserStatus) => void;
   onZoneChange: (zone: string) => void;
   privateOfficeDoorClosed: boolean;
   onDoorToggle: () => void;
   onKnock: (targetUserIds: string[]) => void;
+  onLockOffice: (officeIndex: 0 | 1) => void;
   isDark: boolean;
   speakingNames: Set<string>;
 }
 
 export function OfficeCanvas({
   room, myUserId, myPosition,
+  myOfficeIndex, offices,
   onMove, onZoneChange,
-  privateOfficeDoorClosed, onDoorToggle, onKnock,
+  privateOfficeDoorClosed, onDoorToggle, onKnock, onLockOffice,
   isDark, speakingNames,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1007,7 +1203,6 @@ export function OfficeCanvas({
   const lastTimeRef = useRef<number>(0);
   const lastEmitRef = useRef<number>(0);
   const lastZoneRef = useRef<string>("");
-  const showKnockRef = useRef(false);
 
   const roomRef = useRef(room);
   const interpRef = useRef<Map<string, { x: number; y: number }>>(new Map());
@@ -1037,6 +1232,21 @@ export function OfficeCanvas({
 
   const speakingNamesRef = useRef(speakingNames);
   useEffect(() => { speakingNamesRef.current = speakingNames; }, [speakingNames]);
+
+  const officesRef = useRef(offices);
+  useEffect(() => { officesRef.current = offices; }, [offices]);
+
+  const myOfficeIndexRef = useRef(myOfficeIndex);
+  useEffect(() => { myOfficeIndexRef.current = myOfficeIndex; }, [myOfficeIndex]);
+
+  const onLockOfficeRef = useRef(onLockOffice);
+  useEffect(() => { onLockOfficeRef.current = onLockOffice; }, [onLockOffice]);
+
+  // Track which canvas buttons are currently shown for click detection
+  const showKnock1Ref = useRef(false);
+  const showKnock2Ref = useRef(false);
+  const showLock1Ref  = useRef(false);
+  const showLock2Ref  = useRef(false);
 
   useEffect(() => {
     if (myPosition && !syncedRef.current) {
@@ -1069,6 +1279,23 @@ export function OfficeCanvas({
 
     x = Math.max(AVATAR_R, Math.min(CANVAS_W - AVATAR_R, x));
     y = Math.max(AVATAR_R, Math.min(CANVAS_H - AVATAR_R, y));
+
+    // Collision: locked offices are solid walls — can't enter from outside
+    const { x: ox, y: oy } = posRef.current;
+    const lockedZones = [];
+    if (officesRef.current[0].locked) lockedZones.push(PRIVATE_OFFICE_ZONE);
+    if (officesRef.current[1].locked) lockedZones.push(PRIVATE_OFFICE_2_ZONE);
+    for (const z of lockedZones) {
+      const inside = (px: number, py: number) =>
+        px > z.x + 7 && px < z.x + z.w - 7 && py > z.y + 7 && py < z.y + z.h - 7;
+      if (inside(x, y) && !inside(ox, oy)) {
+        // Try sliding along each axis independently
+        if (!inside(ox, y)) x = ox;
+        else if (!inside(x, oy)) y = oy;
+        else { x = ox; y = oy; }
+      }
+    }
+
     posRef.current = { x, y };
 
     if (moved && time - lastEmitRef.current > 60) {
@@ -1099,8 +1326,9 @@ export function OfficeCanvas({
     ctx.scale(sx, sy);
 
     const p = paletteRef.current;
+    const offs = officesRef.current;
     drawBackground(ctx, p);
-    drawZones(ctx, doorClosedRef.current, p);
+    drawZones(ctx, doorClosedRef.current, p, offs);
     drawLights(ctx, p);
     drawFurniture(ctx, p);
 
@@ -1123,15 +1351,29 @@ export function OfficeCanvas({
 
     drawZoneIndicator(ctx, zone, p);
 
-    const distToDoor = Math.sqrt(
-      (x - DOOR_CENTER_PX.x) ** 2 + (y - DOOR_CENTER_PX.y) ** 2
-    );
-    const showKnock =
-      doorClosedRef.current &&
-      zone !== "Private Office" &&
-      distToDoor <= KNOCK_RANGE_PX;
-    showKnockRef.current = showKnock;
-    if (showKnock) drawKnockButton(ctx);
+    const myIdx = myOfficeIndexRef.current;
+    const d1 = Math.sqrt((x - DOOR1_CENTER.x) ** 2 + (y - DOOR1_CENTER.y) ** 2);
+    const d2 = Math.sqrt((x - DOOR2_CENTER.x) ** 2 + (y - DOOR2_CENTER.y) ** 2);
+
+    // Lock buttons (owner near their door)
+    const sL1 = myIdx === 0 && !offs[0].locked && d1 <= BTN_RANGE;
+    const sL1locked = myIdx === 0 && offs[0].locked && d1 <= BTN_RANGE;
+    const sL2 = myIdx === 1 && !offs[1].locked && d2 <= BTN_RANGE;
+    const sL2locked = myIdx === 1 && offs[1].locked && d2 <= BTN_RANGE;
+    showLock1Ref.current = sL1 || sL1locked;
+    showLock2Ref.current = sL2 || sL2locked;
+    if (sL1)       drawCanvasBtn(ctx, LOCK_BTN_1, "🔓 Lock",   "rgba(108,99,255,0.9)");
+    if (sL1locked) drawCanvasBtn(ctx, LOCK_BTN_1, "🔒 Unlock", "rgba(200,40,40,0.9)");
+    if (sL2)       drawCanvasBtn(ctx, LOCK_BTN_2, "🔓 Lock",   "rgba(108,99,255,0.9)");
+    if (sL2locked) drawCanvasBtn(ctx, LOCK_BTN_2, "🔒 Unlock", "rgba(200,40,40,0.9)");
+
+    // Knock buttons (non-owner outside a locked door)
+    const sK1 = myIdx !== 0 && offs[0].locked && zone !== "Private Office" && d1 <= BTN_RANGE;
+    const sK2 = myIdx !== 1 && offs[1].locked && zone !== "Private Office 2" && d2 <= BTN_RANGE;
+    showKnock1Ref.current = sK1;
+    showKnock2Ref.current = sK2;
+    if (sK1) drawCanvasBtn(ctx, KNOCK_BTN_1, "🚪 Knock", "rgba(255,140,0,0.9)");
+    if (sK2) drawCanvasBtn(ctx, KNOCK_BTN_2, "🚪 Knock", "rgba(255,140,0,0.9)");
 
     ctx.restore();
     rafRef.current = requestAnimationFrame(tick);
@@ -1166,22 +1408,49 @@ export function OfficeCanvas({
     const cx = (e.clientX - rect.left) * scaleX;
     const cy = (e.clientY - rect.top) * scaleY;
 
-    if (showKnockRef.current) {
-      const { x, y, w, h } = KNOCK_BTN;
-      if (cx >= x && cx <= x + w && cy >= y && cy <= y + h) {
-        const occupants = roomRef.current.users
-          .filter((u) => {
-            if (u.id === myUserIdRef.current) return false;
-            const px = pctToPx(u.position);
-            return detectZone(px.x, px.y) === "Private Office";
-          })
-          .map((u) => u.id);
-        onKnockRef.current(occupants);
-        return;
-      }
+    function hits(btn: { x: number; y: number; w: number; h: number }) {
+      return cx >= btn.x && cx <= btn.x + btn.w && cy >= btn.y && cy <= btn.y + btn.h;
     }
 
+    // Lock / unlock office 1
+    if (showLock1Ref.current && hits(LOCK_BTN_1)) {
+      onLockOfficeRef.current(0); return;
+    }
+    // Lock / unlock office 2
+    if (showLock2Ref.current && hits(LOCK_BTN_2)) {
+      onLockOfficeRef.current(1); return;
+    }
+
+    // Knock on office 1
+    if (showKnock1Ref.current && hits(KNOCK_BTN_1)) {
+      const occupants = roomRef.current.users
+        .filter((u) => {
+          if (u.id === myUserIdRef.current) return false;
+          const px = pctToPx(u.position);
+          return detectZone(px.x, px.y) === "Private Office";
+        })
+        .map((u) => u.id);
+      onKnockRef.current(occupants); return;
+    }
+
+    // Knock on office 2
+    if (showKnock2Ref.current && hits(KNOCK_BTN_2)) {
+      const occupants = roomRef.current.users
+        .filter((u) => {
+          if (u.id === myUserIdRef.current) return false;
+          const px = pctToPx(u.position);
+          return detectZone(px.x, px.y) === "Private Office 2";
+        })
+        .map((u) => u.id);
+      onKnockRef.current(occupants); return;
+    }
+
+    // Door toggle (office 1)
     if (cx >= DOOR.x && cx <= DOOR.x + DOOR.w && cy >= DOOR.y && cy <= DOOR.y + DOOR.h) {
+      onDoorToggleRef.current(); return;
+    }
+    // Door toggle (office 2)
+    if (cx >= DOOR_2.x && cx <= DOOR_2.x + DOOR_2.w && cy >= DOOR_2.y && cy <= DOOR_2.y + DOOR_2.h) {
       onDoorToggleRef.current();
     }
   }

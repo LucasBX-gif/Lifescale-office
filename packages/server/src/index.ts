@@ -9,18 +9,19 @@ import {
   EVENTS,
   User,
   Room,
+  OfficeAssignment,
   JoinRoomPayload,
   MovePayload,
   SetStatusPayload,
   KnockPayload,
   KnockResponsePayload,
+  LockOfficePayload,
 } from "@lifescale/shared";
 
 const PORT = process.env.PORT || 3001;
 const LK_API_KEY = process.env.LIVEKIT_API_KEY!;
 const LK_API_SECRET = process.env.LIVEKIT_API_SECRET!;
 
-// Accept the configured production origin plus any Vercel preview URL for this project.
 const PRODUCTION_ORIGIN = (process.env.CLIENT_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
 const VERCEL_PREVIEW_RE = /^https:\/\/lifescale-office-client.*\.vercel\.app$/;
 
@@ -46,8 +47,9 @@ const io = new Server(httpServer, {
   cors: { origin: corsOriginFn, methods: ["GET", "POST"], credentials: true },
 });
 
-// --- In-memory office state ---
-// Rooms are created dynamically when a user first joins them (workspace UUID → room).
+function emptyOffice(): OfficeAssignment {
+  return { ownerId: "", ownerName: "", locked: false };
+}
 
 const rooms = new Map<string, Room>();
 
@@ -58,60 +60,36 @@ function getOrCreateRoom(roomId: string, roomName?: string): Room {
       name: roomName || roomId,
       users: [],
       privateOfficeDoorClosed: false,
+      offices: [emptyOffice(), emptyOffice()],
     });
   }
   return rooms.get(roomId)!;
 }
 
-const userSocketMap = new Map<string, string>(); // userId -> socketId
-const socketUserMap = new Map<string, User>();   // socketId -> User
+const userSocketMap = new Map<string, string>();
+const socketUserMap = new Map<string, User>();
 
-// --- REST ---
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.get("/rooms", (_req, res) => {
   res.json(Array.from(rooms.values()).map((r) => ({ id: r.id, name: r.name, userCount: r.users.length })));
 });
 
-/**
- * GET /token?roomId=lobby&name=Jane
- * Returns a short-lived LiveKit JWT the client uses to join the voice room.
- * The LiveKit room name mirrors our office room id so each office room
- * gets its own isolated voice channel.
- */
 app.get("/token", async (req, res) => {
   const { roomId, name } = req.query as { roomId?: string; name?: string };
-
   if (!roomId || !name) {
     res.status(400).json({ error: "roomId and name are required" });
     return;
   }
-
   const participantIdentity = `${name.trim()}-${uuidv4().slice(0, 6)}`;
-
   const token = new AccessToken(LK_API_KEY, LK_API_SECRET, {
     identity: participantIdentity,
     name: name.trim(),
     ttl: "4h",
   });
-
-  token.addGrant({
-    roomJoin: true,
-    room: roomId,
-    canPublish: true,
-    canSubscribe: true,
-  });
-
-  res.json({
-    token: await token.toJwt(),
-    identity: participantIdentity,
-  });
+  token.addGrant({ roomJoin: true, room: roomId, canPublish: true, canSubscribe: true });
+  res.json({ token: await token.toJwt(), identity: participantIdentity });
 });
-
-// --- Socket.io (position tracking) ---
 
 io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id}`);
@@ -133,9 +111,22 @@ io.on("connection", (socket) => {
     socketUserMap.set(socket.id, user);
     room.users.push(user);
 
+    // Auto-assign to the first free office slot
+    const freeIdx = room.offices.findIndex((o) => !o.ownerId);
+    if (freeIdx !== -1) {
+      room.offices[freeIdx] = { ownerId: user.id, ownerName: name, locked: false };
+    }
+
     socket.join(roomId);
     socket.emit(EVENTS.ROOM_STATE, room);
     socket.to(roomId).emit(EVENTS.USER_JOINED, user);
+    // Broadcast updated office assignments to existing members
+    if (freeIdx !== -1) {
+      socket.to(roomId).emit(EVENTS.OFFICE_UPDATED, {
+        officeIndex: freeIdx,
+        office: room.offices[freeIdx],
+      });
+    }
 
     console.log(`${name} joined room ${roomId}`);
   });
@@ -151,20 +142,14 @@ io.on("connection", (socket) => {
     const user = socketUserMap.get(socket.id);
     if (!user) return;
     user.isMuted = !user.isMuted;
-    io.to(user.room).emit(EVENTS.USER_UPDATED, {
-      userId: user.id,
-      isMuted: user.isMuted,
-    });
+    io.to(user.room).emit(EVENTS.USER_UPDATED, { userId: user.id, isMuted: user.isMuted });
   });
 
   socket.on(EVENTS.TOGGLE_DEAFEN, () => {
     const user = socketUserMap.get(socket.id);
     if (!user) return;
     user.isDeafened = !user.isDeafened;
-    io.to(user.room).emit(EVENTS.USER_UPDATED, {
-      userId: user.id,
-      isDeafened: user.isDeafened,
-    });
+    io.to(user.room).emit(EVENTS.USER_UPDATED, { userId: user.id, isDeafened: user.isDeafened });
   });
 
   socket.on(EVENTS.SET_STATUS, ({ status }: SetStatusPayload) => {
@@ -183,7 +168,18 @@ io.on("connection", (socket) => {
     io.to(user.room).emit(EVENTS.DOOR_CHANGED, { closed: room.privateOfficeDoorClosed });
   });
 
-  // Route a knock to specific users by ID (client resolves who's in the zone)
+  // Owner toggles their office lock (physical wall barrier)
+  socket.on(EVENTS.LOCK_OFFICE, ({ officeIndex }: LockOfficePayload) => {
+    const user = socketUserMap.get(socket.id);
+    if (!user) return;
+    const room = rooms.get(user.room);
+    if (!room) return;
+    const office = room.offices[officeIndex];
+    if (!office || office.ownerId !== user.id) return;
+    office.locked = !office.locked;
+    io.to(user.room).emit(EVENTS.OFFICE_UPDATED, { officeIndex, office });
+  });
+
   socket.on(EVENTS.KNOCK, ({ targetUserIds }: KnockPayload) => {
     const knocker = socketUserMap.get(socket.id);
     if (!knocker) return;
@@ -198,12 +194,9 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Accept → server opens the door and tells the knocker; Ignore → just tell the knocker
   socket.on(EVENTS.KNOCK_RESPONSE, ({ knockerId, accepted }: KnockResponsePayload) => {
     const responder = socketUserMap.get(socket.id);
     if (!responder) return;
-
-    // Notify the knocker of the outcome
     const knockerSocketId = userSocketMap.get(knockerId);
     if (knockerSocketId) {
       io.to(knockerSocketId).emit(EVENTS.KNOCK_ANSWERED, {
@@ -211,8 +204,6 @@ io.on("connection", (socket) => {
         responderName: responder.name,
       });
     }
-
-    // Accept → open the door for the whole room
     if (accepted) {
       const room = rooms.get(responder.room);
       if (room) {
@@ -236,6 +227,16 @@ function handleLeave(socketId: string) {
   if (room) {
     room.users = room.users.filter((u) => u.id !== user.id);
     io.to(user.room).emit(EVENTS.USER_LEFT, { userId: user.id });
+
+    // Free any owned office
+    const offIdx = room.offices.findIndex((o) => o.ownerId === user.id);
+    if (offIdx !== -1) {
+      room.offices[offIdx] = emptyOffice();
+      io.to(user.room).emit(EVENTS.OFFICE_UPDATED, {
+        officeIndex: offIdx,
+        office: room.offices[offIdx],
+      });
+    }
   }
   userSocketMap.delete(user.id);
   socketUserMap.delete(socketId);

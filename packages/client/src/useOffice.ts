@@ -6,6 +6,7 @@ import {
   EVENTS,
   User,
   Room,
+  OfficeAssignment,
   Position2D,
   JoinRoomPayload,
   MovePayload,
@@ -16,6 +17,8 @@ import {
   KnockedPayload,
   KnockAnsweredPayload,
   DoorChangedPayload,
+  LockOfficePayload,
+  OfficeUpdatedPayload,
 } from "@lifescale/shared";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
@@ -36,7 +39,12 @@ type Action =
   | { type: "USER_LEFT"; userId: string }
   | { type: "USER_MOVED"; userId: string; position: Position2D }
   | { type: "USER_UPDATED"; userId: string; patch: Partial<User> }
-  | { type: "DOOR_CHANGED"; closed: boolean };
+  | { type: "DOOR_CHANGED"; closed: boolean }
+  | { type: "OFFICE_UPDATED"; officeIndex: 0 | 1; office: OfficeAssignment };
+
+function emptyOffice(): OfficeAssignment {
+  return { ownerId: "", ownerName: "", locked: false };
+}
 
 function reducer(state: OfficeState, action: Action): OfficeState {
   switch (action.type) {
@@ -80,6 +88,14 @@ function reducer(state: OfficeState, action: Action): OfficeState {
     case "DOOR_CHANGED":
       if (!state.room) return state;
       return { ...state, room: { ...state.room, privateOfficeDoorClosed: action.closed } };
+    case "OFFICE_UPDATED": {
+      if (!state.room) return state;
+      const newOffices: [OfficeAssignment, OfficeAssignment] = [
+        ...state.room.offices,
+      ] as [OfficeAssignment, OfficeAssignment];
+      newOffices[action.officeIndex] = action.office;
+      return { ...state, room: { ...state.room, offices: newOffices } };
+    }
     default:
       return state;
   }
@@ -102,13 +118,11 @@ export function useOffice() {
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
-  // Pending knock notifications (may receive several before responding)
   const [knockQueue, setKnockQueue] = useState<KnockNotification[]>([]);
 
   const { connect: lkConnect, disconnect: lkDisconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes, speakingNames } =
     useLiveKit();
 
-  // Door state is now server-derived; use a ref so the 50ms interval stays current
   const doorClosedRef = useRef(false);
   useEffect(() => {
     doorClosedRef.current = state.room?.privateOfficeDoorClosed ?? false;
@@ -132,9 +146,11 @@ export function useOffice() {
     socket.on(EVENTS.USER_JOINED, (user: User) =>
       dispatch({ type: "USER_JOINED", user })
     );
+
     socket.on(EVENTS.USER_LEFT, ({ userId }: { userId: string }) =>
       dispatch({ type: "USER_LEFT", userId })
     );
+
     socket.on(
       EVENTS.USER_MOVED,
       ({ userId, position }: { userId: string; position: Position2D }) =>
@@ -146,20 +162,21 @@ export function useOffice() {
         dispatch({ type: "USER_UPDATED", userId, patch })
     );
 
-    // Door state broadcast from server
     socket.on(EVENTS.DOOR_CHANGED, ({ closed }: DoorChangedPayload) =>
       dispatch({ type: "DOOR_CHANGED", closed })
     );
 
-    // Incoming knock — add to queue
+    socket.on(EVENTS.OFFICE_UPDATED, ({ officeIndex, office }: OfficeUpdatedPayload) =>
+      dispatch({ type: "OFFICE_UPDATED", officeIndex, office })
+    );
+
     socket.on(EVENTS.KNOCKED, ({ knockerId, knockerName }: KnockedPayload) => {
       setKnockQueue((q) => {
-        if (q.some((k) => k.knockerId === knockerId)) return q; // dedupe
+        if (q.some((k) => k.knockerId === knockerId)) return q;
         return [...q, { knockerId, knockerName }];
       });
     });
 
-    // Feedback to the knocker after owner responds
     socket.on(EVENTS.KNOCK_ANSWERED, ({ accepted, responderName }: KnockAnsweredPayload) => {
       console.info(
         accepted
@@ -195,37 +212,41 @@ export function useOffice() {
   }, []);
 
   const toggleMute = useCallback(() => {
+    const user = stateRef.current.room?.users.find(
+      (u) => u.id === stateRef.current.currentUserId
+    );
+    if (!user) return;
+    const newMuted = !user.isMuted;
     socket.emit(EVENTS.TOGGLE_MUTE);
-    const myUser = state.room?.users.find((u) => u.id === state.currentUserId);
-    if (myUser) setMicrophoneMuted(!myUser.isMuted);
-  }, [state.room, state.currentUserId, setMicrophoneMuted]);
+    setMicrophoneMuted(newMuted);
+  }, [setMicrophoneMuted]);
 
   const toggleDeafen = useCallback(() => {
+    const user = stateRef.current.room?.users.find(
+      (u) => u.id === stateRef.current.currentUserId
+    );
+    if (!user) return;
+    const newDeafened = !user.isDeafened;
     socket.emit(EVENTS.TOGGLE_DEAFEN);
-    const myUser = state.room?.users.find((u) => u.id === state.currentUserId);
-    if (myUser) setAudioOutputMuted(!myUser.isDeafened);
-  }, [state.room, state.currentUserId, setAudioOutputMuted]);
+    setAudioOutputMuted(newDeafened);
+  }, [setAudioOutputMuted]);
 
-  const setStatus = useCallback(
-    (status: UserStatus) => {
-      socket.emit(EVENTS.SET_STATUS, { status } satisfies SetStatusPayload);
-      setMicrophoneMuted(status === "deep-work");
-    },
-    [setMicrophoneMuted]
-  );
+  const setStatus = useCallback((status: UserStatus) => {
+    socket.emit(EVENTS.SET_STATUS, { status } satisfies SetStatusPayload);
+  }, []);
 
-  /** Toggle the door — server broadcasts the new state to the whole room */
   const togglePrivateOfficeDoor = useCallback(() => {
     socket.emit(EVENTS.TOGGLE_DOOR);
   }, []);
 
-  /** Send a knock to all users currently inside the Private Office zone */
+  const lockOffice = useCallback((officeIndex: 0 | 1) => {
+    socket.emit(EVENTS.LOCK_OFFICE, { officeIndex } satisfies LockOfficePayload);
+  }, []);
+
   const knock = useCallback((targetUserIds: string[]) => {
-    if (targetUserIds.length === 0) return;
     socket.emit(EVENTS.KNOCK, { targetUserIds } satisfies KnockPayload);
   }, []);
 
-  /** Accept or ignore a knock; removes it from the queue */
   const respondToKnock = useCallback((knockerId: string, accepted: boolean) => {
     socket.emit(EVENTS.KNOCK_RESPONSE, { knockerId, accepted } satisfies KnockResponsePayload);
     setKnockQueue((q) => q.filter((k) => k.knockerId !== knockerId));
@@ -256,10 +277,18 @@ export function useOffice() {
       ? (state.room.users.find((u) => u.id === state.currentUserId) ?? null)
       : null;
 
+  // Which office index does the current user own? (-1 if none)
+  const myOfficeIndex: -1 | 0 | 1 = (() => {
+    if (!state.room || !state.currentUserId) return -1;
+    const idx = state.room.offices.findIndex((o) => o.ownerId === state.currentUserId);
+    return (idx as -1 | 0 | 1);
+  })();
+
   return {
     connected: state.connected,
     room: state.room,
     myUser,
+    myOfficeIndex,
     joinRoom,
     move,
     toggleMute,
@@ -267,6 +296,7 @@ export function useOffice() {
     setStatus,
     privateOfficeDoorClosed: state.room?.privateOfficeDoorClosed ?? false,
     togglePrivateOfficeDoor,
+    lockOffice,
     knock,
     knockQueue,
     respondToKnock,

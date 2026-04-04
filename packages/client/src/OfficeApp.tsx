@@ -17,10 +17,10 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
   const [currentZone, setCurrentZone] = useState("Open Floor");
 
   const {
-    connected, room, myUser,
+    connected, room, myUser, myOfficeIndex,
     joinRoom, move, toggleMute, toggleDeafen, setStatus,
     privateOfficeDoorClosed, togglePrivateOfficeDoor,
-    knock, knockQueue, respondToKnock, speakingNames,
+    lockOffice, knock, knockQueue, respondToKnock, speakingNames,
   } = useOffice();
 
   useEffect(() => {
@@ -59,12 +59,15 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
           room={room}
           myUserId={myUser?.id ?? null}
           myPosition={myUser?.position ?? null}
+          myOfficeIndex={myOfficeIndex}
+          offices={room.offices}
           onMove={move}
           onStatusChange={setStatus}
           onZoneChange={setCurrentZone}
           privateOfficeDoorClosed={privateOfficeDoorClosed}
           onDoorToggle={togglePrivateOfficeDoor}
           onKnock={knock}
+          onLockOffice={lockOffice}
           isDark={theme === "dark"}
           speakingNames={speakingNames}
         />
@@ -74,10 +77,8 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
         <Controls
           user={myUser}
           currentZone={currentZone}
-          privateOfficeDoorClosed={privateOfficeDoorClosed}
           onToggleMute={toggleMute}
           onToggleDeafen={toggleDeafen}
-          onDoorToggle={togglePrivateOfficeDoor}
         />
       )}
 

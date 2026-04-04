@@ -3,10 +3,8 @@ import { User } from "@lifescale/shared";
 interface Props {
   user: User;
   currentZone: string;
-  privateOfficeDoorClosed: boolean;
   onToggleMute: () => void;
   onToggleDeafen: () => void;
-  onDoorToggle: () => void;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -21,20 +19,11 @@ const STATUS_LABEL: Record<string, string> = {
   "on-a-call": "On a Call",
 };
 
-export function Controls({
-  user,
-  currentZone,
-  privateOfficeDoorClosed,
-  onToggleMute,
-  onToggleDeafen,
-  onDoorToggle,
-}: Props) {
-  const inPrivateOffice = currentZone === "Private Office";
+export function Controls({ user, currentZone, onToggleMute, onToggleDeafen }: Props) {
   const initials = user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
     <footer className="controls-bar">
-      {/* User identity */}
       <div className="ctrl-user">
         <div className="ctrl-user-avatar">{initials}</div>
         <div className="ctrl-user-info">
@@ -45,7 +34,6 @@ export function Controls({
         </div>
       </div>
 
-      {/* Action buttons */}
       <div className="ctrl-actions">
         <button
           className={`ctrl-btn ${user.isMuted ? "ctrl-btn--danger" : ""}`}
@@ -64,20 +52,8 @@ export function Controls({
           <span className="ctrl-btn-icon">{user.isDeafened ? "🔕" : "🎧"}</span>
           <span className="ctrl-btn-label">{user.isDeafened ? "Deafened" : "Audio"}</span>
         </button>
-
-        {inPrivateOffice && (
-          <button
-            className={`ctrl-btn ${privateOfficeDoorClosed ? "ctrl-btn--accent" : ""}`}
-            onClick={onDoorToggle}
-            title="Toggle Private Office door"
-          >
-            <span className="ctrl-btn-icon">{privateOfficeDoorClosed ? "🔒" : "🚪"}</span>
-            <span className="ctrl-btn-label">{privateOfficeDoorClosed ? "Locked" : "Open"}</span>
-          </button>
-        )}
       </div>
 
-      {/* Zone pill */}
       <div className="ctrl-zone">
         <span className="ctrl-zone-dot" />
         <span className="ctrl-zone-name">{currentZone}</span>
