@@ -6,7 +6,10 @@ import {
 } from "../zones";
 
 const AVATAR_R = 20;
-const SPEED = 200;
+const SPEED = 260;
+
+// Interpolation smoothing factor (higher = snappier, lower = silkier)
+const LERP_SPEED = 12; // reaches target in ~1/LERP_SPEED seconds
 
 const STATUS_COLORS: Record<UserStatus, string> = {
   available:   "#3dffa0",
@@ -504,7 +507,21 @@ export function OfficeCanvas({
   const showKnockRef = useRef(false);
 
   const roomRef = useRef(room);
-  useEffect(() => { roomRef.current = room; }, [room]);
+  // Interpolated positions for remote users: userId → {x, y} in virtual px
+  const interpRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+  useEffect(() => {
+    roomRef.current = room;
+    // Seed any new users into the interpolation map at their current position
+    for (const user of room.users) {
+      if (!interpRef.current.has(user.id)) {
+        interpRef.current.set(user.id, pctToPx(user.position));
+      }
+    }
+    // Remove users who left
+    for (const id of interpRef.current.keys()) {
+      if (!room.users.find((u) => u.id === id)) interpRef.current.delete(id);
+    }
+  }, [room]);
 
   const myUserIdRef = useRef(myUserId);
   useEffect(() => { myUserIdRef.current = myUserId; }, [myUserId]);
@@ -514,6 +531,10 @@ export function OfficeCanvas({
 
   const isDarkRef = useRef(isDark);
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
+
+  // Cache palette to avoid recreating every frame
+  const paletteRef = useRef(palette(isDark));
+  useEffect(() => { paletteRef.current = palette(isDark); }, [isDark]);
 
   const speakingNamesRef = useRef(speakingNames);
   useEffect(() => { speakingNamesRef.current = speakingNames; }, [speakingNames]);
@@ -574,25 +595,31 @@ export function OfficeCanvas({
       canvas.height = ch;
     }
 
-    const p = palette(isDarkRef.current);
-
     // Scale all drawing from the 1200×800 virtual space to the actual canvas size
     const sx = canvas.width / CANVAS_W;
     const sy = canvas.height / CANVAS_H;
     ctx.save();
     ctx.scale(sx, sy);
 
+    const p = paletteRef.current;
     drawBackground(ctx, p);
     drawZones(ctx, doorClosedRef.current, p);
     drawFurniture(ctx, p);
+
+    // Frame-rate independent lerp factor
+    const alpha = 1 - Math.exp(-dt * LERP_SPEED);
 
     const myId = myUserIdRef.current;
     const speaking = speakingNamesRef.current;
     for (const user of roomRef.current.users) {
       if (user.id === myId) continue;
-      const { x: ux, y: uy } = pctToPx(user.position);
+      const target = pctToPx(user.position);
+      const cur = interpRef.current.get(user.id) ?? target;
+      const ix = cur.x + (target.x - cur.x) * alpha;
+      const iy = cur.y + (target.y - cur.y) * alpha;
+      interpRef.current.set(user.id, { x: ix, y: iy });
       const isSpeaking = speaking.has(user.name);
-      drawAvatar(ctx, ux, uy, user, false, p, isSpeaking, time);
+      drawAvatar(ctx, ix, iy, user, false, p, isSpeaking, time);
     }
 
     const meUser = roomRef.current.users.find((u) => u.id === myId);
