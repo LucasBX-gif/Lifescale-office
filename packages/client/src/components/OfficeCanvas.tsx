@@ -76,7 +76,7 @@ function drawZones(ctx: CanvasRenderingContext2D, doorClosed: boolean, p: Return
     ctx.font = "bold 15px Inter, system-ui, sans-serif";
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
-    ctx.fillStyle = z.border.replace("0.85", "0.5");
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
     ctx.fillText(z.name.toUpperCase(), z.x + z.w / 2, z.y + z.h - 18);
 
     // Walls
