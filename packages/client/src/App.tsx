@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { LoginPage } from "./pages/LoginPage";
 import { WorkspaceLobby } from "./pages/WorkspaceLobby";
@@ -12,20 +12,31 @@ interface Workspace {
 export default function App() {
   const { session, user, loading } = useAuth();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem("theme") as "dark" | "light") || "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  }
 
   if (loading) {
     return <div className="status-screen"><p>Loading…</p></div>;
   }
 
   if (!session || !user) {
-    return <LoginPage />;
+    return <LoginPage theme={theme} onToggleTheme={toggleTheme} />;
   }
 
   if (!workspace) {
-    return <WorkspaceLobby user={user} onEnter={setWorkspace} />;
+    return <WorkspaceLobby user={user} onEnter={setWorkspace} theme={theme} onToggleTheme={toggleTheme} />;
   }
 
-  // Use first name only as the in-office display name
   const displayName =
     (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ||
     user.email?.split("@")[0] ||
@@ -37,6 +48,8 @@ export default function App() {
       workspaceName={workspace.name}
       userName={displayName}
       onLeave={() => setWorkspace(null)}
+      theme={theme}
+      onToggleTheme={toggleTheme}
     />
   );
 }

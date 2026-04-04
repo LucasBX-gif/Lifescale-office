@@ -11,9 +11,11 @@ interface Workspace {
 interface Props {
   user: User;
   onEnter: (workspace: { id: string; name: string }) => void;
+  theme: "dark" | "light";
+  onToggleTheme: () => void;
 }
 
-export function WorkspaceLobby({ user, onEnter }: Props) {
+export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -130,12 +132,14 @@ export function WorkspaceLobby({ user, onEnter }: Props) {
             <h1>Lifescale Office</h1>
             <p className="lobby-greeting">Hey, {displayName}</p>
           </div>
-          <button
-            className="btn-signout"
-            onClick={() => supabase.auth.signOut()}
-          >
-            Sign out
-          </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+              {theme === "dark" ? "☀️" : "🌙"}
+            </button>
+            <button className="btn-signout" onClick={() => supabase.auth.signOut()}>
+              Sign out
+            </button>
+          </div>
         </header>
 
         {inviteError && <p className="lobby-error">{inviteError}</p>}

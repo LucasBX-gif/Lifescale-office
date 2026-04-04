@@ -9,9 +9,11 @@ interface Props {
   workspaceName: string;
   userName: string;
   onLeave: () => void;
+  theme: "dark" | "light";
+  onToggleTheme: () => void;
 }
 
-export function OfficeApp({ workspaceId, workspaceName, userName, onLeave }: Props) {
+export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme, onToggleTheme }: Props) {
   const [currentZone, setCurrentZone] = useState("Open Floor");
 
   const {
@@ -47,7 +49,12 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave }: Pro
         <span className="room-name">{workspaceName}</span>
         <span className="zone-badge">{currentZone}</span>
         <span className="connection-badge">Live</span>
-        <button className="btn-leave" onClick={onLeave}>← Leave</button>
+        <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
+          <button className="theme-toggle theme-toggle--sm" onClick={onToggleTheme} aria-label="Toggle theme">
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
+          <button className="btn-leave" onClick={onLeave}>← Leave</button>
+        </div>
       </header>
 
       <main className="app-main">
