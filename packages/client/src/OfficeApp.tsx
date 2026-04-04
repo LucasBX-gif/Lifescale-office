@@ -21,6 +21,7 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
     joinRoom, move, toggleMute, toggleDeafen, setStatus,
     privateOfficeDoorClosed, togglePrivateOfficeDoor,
     lockOffice, setOfficeStyle, knock, knockQueue, respondToKnock, speakingNames,
+    canPlaybackAudio, resumeAudio,
   } = useOffice();
 
   useEffect(() => {
@@ -53,6 +54,27 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
           <button className="btn-leave" onClick={onLeave}>← Leave</button>
         </div>
       </nav>
+
+      {!canPlaybackAudio && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 999,
+          background: "#ff6464", color: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+          padding: "10px 16px", fontSize: "0.875rem", fontWeight: 600,
+        }}>
+          <span>🔇 Audio blocked by browser</span>
+          <button
+            onClick={resumeAudio}
+            style={{
+              background: "#fff", color: "#ff6464",
+              border: "none", borderRadius: 6, padding: "4px 14px",
+              fontWeight: 700, cursor: "pointer", fontSize: "0.85rem",
+            }}
+          >
+            Enable Audio
+          </button>
+        </div>
+      )}
 
       <main className="app-main">
         <OfficeCanvas

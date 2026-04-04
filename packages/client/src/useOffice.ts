@@ -117,7 +117,7 @@ export function useOffice() {
 
   const [knockQueue, setKnockQueue] = useState<KnockNotification[]>([]);
 
-  const { connect: lkConnect, disconnect: lkDisconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes, speakingNames } =
+  const { connect: lkConnect, disconnect: lkDisconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes, speakingNames, canPlaybackAudio, resumeAudio } =
     useLiveKit();
 
   const doorClosedRef = useRef(false);
@@ -303,5 +303,7 @@ export function useOffice() {
     knockQueue,
     respondToKnock,
     speakingNames,
+    canPlaybackAudio,
+    resumeAudio,
   };
 }
