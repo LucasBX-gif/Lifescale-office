@@ -18,6 +18,7 @@ import {
   KnockAnsweredPayload,
   DoorChangedPayload,
   LockOfficePayload,
+  SetOfficeStylePayload,
   OfficeUpdatedPayload,
 } from "@lifescale/shared";
 
@@ -239,6 +240,10 @@ export function useOffice() {
     socket.emit(EVENTS.LOCK_OFFICE, { officeIndex } satisfies LockOfficePayload);
   }, []);
 
+  const setOfficeStyle = useCallback((officeIndex: 0 | 1, style: number) => {
+    socket.emit(EVENTS.SET_OFFICE_STYLE, { officeIndex, style } satisfies SetOfficeStylePayload);
+  }, []);
+
   const knock = useCallback((targetUserIds: string[]) => {
     socket.emit(EVENTS.KNOCK, { targetUserIds } satisfies KnockPayload);
   }, []);
@@ -293,6 +298,7 @@ export function useOffice() {
     privateOfficeDoorClosed: state.room?.privateOfficeDoorClosed ?? false,
     togglePrivateOfficeDoor,
     lockOffice,
+    setOfficeStyle,
     knock,
     knockQueue,
     respondToKnock,

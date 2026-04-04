@@ -253,6 +253,96 @@ function drawLights(ctx: CanvasRenderingContext2D, p: P) {
   }
 }
 
+// ─── Per-style office floor ───────────────────────────────────────────────────
+function drawOfficeFloor(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, style: number, p: P) {
+  const isDark = p.bg === "#0a0a14";
+  switch (style) {
+    case 1: { // Marble Suite — white/cream with grey veining + gold grout
+      ctx.fillStyle = isDark ? "#16140e" : "#f5f2ea";
+      ctx.fillRect(x, y, w, h);
+      // Tile grid
+      const T = 55;
+      ctx.strokeStyle = isDark ? "rgba(200,170,80,0.18)" : "rgba(160,130,50,0.22)";
+      ctx.lineWidth = 0.8;
+      for (let tx = x; tx <= x + w; tx += T) { ctx.beginPath(); ctx.moveTo(tx, y); ctx.lineTo(tx, y + h); ctx.stroke(); }
+      for (let ty = y; ty <= y + h; ty += T) { ctx.beginPath(); ctx.moveTo(x, ty); ctx.lineTo(x + w, ty); ctx.stroke(); }
+      // Marble veins
+      ctx.strokeStyle = isDark ? "rgba(200,185,140,0.1)" : "rgba(120,100,60,0.13)";
+      ctx.lineWidth = 1;
+      const veins: [number, number, number, number, number, number, number, number][] = [
+        [x+20, y+30, x+60, y+80, x+90, y+60, x+140, y+110],
+        [x+60, y+150, x+100, y+180, x+140, y+170, x+180, y+210],
+        [x+160, y+20, x+180, y+60, x+200, y+50, x+240, y+90],
+      ];
+      for (const [x1,y1,cx1,cy1,cx2,cy2,x2,y2] of veins) {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.bezierCurveTo(cx1,cy1,cx2,cy2,x2,y2); ctx.stroke();
+      }
+      break;
+    }
+    case 2: { // Cyber Dark — near-black with glowing cyan grid
+      ctx.fillStyle = "#020810";
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = "rgba(0,180,255,0.22)";
+      ctx.lineWidth = 0.5;
+      const G = 28;
+      for (let tx = x; tx <= x + w; tx += G) { ctx.beginPath(); ctx.moveTo(tx, y); ctx.lineTo(tx, y + h); ctx.stroke(); }
+      for (let ty = y; ty <= y + h; ty += G) { ctx.beginPath(); ctx.moveTo(x, ty); ctx.lineTo(x + w, ty); ctx.stroke(); }
+      // Corner accent glows
+      for (const [cx2, cy2] of [[x,y],[x+w,y],[x,y+h],[x+w,y+h]] as [number,number][]) {
+        const g = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, 50);
+        g.addColorStop(0, "rgba(0,180,255,0.18)"); g.addColorStop(1, "transparent");
+        ctx.fillStyle = g; ctx.fillRect(cx2 - 50, cy2 - 50, 100, 100);
+      }
+      break;
+    }
+    case 3: { // Nordic — pale birch planks
+      ctx.fillStyle = isDark ? "#1a160e" : "#f0ece0";
+      ctx.fillRect(x, y, w, h);
+      const plankH = 18;
+      for (let py = y; py < y + h; py += plankH) {
+        ctx.fillStyle = Math.floor((py - y) / plankH) % 2 === 0
+          ? (isDark ? "rgba(210,195,160,0.3)" : "rgba(220,210,185,0.5)")
+          : (isDark ? "rgba(195,178,142,0.27)" : "rgba(205,194,168,0.45)");
+        ctx.fillRect(x, py, w, plankH);
+        ctx.strokeStyle = isDark ? "rgba(160,140,100,0.13)" : "rgba(110,90,55,0.1)";
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x + w, py); ctx.stroke();
+        // Plank end marks (staggered)
+        const gap = Math.floor((py - y) / plankH) % 2 === 0 ? w * 0.55 : w * 0.35;
+        ctx.beginPath(); ctx.moveTo(x + gap, py); ctx.lineTo(x + gap, py + plankH); ctx.stroke();
+      }
+      break;
+    }
+    case 4: { // Royal Gold — deep burgundy carpet with gold trim
+      const c1 = isDark ? "rgba(55,5,15,0.95)" : "rgba(100,18,32,0.65)";
+      const c2 = isDark ? "rgba(45,3,12,0.95)" : "rgba(85,14,26,0.6)";
+      const cl = isDark ? "rgba(160,60,40,0.04)" : "rgba(180,70,50,0.04)";
+      drawCarpet(ctx, x, y, w, h, c1, c2, cl);
+      // Gold border trim (double line)
+      ctx.strokeStyle = isDark ? "rgba(210,170,40,0.55)" : "rgba(190,150,25,0.65)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x + 5, y + 5, w - 10, h - 10);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = isDark ? "rgba(210,170,40,0.3)" : "rgba(190,150,25,0.35)";
+      ctx.strokeRect(x + 10, y + 10, w - 20, h - 20);
+      break;
+    }
+    default: // Executive (0) — warm dark wood
+      drawWoodFloor(ctx, x, y, w, h, p);
+  }
+}
+
+// Style-specific wall border & rug tint
+function officeStyleColors(style: number) {
+  switch (style) {
+    case 1: return { border: "rgba(212,175,55,0.85)",  rug: "rgba(212,175,55,0.07)"  };
+    case 2: return { border: "rgba(0,200,255,0.8)",    rug: "rgba(0,180,255,0.07)"   };
+    case 3: return { border: "rgba(140,190,160,0.8)",  rug: "rgba(160,215,185,0.07)" };
+    case 4: return { border: "rgba(200,160,25,0.85)",  rug: "rgba(210,170,40,0.07)"  };
+    default: return { border: "rgba(140,130,255,0.85)", rug: "rgba(108,99,255,0.08)" };
+  }
+}
+
 // ─── Zones — walls & labels ───────────────────────────────────────────────────
 function drawZones(
   ctx: CanvasRenderingContext2D,
@@ -264,8 +354,10 @@ function drawZones(
 
   for (const z of ZONES) {
     // Floor texture
-    if (z.id === "private-office" || z.id === "private-office-2") {
-      drawWoodFloor(ctx, z.x, z.y, z.w, z.h, p);
+    if (z.id === "private-office") {
+      drawOfficeFloor(ctx, z.x, z.y, z.w, z.h, offices[0].style ?? 0, p);
+    } else if (z.id === "private-office-2") {
+      drawOfficeFloor(ctx, z.x, z.y, z.w, z.h, offices[1].style ?? 0, p);
     } else if (z.id === "war-room") {
       drawCarpet(ctx, z.x, z.y, z.w, z.h, p.warmCarpet, p.warmCarpetAlt, p.warmCarpetLine);
     } else if (z.id === "lounge") {
@@ -333,8 +425,12 @@ function drawZones(
       ctx.fillRect(z.x + z.w, z.y, WT, z.h + WT);
     }
 
-    // Wall border highlight
-    ctx.strokeStyle = z.border;
+    // Wall border highlight — style-tinted for private offices
+    const borderColor =
+      z.id === "private-office"   ? officeStyleColors(offices[0].style ?? 0).border :
+      z.id === "private-office-2" ? officeStyleColors(offices[1].style ?? 0).border :
+      z.border;
+    ctx.strokeStyle = borderColor;
     ctx.lineWidth = 1;
     if (z.id === "private-office") {
       const { x, y, w, h } = PRIVATE_OFFICE_ZONE;
@@ -404,12 +500,12 @@ function drawDoor(ctx: CanvasRenderingContext2D, closed: boolean, p: P, isOffice
 }
 
 // ─── Furniture ────────────────────────────────────────────────────────────────
-function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
+function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [number, number]) {
 
   // ══ PRIVATE OFFICE (0,0 → 300,280) ══════════════════════════════════════════
 
   // Floor rug
-  ctx.fillStyle = p.rugWarm;
+  ctx.fillStyle = officeStyleColors(officeStyles[0]).rug;
   rr(ctx, 16, 55, 270, 210, 8); ctx.fill();
 
 
@@ -868,7 +964,7 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   // ══ PRIVATE OFFICE 2 (900,0 → 1200,280) — mirrored layout ════════════════════
 
   // Floor rug (mirrored)
-  ctx.fillStyle = p.rugWarm;
+  ctx.fillStyle = officeStyleColors(officeStyles[1]).rug;
   rr(ctx, 914, 55, 270, 210, 8); ctx.fill();
 
 
@@ -1420,7 +1516,7 @@ export function OfficeCanvas({
     drawBackground(ctx, p);
     drawZones(ctx, doorClosedRef.current, p, offs);
     drawLights(ctx, p);
-    drawFurniture(ctx, p);
+    drawFurniture(ctx, p, [offs[0].style ?? 0, offs[1].style ?? 0]);
 
     const alpha = 1 - Math.exp(-dt * LERP_SPEED);
     const myId = myUserIdRef.current;
@@ -1438,8 +1534,6 @@ export function OfficeCanvas({
 
     const meUser = roomRef.current.users.find((u) => u.id === myId);
     if (meUser) drawAvatar(ctx, x, y, meUser, true, p, speaking.has(meUser.name), time);
-
-    drawZoneIndicator(ctx, zone, p);
 
     const d1 = Math.sqrt((x - DOOR1_CENTER.x) ** 2 + (y - DOOR1_CENTER.y) ** 2);
     const d2 = Math.sqrt((x - DOOR2_CENTER.x) ** 2 + (y - DOOR2_CENTER.y) ** 2);

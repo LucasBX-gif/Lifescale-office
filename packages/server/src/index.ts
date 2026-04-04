@@ -16,6 +16,7 @@ import {
   KnockPayload,
   KnockResponsePayload,
   LockOfficePayload,
+  SetOfficeStylePayload,
 } from "@lifescale/shared";
 
 const PORT = process.env.PORT || 3001;
@@ -48,7 +49,7 @@ const io = new Server(httpServer, {
 });
 
 function emptyOffice(): OfficeAssignment {
-  return { ownerId: "", ownerName: "", locked: false };
+  return { ownerId: "", ownerName: "", locked: false, style: 0 };
 }
 
 const rooms = new Map<string, Room>();
@@ -166,6 +167,17 @@ io.on("connection", (socket) => {
     if (!room) return;
     room.privateOfficeDoorClosed = !room.privateOfficeDoorClosed;
     io.to(user.room).emit(EVENTS.DOOR_CHANGED, { closed: room.privateOfficeDoorClosed });
+  });
+
+  socket.on(EVENTS.SET_OFFICE_STYLE, ({ officeIndex, style }: SetOfficeStylePayload) => {
+    const user = socketUserMap.get(socket.id);
+    if (!user) return;
+    const room = rooms.get(user.room);
+    if (!room) return;
+    const office = room.offices[officeIndex];
+    if (!office || office.ownerId !== user.id) return;
+    office.style = Math.max(0, Math.min(4, style));
+    io.to(user.room).emit(EVENTS.OFFICE_UPDATED, { officeIndex, office });
   });
 
   // Owner toggles their office lock (physical wall barrier)

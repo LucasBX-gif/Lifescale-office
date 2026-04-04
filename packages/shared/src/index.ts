@@ -22,6 +22,7 @@ export interface OfficeAssignment {
   ownerId: string;
   ownerName: string;
   locked: boolean;
+  style: number; // 0–4
 }
 
 export interface Room {
@@ -48,7 +49,8 @@ export const EVENTS = {
   TOGGLE_DOOR:    "toggle_door",
   KNOCK:          "knock",
   KNOCK_RESPONSE: "knock_response",
-  LOCK_OFFICE:    "lock_office",
+  LOCK_OFFICE:        "lock_office",
+  SET_OFFICE_STYLE:   "set_office_style",
 
   // Server -> Client
   ROOM_STATE:     "room_state",
@@ -73,5 +75,6 @@ export interface KnockedPayload         { knockerId: string; knockerName: string
 export interface KnockResponsePayload   { knockerId: string; accepted: boolean; }
 export interface KnockAnsweredPayload   { accepted: boolean; responderName: string; }
 export interface DoorChangedPayload     { closed: boolean; }
-export interface LockOfficePayload      { officeIndex: 0 | 1; }
-export interface OfficeUpdatedPayload   { officeIndex: 0 | 1; office: OfficeAssignment; }
+export interface LockOfficePayload        { officeIndex: 0 | 1; }
+export interface SetOfficeStylePayload   { officeIndex: 0 | 1; style: number; }
+export interface OfficeUpdatedPayload    { officeIndex: 0 | 1; office: OfficeAssignment; }
