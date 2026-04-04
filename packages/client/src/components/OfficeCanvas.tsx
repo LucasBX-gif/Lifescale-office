@@ -1439,7 +1439,6 @@ export function OfficeCanvas({
 
     drawZoneIndicator(ctx, zone, p);
 
-    const myIdx = myOfficeIndexRef.current;
     const d1 = Math.sqrt((x - DOOR1_CENTER.x) ** 2 + (y - DOOR1_CENTER.y) ** 2);
     const d2 = Math.sqrt((x - DOOR2_CENTER.x) ** 2 + (y - DOOR2_CENTER.y) ** 2);
 
