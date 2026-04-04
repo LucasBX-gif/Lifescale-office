@@ -72,18 +72,12 @@ function drawZones(ctx: CanvasRenderingContext2D, doorClosed: boolean, p: Return
     ctx.fillStyle = z.fill;
     ctx.fillRect(z.x, z.y, z.w, z.h);
 
-    // Room label pill — bottom-left of zone, clear of furniture
-    ctx.font = "bold 11px Inter, system-ui, sans-serif";
-    const lw = ctx.measureText(z.name).width;
-    const ly = z.y + z.h - 34;
-    ctx.fillStyle = z.border.replace("0.85", "0.22");
-    ctx.beginPath();
-    ctx.roundRect(z.x + 10, ly, lw + 16, 22, 4);
-    ctx.fill();
-    ctx.fillStyle = z.border;
+    // Room label — large semi-transparent floor text, drawn before furniture
+    ctx.font = "bold 15px Inter, system-ui, sans-serif";
     ctx.textBaseline = "middle";
-    ctx.textAlign = "left";
-    ctx.fillText(z.name, z.x + 18, ly + 11);
+    ctx.textAlign = "center";
+    ctx.fillStyle = z.border.replace("0.85", "0.5");
+    ctx.fillText(z.name.toUpperCase(), z.x + z.w / 2, z.y + z.h - 18);
 
     // Walls
     ctx.strokeStyle = z.border;
