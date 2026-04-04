@@ -9,12 +9,18 @@ import {
   RemoteTrack,
 } from "livekit-client";
 
-const MAX_HEAR_DISTANCE = 700; // canvas pixels (1200x800 virtual space)
+const MAX_HEAR_DISTANCE = 700;
 
 const LIVEKIT_URL = import.meta.env.VITE_LIVEKIT_URL as string;
 
 const ROOM_OPTIONS: RoomOptions = {
-  audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true },
+  audioCaptureDefaults: {
+    echoCancellation: true,
+    noiseSuppression: false,   // off — adds ~100 ms latency
+    autoGainControl: false,    // off — causes pumping artifacts
+    sampleRate: 48000,
+    channelCount: 1,
+  },
   adaptiveStream: true,
   dynacast: true,
 };
@@ -30,6 +36,9 @@ export function useLiveKit() {
   const [speakingNames, setSpeakingNames] = useState<Set<string>>(new Set());
   const [canPlaybackAudio, setCanPlaybackAudio] = useState(true);
 
+  // Per-participant smoothed volume: avoids hard cuts when door closes or distance jumps
+  const smoothedVolsRef = useRef<Map<string, number>>(new Map());
+
   const connect = useCallback(async (token: string) => {
     const room = new Room(ROOM_OPTIONS);
     roomRef.current = room;
@@ -41,6 +50,7 @@ export function useLiveKit() {
     room.on(RoomEvent.Disconnected, () => {
       console.log("[LiveKit] disconnected");
       setSpeakingNames(new Set());
+      smoothedVolsRef.current.clear();
     });
 
     room.on(RoomEvent.MediaDevicesError, (err: Error) => {
@@ -70,36 +80,30 @@ export function useLiveKit() {
       }
     });
 
-    // Track whether browser is blocking audio playback
     room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
       const blocked = !room.canPlaybackAudio;
       setCanPlaybackAudio(!blocked);
-      if (blocked) {
-        console.warn("[LiveKit] audio playback blocked — awaiting user gesture");
-      }
+      if (blocked) console.warn("[LiveKit] audio blocked — awaiting user gesture");
     });
 
     await room.connect(LIVEKIT_URL, token);
-    console.log("[LiveKit] connected to room:", room.name);
+    console.log("[LiveKit] connected:", room.name);
 
-    // Enable mic — don't let this failure block audio playback
     try {
       await room.localParticipant.setMicrophoneEnabled(true);
     } catch (err) {
       console.error("[LiveKit] mic enable failed:", err);
     }
 
-    // Attempt to start audio immediately
     try {
       await room.startAudio();
       setCanPlaybackAudio(true);
     } catch (err) {
-      console.warn("[LiveKit] startAudio failed (will retry on user gesture):", err);
+      console.warn("[LiveKit] startAudio needs user gesture:", err);
       setCanPlaybackAudio(false);
     }
   }, []);
 
-  /** Call this from a button click if the browser blocks autoplay */
   const resumeAudio = useCallback(async () => {
     const room = roomRef.current;
     if (!room) return;
@@ -114,6 +118,7 @@ export function useLiveKit() {
   const disconnect = useCallback(() => {
     roomRef.current?.disconnect();
     roomRef.current = null;
+    smoothedVolsRef.current.clear();
   }, []);
 
   const setMicrophoneMuted = useCallback(async (muted: boolean) => {
@@ -127,11 +132,9 @@ export function useLiveKit() {
   }, []);
 
   /**
-   * Called every 50 ms. For each LiveKit remote participant, resolves volume by:
-   *
-   *   1. War Room:        both in War Room → always 1.0 (collaboration zone)
-   *   2. Private Office:  door is closed + one person inside, one outside → 0
-   *   3. Default:         linear falloff from 1.0 at 0 px to 0.0 at MAX_HEAR_DISTANCE
+   * Called every 50 ms.
+   * Volumes are smoothed toward their target each tick (LERP factor 0.25)
+   * so transitions are ~200 ms rather than instant cuts.
    */
   const updateVolumes = useCallback(
     (
@@ -158,26 +161,27 @@ export function useLiveKit() {
 
         const peerInOffice =
           peer.zone === "Private Office" || peer.zone === "Private Office 2";
-
         const bothInWarRoom = myZone === "War Room" && peer.zone === "War Room";
+        const doorBlocking = privateOfficeDoorClosed && myInOffice !== peerInOffice;
 
-        // Block audio when the door is closed and exactly one side is inside an office
-        const doorBlocking =
-          privateOfficeDoorClosed && myInOffice !== peerInOffice;
-
-        let volume: number;
+        let target: number;
         if (bothInWarRoom) {
-          volume = 1;
+          target = 1;
         } else if (doorBlocking) {
-          volume = 0;
+          target = 0;
         } else {
           const dx = peer.positionPx.x - myPositionPx.x;
           const dy = peer.positionPx.y - myPositionPx.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          volume = Math.max(0, 1 - distance / MAX_HEAR_DISTANCE);
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          target = Math.max(0, 1 - dist / MAX_HEAR_DISTANCE);
         }
 
-        participant.setVolume(volume);
+        // Smooth toward target: avoids hard pops when zones/distance change
+        const key = participant.identity;
+        const prev = smoothedVolsRef.current.get(key) ?? target;
+        const smoothed = prev + (target - prev) * 0.25;
+        smoothedVolsRef.current.set(key, smoothed);
+        participant.setVolume(smoothed);
       });
     },
     []

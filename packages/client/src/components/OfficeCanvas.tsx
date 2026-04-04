@@ -1234,15 +1234,15 @@ function drawAvatar(
   user: User,
   isMe: boolean,
   p: P,
-  isSpeaking: boolean,
+  speakingLevel: number,
   now: number
 ) {
   const statusColor = STATUS_COLORS[user.status];
 
-  // Speaking pulse ring
-  if (isSpeaking) {
-    const pulse = 0.55 + 0.45 * Math.sin(now / 180);
-    const ringR = AVATAR_R + 6 + 4 * Math.sin(now / 220);
+  // Speaking pulse ring — smoothly fades in/out with speakingLevel
+  if (speakingLevel > 0.01) {
+    const pulse = speakingLevel * (0.55 + 0.45 * Math.sin(now / 180));
+    const ringR = AVATAR_R + 6 + 4 * Math.sin(now / 220) * speakingLevel;
     ctx.beginPath();
     ctx.arc(x, y, ringR, 0, Math.PI * 2);
     ctx.strokeStyle = `rgba(61, 255, 160, ${pulse})`;
@@ -1397,6 +1397,10 @@ export function OfficeCanvas({
   const speakingNamesRef = useRef(speakingNames);
   useEffect(() => { speakingNamesRef.current = speakingNames; }, [speakingNames]);
 
+  // Per-user smooth speaking level: 0 = silent, 1 = fully speaking
+  // Attack is fast (0.25/frame), decay is slow (0.07/frame) for natural fade-out
+  const speakingLevelsRef = useRef<Map<string, number>>(new Map());
+
   const officesRef = useRef(offices);
   useEffect(() => { officesRef.current = offices; }, [offices]);
 
@@ -1503,6 +1507,19 @@ export function OfficeCanvas({
     const alpha = 1 - Math.exp(-dt * LERP_SPEED);
     const myId = myUserIdRef.current;
     const speaking = speakingNamesRef.current;
+    const levels = speakingLevelsRef.current;
+
+    // Update smooth speaking levels for all users this frame
+    for (const user of roomRef.current.users) {
+      const isSpeaking = speaking.has(user.name);
+      const prev = levels.get(user.id) ?? 0;
+      // Fast attack (0.25), slow decay (0.07)
+      const next = isSpeaking
+        ? Math.min(1, prev + 0.25)
+        : Math.max(0, prev - 0.07);
+      if (next === 0) levels.delete(user.id);
+      else levels.set(user.id, next);
+    }
 
     for (const user of roomRef.current.users) {
       if (user.id === myId) continue;
@@ -1511,11 +1528,11 @@ export function OfficeCanvas({
       const ix = cur.x + (target.x - cur.x) * alpha;
       const iy = cur.y + (target.y - cur.y) * alpha;
       interpRef.current.set(user.id, { x: ix, y: iy });
-      drawAvatar(ctx, ix, iy, user, false, p, speaking.has(user.name), time);
+      drawAvatar(ctx, ix, iy, user, false, p, levels.get(user.id) ?? 0, time);
     }
 
     const meUser = roomRef.current.users.find((u) => u.id === myId);
-    if (meUser) drawAvatar(ctx, x, y, meUser, true, p, speaking.has(meUser.name), time);
+    if (meUser) drawAvatar(ctx, x, y, meUser, true, p, levels.get(meUser.id) ?? 0, time);
 
     const d1 = Math.sqrt((x - DOOR1_CENTER.x) ** 2 + (y - DOOR1_CENTER.y) ** 2);
     const d2 = Math.sqrt((x - DOOR2_CENTER.x) ** 2 + (y - DOOR2_CENTER.y) ** 2);
