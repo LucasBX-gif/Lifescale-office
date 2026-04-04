@@ -17,17 +17,33 @@ import {
 } from "@lifescale/shared";
 
 const PORT = process.env.PORT || 3001;
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
 const LK_API_KEY = process.env.LIVEKIT_API_KEY!;
 const LK_API_SECRET = process.env.LIVEKIT_API_SECRET!;
 
+// Accept the configured production origin plus any Vercel preview URL for this project.
+const PRODUCTION_ORIGIN = (process.env.CLIENT_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
+const VERCEL_PREVIEW_RE = /^https:\/\/lifescale-office-client.*\.vercel\.app$/;
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return false;
+  if (origin === PRODUCTION_ORIGIN) return true;
+  if (VERCEL_PREVIEW_RE.test(origin)) return true;
+  if (origin === "http://localhost:5173") return true;
+  return false;
+}
+
+const corsOriginFn = (
+  origin: string | undefined,
+  cb: (err: Error | null, allow?: boolean) => void
+) => cb(null, isAllowedOrigin(origin));
+
 const app = express();
-app.use(cors({ origin: CLIENT_ORIGIN }));
+app.use(cors({ origin: corsOriginFn, credentials: true }));
 app.use(express.json());
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: CLIENT_ORIGIN, methods: ["GET", "POST"] },
+  cors: { origin: corsOriginFn, methods: ["GET", "POST"], credentials: true },
 });
 
 // --- In-memory office state ---
