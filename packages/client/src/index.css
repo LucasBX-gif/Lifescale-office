@@ -550,29 +550,69 @@ body {
 /* ── Workspace lobby ─────────────────────────────────────────────────────────── */
 .lobby-screen {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  min-height: 100dvh;
-  padding: 3rem 1rem;
-  background: var(--bg);
-  overflow-y: auto;
-}
-
-.lobby-container {
-  width: 100%;
-  max-width: 560px;
-  display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  min-height: 100dvh;
+  background: var(--bg);
 }
 
-.lobby-header {
+/* Nav bar */
+.lobby-nav {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  padding: 0 2rem;
+  height: 60px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
-.lobby-header h1 { font-size: 1.1rem; font-weight: 700; }
-.lobby-greeting { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+.lobby-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lobby-nav-icon { font-size: 1.2rem; }
+.lobby-nav-title { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+
+.lobby-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lobby-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lobby-avatar-img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+.lobby-avatar-fallback {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+.lobby-user-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
 
 .btn-signout {
   padding: 6px 14px;
@@ -587,31 +627,54 @@ body {
 }
 .btn-signout:hover { background: var(--border); color: var(--text); }
 
-.lobby-section-header {
+/* Body */
+.lobby-body {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 2rem;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 2rem;
 }
-.lobby-section-header h2 { font-size: 0.95rem; font-weight: 600; }
 
-.btn-create {
-  padding: 6px 14px;
+.lobby-hero-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lobby-title {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.lobby-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.btn-new-office {
+  padding: 10px 20px;
   border-radius: var(--radius);
-  border: 1px solid rgba(108,99,255,0.4);
-  background: rgba(108,99,255,0.1);
-  color: #a89fff;
-  font-size: 0.8rem;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 2px 10px rgba(108,99,255,0.3);
 }
-.btn-create:hover { background: rgba(108,99,255,0.2); }
-
-.lobby-empty {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 2rem 0;
+.btn-new-office:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(108,99,255,0.4);
 }
 
 .lobby-error {
@@ -623,61 +686,137 @@ body {
   border-radius: var(--radius);
 }
 
-.workspace-list {
-  list-style: none;
+.lobby-loading {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+/* Empty state */
+.lobby-empty-state {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 5rem 0;
+  text-align: center;
+}
+.lobby-empty-icon { font-size: 3rem; }
+.lobby-empty-title { font-size: 1.1rem; font-weight: 600; }
+.lobby-empty-sub { font-size: 0.85rem; color: var(--text-muted); max-width: 320px; }
+
+/* Workspace cards grid */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
 }
 
-.workspace-item {
+.ws-card {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  transition: border-color 0.15s;
+  border-radius: 12px;
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+  overflow: hidden;
 }
-.workspace-item:hover { border-color: rgba(108,99,255,0.4); }
+.ws-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--grad);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.ws-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(108,99,255,0.18);
+}
+.ws-card:hover::before { opacity: 0.04; }
 
-.workspace-info {
+.ws-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
 }
-.workspace-icon { font-size: 1.2rem; flex-shrink: 0; }
-.workspace-name { font-size: 0.95rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.workspace-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-.btn-invite {
-  padding: 6px 12px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: transparent;
+.ws-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ws-card-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ws-card-meta {
+  font-size: 0.75rem;
   color: var(--text-muted);
-  font-size: 0.78rem;
+}
+
+.ws-card-invite {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 0.85rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
 }
-.btn-invite:hover { background: var(--border); color: var(--text); }
+.ws-card-invite:hover { background: var(--border); color: var(--text); }
 
-.btn-enter {
-  padding: 6px 14px;
-  border-radius: var(--radius);
-  border: none;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
+/* "New office" card */
+.ws-card--new {
+  border-style: dashed;
+  border-color: var(--border);
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 88px;
+  color: var(--text-muted);
+  background: transparent;
 }
-.btn-enter:hover { background: var(--accent-hover); }
+.ws-card--new:hover { border-color: var(--accent); color: var(--accent); }
+.ws-card--new::before { display: none; }
+
+.ws-card-new-icon {
+  font-size: 1.5rem;
+  font-weight: 300;
+  line-height: 1;
+}
+.ws-card-new-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+}
 
 /* ── Modal ───────────────────────────────────────────────────────────────────── */
 .modal-backdrop {
