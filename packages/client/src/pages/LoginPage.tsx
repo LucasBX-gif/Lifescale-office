@@ -64,7 +64,7 @@ export function LoginPage({ theme, onToggleTheme }: Props) {
 
       {/* Hero */}
       <div className="login-hero">
-        <div className="login-eyebrow">Virtual Office — Spatial Audio</div>
+        <div className="login-eyebrow">Lifescale office — Virtual Workspace</div>
 
         <h1 className="login-headline">
           Your team,<br />
@@ -97,7 +97,10 @@ export function LoginPage({ theme, onToggleTheme }: Props) {
           {loading ? "Redirecting…" : "Continue with Google"}
         </button>
 
-        <p className="login-footer">Free to use · No credit card required</p>
+        <p className="login-footer">
+          Free to use · No credit card required ·{" "}
+          <a href="/privacy.html" style={{ color: "#7878a0" }}>Privacy Policy</a>
+        </p>
       </div>
     </div>
   );
