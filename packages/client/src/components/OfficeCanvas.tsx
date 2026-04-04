@@ -1306,24 +1306,6 @@ function drawAvatar(
 }
 
 // ─── Zone indicator ───────────────────────────────────────────────────────────
-function drawZoneIndicator(ctx: CanvasRenderingContext2D, zoneName: string, p: P) {
-  ctx.font = "bold 12px Inter, system-ui, sans-serif";
-  const text = ` ${zoneName} `;
-  const tw = ctx.measureText(text).width;
-  const px = CANVAS_W - tw - 24;
-  const py = 14;
-  const h = 26;
-
-  ctx.fillStyle = p.indicator;
-  ctx.beginPath();
-  ctx.roundRect(px - 6, py - 2, tw + 12, h, 8);
-  ctx.fill();
-
-  ctx.fillStyle = p.indicatorTxt;
-  ctx.textBaseline = "middle";
-  ctx.textAlign = "left";
-  ctx.fillText(text, px, py + h / 2 - 1);
-}
 
 // ─── Buttons near office doors ─────────────────────────────────────────────────
 // Office 1: door on right wall (x=300), outside is x>300
