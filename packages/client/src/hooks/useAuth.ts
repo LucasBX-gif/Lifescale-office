@@ -7,16 +7,17 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-
+    // onAuthStateChange fires for both existing sessions AND new sessions
+    // from the OAuth URL hash — so we use it as the single source of truth.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
+      setLoading(false);
     });
+
+    // Kick off session detection (processes URL hash for implicit flow)
+    supabase.auth.getSession();
 
     return () => subscription.unsubscribe();
   }, []);
