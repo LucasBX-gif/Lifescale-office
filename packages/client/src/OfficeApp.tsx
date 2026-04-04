@@ -77,8 +77,11 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
         <Controls
           user={myUser}
           currentZone={currentZone}
+          myOfficeIndex={myOfficeIndex}
+          offices={room.offices}
           onToggleMute={toggleMute}
           onToggleDeafen={toggleDeafen}
+          onLockOffice={lockOffice}
         />
       )}
 

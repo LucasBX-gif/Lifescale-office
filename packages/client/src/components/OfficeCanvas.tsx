@@ -845,45 +845,6 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   ctx.fillStyle = "rgba(255,120,80,0.4)";
   ctx.beginPath(); ctx.arc(1184, 577, 3, 0, Math.PI * 2); ctx.fill();
 
-  // ══ OPEN FLOOR — scattered workstations ══════════════════════════════════════
-
-  const desks = [
-    { x: 328, y: 36, facing: "down" },
-    { x: 328, y: 140, facing: "down" },
-    { x: 808, y: 36, facing: "down" },
-    { x: 808, y: 140, facing: "down" },
-    { x: 95, y: 370, facing: "right" },
-    { x: 195, y: 490, facing: "right" },
-    { x: 590, y: 600, facing: "up" },
-    { x: 680, y: 700, facing: "up" },
-  ];
-
-  for (const d of desks) {
-    shadow(ctx, p.shadow, 6);
-    ctx.fillStyle = p.deskMid;
-    rr(ctx, d.x, d.y, 84, 48, 3); ctx.fill();
-    noShadow(ctx);
-    ctx.fillStyle = p.deskLight;
-    rr(ctx, d.x, d.y, 84, 8, 3); ctx.fill();
-    ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1;
-    rr(ctx, d.x, d.y, 84, 48, 3); ctx.stroke();
-    // Monitor
-    ctx.fillStyle = p.screenFill;
-    rr(ctx, d.x + 22, d.y + 6, 38, 26, 2); ctx.fill();
-    ctx.fillStyle = p.screenGlow;
-    rr(ctx, d.x + 24, d.y + 8, 34, 22, 1); ctx.fill();
-    // Keyboard
-    ctx.fillStyle = p.chairFill;
-    rr(ctx, d.x + 20, d.y + 34, 34, 10, 1); ctx.fill();
-    // Chair (simple arc)
-    const facing = d.facing;
-    const cy2 = facing === "down" ? d.y + 55 : facing === "up" ? d.y - 14 : d.y + 20;
-    const cx2 = facing === "right" ? d.x + 95 : d.x + 42;
-    ctx.beginPath(); ctx.arc(cx2, cy2, 14, 0, Math.PI * 2);
-    ctx.fillStyle = p.chairFill; ctx.fill();
-    ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 1.5; ctx.stroke();
-  }
-
   // ── Water cooler ─────────────────────────────────────────────────────────────
   shadow(ctx, p.shadow, 8);
   ctx.fillStyle = p.counterFill;
@@ -1355,17 +1316,8 @@ export function OfficeCanvas({
     const d1 = Math.sqrt((x - DOOR1_CENTER.x) ** 2 + (y - DOOR1_CENTER.y) ** 2);
     const d2 = Math.sqrt((x - DOOR2_CENTER.x) ** 2 + (y - DOOR2_CENTER.y) ** 2);
 
-    // Lock buttons (owner near their door)
-    const sL1 = myIdx === 0 && !offs[0].locked && d1 <= BTN_RANGE;
-    const sL1locked = myIdx === 0 && offs[0].locked && d1 <= BTN_RANGE;
-    const sL2 = myIdx === 1 && !offs[1].locked && d2 <= BTN_RANGE;
-    const sL2locked = myIdx === 1 && offs[1].locked && d2 <= BTN_RANGE;
-    showLock1Ref.current = sL1 || sL1locked;
-    showLock2Ref.current = sL2 || sL2locked;
-    if (sL1)       drawCanvasBtn(ctx, LOCK_BTN_1, "🔓 Lock",   "rgba(108,99,255,0.9)");
-    if (sL1locked) drawCanvasBtn(ctx, LOCK_BTN_1, "🔒 Unlock", "rgba(200,40,40,0.9)");
-    if (sL2)       drawCanvasBtn(ctx, LOCK_BTN_2, "🔓 Lock",   "rgba(108,99,255,0.9)");
-    if (sL2locked) drawCanvasBtn(ctx, LOCK_BTN_2, "🔒 Unlock", "rgba(200,40,40,0.9)");
+    showLock1Ref.current = false;
+    showLock2Ref.current = false;
 
     // Knock buttons (non-owner outside a locked door)
     const sK1 = myIdx !== 0 && offs[0].locked && zone !== "Private Office" && d1 <= BTN_RANGE;
