@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: lifescale-office-server
+    runtime: node
+    plan: starter          # free tier sleeps after 15 min; starter keeps it awake
+    buildCommand: npm install && npm run build -w packages/server
+    startCommand: node packages/server/dist/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Set CLIENT_ORIGIN to your Vercel deployment URL after you deploy the frontend.
+      # Example: https://lifescale-office.vercel.app
+      - key: CLIENT_ORIGIN
+        sync: false        # set manually in Render dashboard — not committed to git
+
+      # LiveKit — set these in the Render dashboard, never commit the real values
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false

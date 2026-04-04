@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm install && npm run build -w packages/client",
+  "outputDirectory": "packages/client/dist",
+  "installCommand": "npm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
