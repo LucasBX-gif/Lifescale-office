@@ -339,3 +339,261 @@ body {
   border-color: rgba(255,79,106,0.35);
   color: #ff4f6a;
 }
+
+/* ── Login screen ────────────────────────────────────────────────────────────── */
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  background: var(--bg);
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3rem 2.5rem;
+  width: 340px;
+}
+
+.login-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.login-logo-icon { font-size: 2.5rem; line-height: 1; }
+.login-logo h1 { font-size: 1.3rem; font-weight: 700; }
+.login-logo p { font-size: 0.85rem; color: var(--text-muted); }
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-google:hover { background: var(--border); border-color: #555568; }
+
+/* ── Workspace lobby ─────────────────────────────────────────────────────────── */
+.lobby-screen {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 3rem 1rem;
+  background: var(--bg);
+  overflow-y: auto;
+}
+
+.lobby-container {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.lobby-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.lobby-header h1 { font-size: 1.1rem; font-weight: 700; }
+.lobby-greeting { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+.btn-signout {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-signout:hover { background: var(--border); color: var(--text); }
+
+.lobby-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lobby-section-header h2 { font-size: 0.95rem; font-weight: 600; }
+
+.btn-create {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(108,99,255,0.4);
+  background: rgba(108,99,255,0.1);
+  color: #a89fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-create:hover { background: rgba(108,99,255,0.2); }
+
+.lobby-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.lobby-error {
+  font-size: 0.85rem;
+  color: var(--danger);
+  background: rgba(255,79,106,0.08);
+  border: 1px solid rgba(255,79,106,0.25);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+}
+
+.workspace-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.workspace-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  transition: border-color 0.15s;
+}
+.workspace-item:hover { border-color: rgba(108,99,255,0.4); }
+
+.workspace-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.workspace-icon { font-size: 1.2rem; flex-shrink: 0; }
+.workspace-name { font-size: 0.95rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.workspace-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.btn-invite {
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-invite:hover { background: var(--border); color: var(--text); }
+
+.btn-enter {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-enter:hover { background: var(--accent-hover); }
+
+/* ── Modal ───────────────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.modal h3 { font-size: 1rem; font-weight: 600; }
+.modal-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: -0.5rem; }
+
+.modal input {
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.modal input:focus { outline: none; border-color: var(--accent); }
+
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.btn-cancel {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.btn-cancel:hover { background: var(--border); }
+
+.btn-confirm {
+  padding: 8px 20px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-confirm:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Leave button in office header ──────────────────────────────────────────── */
+.btn-leave {
+  margin-left: auto;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-leave:hover { background: var(--border); color: var(--text); }

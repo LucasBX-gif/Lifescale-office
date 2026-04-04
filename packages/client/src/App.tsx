@@ -1,70 +1,42 @@
 import { useState } from "react";
-import { useOffice } from "./useOffice";
-import { JoinForm } from "./components/JoinForm";
-import { OfficeCanvas } from "./components/OfficeCanvas";
-import { Controls } from "./components/Controls";
-import { KnockNotification } from "./components/KnockNotification";
+import { useAuth } from "./hooks/useAuth";
+import { LoginPage } from "./pages/LoginPage";
+import { WorkspaceLobby } from "./pages/WorkspaceLobby";
+import { OfficeApp } from "./OfficeApp";
+
+interface Workspace {
+  id: string;
+  name: string;
+}
 
 export default function App() {
-  const [joined, setJoined] = useState(false);
-  const [currentZone, setCurrentZone] = useState("Open Floor");
+  const { session, user, loading } = useAuth();
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
 
-  const {
-    connected, room, myUser,
-    joinRoom, move, toggleMute, toggleDeafen, setStatus,
-    privateOfficeDoorClosed, togglePrivateOfficeDoor,
-    knock, knockQueue, respondToKnock,
-  } = useOffice();
-
-  async function handleJoin(name: string, roomId: string) {
-    await joinRoom({ name, roomId });
-    setJoined(true);
+  if (loading) {
+    return <div className="status-screen"><p>Loading…</p></div>;
   }
 
-  if (!connected) {
-    return <div className="status-screen"><p>Connecting to Lifescale Office…</p></div>;
+  if (!session || !user) {
+    return <LoginPage />;
   }
 
-  if (!joined || !room) {
-    return <JoinForm onJoin={handleJoin} />;
+  if (!workspace) {
+    return <WorkspaceLobby user={user} onEnter={setWorkspace} />;
   }
+
+  // Use first name only as the in-office display name
+  const displayName =
+    (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ||
+    user.email?.split("@")[0] ||
+    "User";
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Lifescale Office</h1>
-        <span className="room-name">{room.name}</span>
-        <span className="zone-badge">{currentZone}</span>
-        <span className="connection-badge">Live</span>
-      </header>
-
-      <main className="app-main">
-        <OfficeCanvas
-          room={room}
-          myUserId={myUser?.id ?? null}
-          myPosition={myUser?.position ?? null}
-          onMove={move}
-          onStatusChange={setStatus}
-          onZoneChange={setCurrentZone}
-          privateOfficeDoorClosed={privateOfficeDoorClosed}
-          onDoorToggle={togglePrivateOfficeDoor}
-          onKnock={knock}
-        />
-      </main>
-
-      {myUser && (
-        <Controls
-          user={myUser}
-          currentZone={currentZone}
-          privateOfficeDoorClosed={privateOfficeDoorClosed}
-          onToggleMute={toggleMute}
-          onToggleDeafen={toggleDeafen}
-          onDoorToggle={togglePrivateOfficeDoor}
-        />
-      )}
-
-      {/* Knock notifications — shown to Private Office occupant */}
-      <KnockNotification queue={knockQueue} onRespond={respondToKnock} />
-    </div>
+    <OfficeApp
+      workspaceId={workspace.id}
+      workspaceName={workspace.name}
+      userName={displayName}
+      onLeave={() => setWorkspace(null)}
+    />
   );
 }

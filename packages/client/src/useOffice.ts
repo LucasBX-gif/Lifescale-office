@@ -177,9 +177,9 @@ export function useOffice() {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const joinRoom = useCallback(
-    async ({ name, roomId }: JoinRoomPayload) => {
+    async ({ name, roomId, roomName }: JoinRoomPayload) => {
       pendingNameRef.current = name;
-      socket.emit(EVENTS.JOIN_ROOM, { name, roomId } satisfies JoinRoomPayload);
+      socket.emit(EVENTS.JOIN_ROOM, { name, roomId, roomName } satisfies JoinRoomPayload);
       const res = await fetch(
         `${SERVER_URL}/token?roomId=${encodeURIComponent(roomId)}&name=${encodeURIComponent(name)}`
       );

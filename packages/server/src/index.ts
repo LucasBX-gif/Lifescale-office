@@ -47,13 +47,21 @@ const io = new Server(httpServer, {
 });
 
 // --- In-memory office state ---
+// Rooms are created dynamically when a user first joins them (workspace UUID → room).
 
-const rooms = new Map<string, Room>([
-  ["lobby",        { id: "lobby",        name: "Lobby",        users: [], privateOfficeDoorClosed: false }],
-  ["open-floor",   { id: "open-floor",   name: "Open Floor",   users: [], privateOfficeDoorClosed: false }],
-  ["focus-zone",   { id: "focus-zone",   name: "Focus Zone",   users: [], privateOfficeDoorClosed: false }],
-  ["meeting-room-1",{ id: "meeting-room-1",name:"Meeting Room 1",users:[],privateOfficeDoorClosed: false }],
-]);
+const rooms = new Map<string, Room>();
+
+function getOrCreateRoom(roomId: string, roomName?: string): Room {
+  if (!rooms.has(roomId)) {
+    rooms.set(roomId, {
+      id: roomId,
+      name: roomName || roomId,
+      users: [],
+      privateOfficeDoorClosed: false,
+    });
+  }
+  return rooms.get(roomId)!;
+}
 
 const userSocketMap = new Map<string, string>(); // userId -> socketId
 const socketUserMap = new Map<string, User>();   // socketId -> User
@@ -65,7 +73,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.get("/rooms", (_req, res) => {
-  res.json(Array.from(rooms.values()));
+  res.json(Array.from(rooms.values()).map((r) => ({ id: r.id, name: r.name, userCount: r.users.length })));
 });
 
 /**
@@ -79,10 +87,6 @@ app.get("/token", async (req, res) => {
 
   if (!roomId || !name) {
     res.status(400).json({ error: "roomId and name are required" });
-    return;
-  }
-  if (!rooms.has(roomId)) {
-    res.status(404).json({ error: "Room not found" });
     return;
   }
 
@@ -112,9 +116,8 @@ app.get("/token", async (req, res) => {
 io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
-  socket.on(EVENTS.JOIN_ROOM, ({ roomId, name }: JoinRoomPayload) => {
-    const room = rooms.get(roomId);
-    if (!room) return;
+  socket.on(EVENTS.JOIN_ROOM, ({ roomId, name, roomName }: JoinRoomPayload) => {
+    const room = getOrCreateRoom(roomId, roomName);
 
     const user: User = {
       id: uuidv4(),
