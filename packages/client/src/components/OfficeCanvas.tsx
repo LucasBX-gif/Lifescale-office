@@ -412,8 +412,6 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   ctx.fillStyle = p.rugWarm;
   rr(ctx, 16, 55, 270, 210, 8); ctx.fill();
 
-  // Blue Lamborghini parked in open area (between bookshelf and desk)
-  drawLambo(ctx, 158, 100, "#1565C0", false);
 
   // ── Bookshelf — full left wall ───────────────────────────────────────────────
   shadow(ctx, p.shadow, 8);
@@ -848,6 +846,12 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   ctx.fillStyle = "rgba(255,120,80,0.4)";
   ctx.beginPath(); ctx.arc(1184, 577, 3, 0, Math.PI * 2); ctx.fill();
 
+  // ── Lamborghinis parked outside each office (above door gap, not blocking entrance) ──
+  // Blue — outside Office 1's right wall (door is at y 110-170, car parked above at y≈62)
+  drawLambo(ctx, 382, 62, "#1565C0", false);
+  // Red — outside Office 2's left wall (mirrored)
+  drawLambo(ctx, 818, 62, "#C62828", true);
+
   // ── Structural columns ────────────────────────────────────────────────────────
   const cols = [{ x: 420, y: 220 }, { x: 780, y: 220 }, { x: 420, y: 520 }, { x: 780, y: 520 }];
   for (const c of cols) {
@@ -867,8 +871,6 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   ctx.fillStyle = p.rugWarm;
   rr(ctx, 914, 55, 270, 210, 8); ctx.fill();
 
-  // Red Lamborghini (mirrored — nose points left)
-  drawLambo(ctx, 1042, 100, "#C62828", true);
 
   // ── Bookshelf — right wall ────────────────────────────────────────────────────
   shadow(ctx, p.shadow, 8);
