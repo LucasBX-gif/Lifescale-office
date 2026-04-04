@@ -6,7 +6,7 @@ import {
   ConnectionState,
 } from "livekit-client";
 
-const MAX_HEAR_DISTANCE = 200; // canvas pixels
+const MAX_HEAR_DISTANCE = 700; // canvas pixels (1200x800 virtual space)
 
 const LIVEKIT_URL = import.meta.env.VITE_LIVEKIT_URL as string;
 
@@ -79,8 +79,13 @@ export function useLiveKit() {
       if (!room) return;
 
       room.remoteParticipants.forEach((participant) => {
-        const peer = peers.find((p) => p.name === participant.name);
-        if (!peer) return;
+        const peer =
+          peers.find((p) => p.name === participant.name) ??
+          peers.find((p) => p.name === participant.identity);
+        if (!peer) {
+          participant.setVolume(1); // fallback: full volume if name can't be matched
+          return;
+        }
 
         let volume: number;
 
