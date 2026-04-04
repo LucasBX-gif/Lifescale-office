@@ -547,7 +547,21 @@ export function OfficeCanvas({
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) { rafRef.current = requestAnimationFrame(tick); return; }
 
+    // Sync canvas buffer to its CSS display size so it's always crisp and full-screen
+    const cw = canvas.clientWidth;
+    const ch = canvas.clientHeight;
+    if (cw > 0 && ch > 0 && (canvas.width !== cw || canvas.height !== ch)) {
+      canvas.width = cw;
+      canvas.height = ch;
+    }
+
     const p = palette(isDarkRef.current);
+
+    // Scale all drawing from the 1200×800 virtual space to the actual canvas size
+    const sx = canvas.width / CANVAS_W;
+    const sy = canvas.height / CANVAS_H;
+    ctx.save();
+    ctx.scale(sx, sy);
 
     drawBackground(ctx, p);
     drawZones(ctx, doorClosedRef.current, p);
@@ -574,6 +588,8 @@ export function OfficeCanvas({
       distToDoor <= KNOCK_RANGE_PX;
     showKnockRef.current = showKnock;
     if (showKnock) drawKnockButton(ctx);
+
+    ctx.restore();
 
     rafRef.current = requestAnimationFrame(tick);
   }, []);
