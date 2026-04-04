@@ -17,19 +17,10 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
   const [currentZone, setCurrentZone] = useState("Open Floor");
 
   const {
-    connected,
-    room,
-    myUser,
-    joinRoom,
-    move,
-    toggleMute,
-    toggleDeafen,
-    setStatus,
-    privateOfficeDoorClosed,
-    togglePrivateOfficeDoor,
-    knock,
-    knockQueue,
-    respondToKnock,
+    connected, room, myUser,
+    joinRoom, move, toggleMute, toggleDeafen, setStatus,
+    privateOfficeDoorClosed, togglePrivateOfficeDoor,
+    knock, knockQueue, respondToKnock,
   } = useOffice();
 
   useEffect(() => {
@@ -42,20 +33,26 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
     return <div className="status-screen"><p>Connecting to office…</p></div>;
   }
 
+  const onlineCount = room.users.length;
+
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Lifescale Office</h1>
-        <span className="room-name">{workspaceName}</span>
-        <span className="zone-badge">{currentZone}</span>
-        <span className="connection-badge">Live</span>
-        <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
+      <nav className="office-nav">
+        <div className="lobby-nav-brand">
+          <span className="lobby-nav-icon">🏢</span>
+          <span className="lobby-nav-title">{workspaceName}</span>
+          {onlineCount > 0 && (
+            <span className="office-online-badge">{onlineCount} online</span>
+          )}
+        </div>
+        <div className="lobby-nav-right">
+          <span className="connection-badge">Live</span>
           <button className="theme-toggle theme-toggle--sm" onClick={onToggleTheme} aria-label="Toggle theme">
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
           <button className="btn-leave" onClick={onLeave}>← Leave</button>
         </div>
-      </header>
+      </nav>
 
       <main className="app-main">
         <OfficeCanvas
@@ -68,6 +65,7 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
           privateOfficeDoorClosed={privateOfficeDoorClosed}
           onDoorToggle={togglePrivateOfficeDoor}
           onKnock={knock}
+          isDark={theme === "dark"}
         />
       </main>
 
