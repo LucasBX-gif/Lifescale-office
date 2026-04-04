@@ -72,12 +72,17 @@ function drawZones(ctx: CanvasRenderingContext2D, doorClosed: boolean, p: Return
     ctx.fillStyle = z.fill;
     ctx.fillRect(z.x, z.y, z.w, z.h);
 
-    // Room label
-    ctx.font = "bold 12px Inter, system-ui, sans-serif";
-    ctx.textBaseline = "top";
-    ctx.textAlign = "left";
+    // Room label pill
+    ctx.font = "bold 11px Inter, system-ui, sans-serif";
+    const lw = ctx.measureText(z.name).width;
+    ctx.fillStyle = z.border.replace("0.85", "0.18");
+    ctx.beginPath();
+    ctx.roundRect(z.x + 10, z.y + 10, lw + 16, 22, 4);
+    ctx.fill();
     ctx.fillStyle = z.border;
-    ctx.fillText(z.name.toUpperCase(), z.x + 12, z.y + 12);
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    ctx.fillText(z.name, z.x + 18, z.y + 21);
 
     // Walls
     ctx.strokeStyle = z.border;
@@ -131,29 +136,227 @@ function drawDoor(ctx: CanvasRenderingContext2D, closed: boolean, p: ReturnType<
   void DOOR.x; void DOOR.w;
 }
 
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+}
+
 function drawFurniture(ctx: CanvasRenderingContext2D, p: ReturnType<typeof palette>) {
-  ctx.strokeStyle = p.furniture;
-  ctx.lineWidth = 1.5;
+  const isDark = p.bg === "#0d0d1a";
 
-  // Private Office — desk + monitor
-  ctx.strokeRect(60, 160, 110, 70);
-  ctx.strokeRect(90, 165, 50, 35); // monitor
-  ctx.strokeRect(145, 185, 14, 40); // chair back
+  // ── Private Office (0,0 → 300,280) ──────────────────────────────────────────
 
-  // War Room — conference table + chairs
-  ctx.strokeStyle = p.furniture;
-  ctx.strokeRect(490, 295, 220, 100);
-  for (let i = 0; i < 3; i++) {
-    ctx.strokeRect(505 + i * 70, 275, 40, 16); // chairs top
-    ctx.strokeRect(505 + i * 70, 399, 40, 16); // chairs bottom
+  // Floor rug
+  ctx.fillStyle = isDark ? "rgba(108,99,255,0.12)" : "rgba(108,99,255,0.1)";
+  roundRect(ctx, 14, 60, 268, 206, 6); ctx.fill();
+
+  // Bookshelf (left wall)
+  ctx.fillStyle = isDark ? "rgba(180,160,120,0.25)" : "rgba(140,120,80,0.3)";
+  roundRect(ctx, 8, 10, 30, 180, 3); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(200,180,140,0.4)" : "rgba(140,110,60,0.5)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 7; i++) {
+    ctx.strokeRect(10, 14 + i * 24, 26, 20);
   }
-  ctx.strokeRect(465, 310, 20, 70); // chair left
-  ctx.strokeRect(715, 310, 20, 70); // chair right
+  // Book spines (colors)
+  const bookColors = ["#ff6464","#6c63ff","#3dffa0","#ffbe32","#06b6d4","#a855f7","#ff8c42"];
+  bookColors.forEach((c, i) => {
+    ctx.fillStyle = c + (isDark ? "99" : "bb");
+    ctx.fillRect(11, 15 + i * 24, 6, 18);
+    ctx.fillStyle = c + (isDark ? "66" : "88");
+    ctx.fillRect(19, 15 + i * 24, 5, 18);
+  });
 
-  // Lounge — two sofas + coffee table
-  ctx.strokeRect(912, 572, 80, 36);  // sofa 1
-  ctx.strokeRect(1008, 572, 80, 36); // sofa 2
-  ctx.strokeRect(940, 620, 120, 28); // coffee table
+  // Desk (L-shape)
+  ctx.fillStyle = isDark ? "rgba(160,140,100,0.3)" : "rgba(180,155,110,0.4)";
+  roundRect(ctx, 55, 140, 180, 55, 4); ctx.fill();
+  roundRect(ctx, 55, 180, 60, 70, 4); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(200,180,140,0.35)" : "rgba(160,130,80,0.5)";
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, 55, 140, 180, 55, 4); ctx.stroke();
+
+  // Monitor on desk
+  ctx.fillStyle = isDark ? "rgba(30,40,80,0.9)" : "rgba(20,30,60,0.8)";
+  roundRect(ctx, 100, 145, 80, 48, 3); ctx.fill();
+  ctx.fillStyle = isDark ? "rgba(80,120,255,0.6)" : "rgba(60,100,220,0.5)";
+  roundRect(ctx, 103, 148, 74, 38, 2); ctx.fill();
+  // Screen glow
+  ctx.fillStyle = isDark ? "rgba(80,120,255,0.15)" : "rgba(60,100,220,0.1)";
+  roundRect(ctx, 95, 142, 90, 56, 4); ctx.fill();
+  // Monitor stand
+  ctx.fillStyle = isDark ? "rgba(180,170,150,0.3)" : "rgba(140,130,110,0.4)";
+  ctx.fillRect(135, 193, 10, 6);
+  ctx.fillRect(128, 197, 24, 3);
+
+  // Chair (arc)
+  ctx.strokeStyle = isDark ? "rgba(160,150,200,0.5)" : "rgba(100,90,160,0.6)";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(80, 228, 18, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = isDark ? "rgba(108,99,255,0.2)" : "rgba(108,99,255,0.15)";
+  ctx.fill();
+
+  // Plant (corner)
+  ctx.fillStyle = isDark ? "rgba(30,80,40,0.7)" : "rgba(20,100,40,0.5)";
+  roundRect(ctx, 258, 228, 22, 24, 3); ctx.fill();
+  ctx.fillStyle = isDark ? "rgba(40,200,80,0.7)" : "rgba(30,180,70,0.6)";
+  ctx.beginPath(); ctx.arc(269, 220, 18, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isDark ? "rgba(60,220,100,0.5)" : "rgba(50,200,90,0.4)";
+  ctx.beginPath(); ctx.arc(258, 215, 12, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(280, 218, 10, 0, Math.PI * 2); ctx.fill();
+
+  // Window (top wall)
+  ctx.fillStyle = isDark ? "rgba(100,160,255,0.15)" : "rgba(150,200,255,0.3)";
+  roundRect(ctx, 90, 2, 120, 18, 2); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(100,160,255,0.4)" : "rgba(80,140,240,0.5)";
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, 90, 2, 120, 18, 2); ctx.stroke();
+  ctx.strokeStyle = isDark ? "rgba(100,160,255,0.25)" : "rgba(80,140,240,0.3)";
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(150, 2); ctx.lineTo(150, 20); ctx.stroke();
+
+  // ── War Room (440,240 → 760,550) ─────────────────────────────────────────────
+
+  // Rug under table
+  ctx.fillStyle = isDark ? "rgba(255,80,50,0.1)" : "rgba(255,80,50,0.08)";
+  roundRect(ctx, 460, 268, 280, 254, 8); ctx.fill();
+
+  // Conference table
+  ctx.fillStyle = isDark ? "rgba(160,100,70,0.45)" : "rgba(180,120,80,0.5)";
+  roundRect(ctx, 490, 300, 220, 150, 8); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(220,150,100,0.5)" : "rgba(180,120,60,0.7)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, 490, 300, 220, 150, 8); ctx.stroke();
+  // Table surface reflection
+  ctx.fillStyle = isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.15)";
+  roundRect(ctx, 498, 306, 100, 60, 4); ctx.fill();
+
+  // Chairs around table
+  const chairColor = isDark ? "rgba(255,80,50,0.3)" : "rgba(255,80,50,0.25)";
+  ctx.fillStyle = chairColor;
+  ctx.strokeStyle = isDark ? "rgba(255,110,80,0.5)" : "rgba(220,70,40,0.6)";
+  ctx.lineWidth = 1.5;
+  // Top chairs
+  for (let i = 0; i < 3; i++) {
+    roundRect(ctx, 506 + i * 72, 274, 44, 22, 4); ctx.fill(); ctx.stroke();
+  }
+  // Bottom chairs
+  for (let i = 0; i < 3; i++) {
+    roundRect(ctx, 506 + i * 72, 456, 44, 22, 4); ctx.fill(); ctx.stroke();
+  }
+  // Left chairs
+  roundRect(ctx, 458, 316, 28, 44, 4); ctx.fill(); ctx.stroke();
+  roundRect(ctx, 458, 392, 28, 44, 4); ctx.fill(); ctx.stroke();
+  // Right chairs
+  roundRect(ctx, 714, 316, 28, 44, 4); ctx.fill(); ctx.stroke();
+  roundRect(ctx, 714, 392, 28, 44, 4); ctx.fill(); ctx.stroke();
+
+  // Whiteboard (left wall of war room)
+  ctx.fillStyle = isDark ? "rgba(240,240,255,0.12)" : "rgba(255,255,255,0.6)";
+  roundRect(ctx, 444, 256, 20, 100, 2); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(200,200,255,0.3)" : "rgba(160,160,200,0.5)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, 444, 256, 20, 100, 2); ctx.stroke();
+  // Marker lines on whiteboard
+  ctx.strokeStyle = isDark ? "rgba(100,180,255,0.6)" : "rgba(60,100,200,0.5)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(447, 275); ctx.lineTo(461, 275); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(447, 285); ctx.lineTo(458, 285); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(447, 295); ctx.lineTo(462, 295); ctx.stroke();
+
+  // Projector screen (right wall)
+  ctx.fillStyle = isDark ? "rgba(230,230,255,0.1)" : "rgba(255,255,255,0.5)";
+  roundRect(ctx, 756, 260, 18, 80, 2); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(200,200,255,0.3)" : "rgba(160,160,200,0.5)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, 756, 260, 18, 80, 2); ctx.stroke();
+
+  // ── Lounge (900,560 → 1200,800) ─────────────────────────────────────────────
+
+  // Rug
+  ctx.fillStyle = isDark ? "rgba(30,210,140,0.12)" : "rgba(30,180,120,0.1)";
+  roundRect(ctx, 910, 568, 282, 224, 10); ctx.fill();
+
+  // L-shaped sofa
+  ctx.fillStyle = isDark ? "rgba(40,160,100,0.4)" : "rgba(30,140,90,0.4)";
+  ctx.strokeStyle = isDark ? "rgba(50,210,140,0.55)" : "rgba(30,170,100,0.65)";
+  ctx.lineWidth = 2;
+  // Main sofa body
+  roundRect(ctx, 912, 572, 160, 50, 6); ctx.fill(); ctx.stroke();
+  // Side sofa
+  roundRect(ctx, 1040, 572, 50, 110, 6); ctx.fill(); ctx.stroke();
+  // Cushions
+  ctx.fillStyle = isDark ? "rgba(60,220,150,0.25)" : "rgba(40,190,120,0.25)";
+  for (let i = 0; i < 3; i++) {
+    roundRect(ctx, 918 + i * 50, 578, 42, 34, 4); ctx.fill();
+  }
+  roundRect(ctx, 1046, 578, 36, 46, 4); ctx.fill();
+
+  // Coffee table
+  ctx.fillStyle = isDark ? "rgba(160,140,100,0.4)" : "rgba(180,155,110,0.45)";
+  roundRect(ctx, 930, 638, 100, 60, 5); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(200,180,140,0.4)" : "rgba(160,130,80,0.55)";
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, 930, 638, 100, 60, 5); ctx.stroke();
+  // Items on coffee table
+  ctx.fillStyle = isDark ? "rgba(255,190,50,0.5)" : "rgba(240,170,30,0.6)";
+  ctx.beginPath(); ctx.arc(960, 668, 8, 0, Math.PI * 2); ctx.fill(); // mug
+  ctx.fillStyle = isDark ? "rgba(200,200,220,0.3)" : "rgba(180,180,210,0.4)";
+  roundRect(ctx, 978, 660, 28, 18, 2); ctx.fill(); // book/tablet
+
+  // TV on wall
+  ctx.fillStyle = isDark ? "rgba(20,25,50,0.9)" : "rgba(15,20,40,0.85)";
+  roundRect(ctx, 906, 562, 90, 52, 4); ctx.fill();
+  ctx.fillStyle = isDark ? "rgba(40,80,180,0.5)" : "rgba(30,60,150,0.4)";
+  roundRect(ctx, 909, 565, 84, 44, 3); ctx.fill();
+  // TV screen glow
+  ctx.fillStyle = isDark ? "rgba(60,100,255,0.12)" : "rgba(40,80,200,0.08)";
+  roundRect(ctx, 904, 560, 96, 58, 5); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(80,120,255,0.3)" : "rgba(60,90,200,0.4)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, 906, 562, 90, 52, 4); ctx.stroke();
+
+  // Plant (lounge corner)
+  ctx.fillStyle = isDark ? "rgba(30,80,40,0.7)" : "rgba(20,100,40,0.5)";
+  roundRect(ctx, 1164, 728, 24, 30, 3); ctx.fill();
+  ctx.fillStyle = isDark ? "rgba(40,200,80,0.65)" : "rgba(30,180,70,0.55)";
+  ctx.beginPath(); ctx.arc(1176, 720, 22, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isDark ? "rgba(60,220,100,0.45)" : "rgba(50,200,90,0.35)";
+  ctx.beginPath(); ctx.arc(1162, 715, 14, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1190, 717, 12, 0, Math.PI * 2); ctx.fill();
+
+  // ── Open Floor desks (scattered) ─────────────────────────────────────────────
+  const openDesks = [
+    { x: 340, y: 40 },
+    { x: 340, y: 140 },
+    { x: 820, y: 40 },
+    { x: 820, y: 140 },
+    { x: 100, y: 380 },
+    { x: 200, y: 500 },
+    { x: 600, y: 620 },
+    { x: 700, y: 720 },
+  ];
+
+  for (const d of openDesks) {
+    ctx.fillStyle = isDark ? "rgba(160,140,100,0.2)" : "rgba(180,155,110,0.25)";
+    roundRect(ctx, d.x, d.y, 80, 45, 3); ctx.fill();
+    ctx.strokeStyle = isDark ? "rgba(200,180,140,0.2)" : "rgba(160,130,80,0.3)";
+    ctx.lineWidth = 1;
+    roundRect(ctx, d.x, d.y, 80, 45, 3); ctx.stroke();
+    // Monitor
+    ctx.fillStyle = isDark ? "rgba(30,40,80,0.7)" : "rgba(20,30,60,0.6)";
+    roundRect(ctx, d.x + 20, d.y + 4, 36, 24, 2); ctx.fill();
+    ctx.fillStyle = isDark ? "rgba(60,100,200,0.4)" : "rgba(40,80,180,0.3)";
+    roundRect(ctx, d.x + 22, d.y + 6, 32, 20, 1); ctx.fill();
+  }
+
+  // Water cooler
+  ctx.fillStyle = isDark ? "rgba(80,160,220,0.35)" : "rgba(60,140,200,0.35)";
+  roundRect(ctx, 414, 40, 20, 40, 4); ctx.fill();
+  ctx.fillStyle = isDark ? "rgba(120,200,255,0.4)" : "rgba(80,160,220,0.45)";
+  roundRect(ctx, 415, 42, 18, 20, 4); ctx.fill();
+  ctx.strokeStyle = isDark ? "rgba(100,180,240,0.4)" : "rgba(60,140,200,0.5)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, 414, 40, 20, 40, 4); ctx.stroke();
 }
 
 function drawAvatar(

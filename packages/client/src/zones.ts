@@ -19,22 +19,22 @@ export const ZONES: ZoneDef[] = [
     id: "private-office",
     name: "Private Office",
     x: 0, y: 0, w: 300, h: 280,
-    fill: "rgba(108, 99, 255, 0.18)",
-    border: "rgba(108, 99, 255, 0.7)",
+    fill: "rgba(108, 99, 255, 0.22)",
+    border: "rgba(140, 130, 255, 0.85)",
   },
   {
     id: "war-room",
     name: "War Room",
     x: 440, y: 240, w: 320, h: 310,
-    fill: "rgba(255, 100, 80, 0.15)",
-    border: "rgba(255, 100, 80, 0.65)",
+    fill: "rgba(255, 80, 50, 0.2)",
+    border: "rgba(255, 110, 80, 0.85)",
   },
   {
     id: "lounge",
     name: "Lounge",
     x: 900, y: 560, w: 300, h: 240,
-    fill: "rgba(50, 200, 140, 0.15)",
-    border: "rgba(50, 200, 140, 0.65)",
+    fill: "rgba(30, 210, 140, 0.2)",
+    border: "rgba(50, 220, 150, 0.85)",
   },
 ];
 
