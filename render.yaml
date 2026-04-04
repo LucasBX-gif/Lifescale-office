@@ -3,7 +3,7 @@ services:
     name: lifescale-office-server
     runtime: node
     plan: starter          # free tier sleeps after 15 min; starter keeps it awake
-    buildCommand: npm install && npm run build -w packages/server
+    buildCommand: npm install && cd packages/server && npm run build
     startCommand: node packages/server/dist/index.js
     healthCheckPath: /health
     envVars:
