@@ -412,6 +412,9 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   ctx.fillStyle = p.rugWarm;
   rr(ctx, 16, 55, 270, 210, 8); ctx.fill();
 
+  // Blue Lamborghini parked in open area (between bookshelf and desk)
+  drawLambo(ctx, 158, 100, "#1565C0", false);
+
   // ── Bookshelf — full left wall ───────────────────────────────────────────────
   shadow(ctx, p.shadow, 8);
   ctx.fillStyle = p.bookShelf;
@@ -845,27 +848,6 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   ctx.fillStyle = "rgba(255,120,80,0.4)";
   ctx.beginPath(); ctx.arc(1184, 577, 3, 0, Math.PI * 2); ctx.fill();
 
-  // ── Water cooler ─────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 8);
-  ctx.fillStyle = p.counterFill;
-  rr(ctx, 410, 38, 24, 48, 4); ctx.fill();
-  noShadow(ctx);
-  ctx.fillStyle = p.glassBlue;
-  rr(ctx, 412, 40, 20, 24, 4); ctx.fill();
-  // Water level
-  ctx.fillStyle = "rgba(80,160,240,0.4)";
-  rr(ctx, 413, 54, 18, 10, 2); ctx.fill();
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  rr(ctx, 410, 38, 24, 48, 4); ctx.stroke();
-  // Cup dispenser
-  ctx.fillStyle = p.deskMid;
-  rr(ctx, 412, 68, 20, 12, 2); ctx.fill();
-  // Tap buttons
-  ctx.fillStyle = "rgba(0,180,255,0.6)";
-  ctx.beginPath(); ctx.arc(417, 78, 3, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "rgba(255,80,80,0.6)";
-  ctx.beginPath(); ctx.arc(425, 78, 3, 0, Math.PI * 2); ctx.fill();
-
   // ── Structural columns ────────────────────────────────────────────────────────
   const cols = [{ x: 420, y: 220 }, { x: 780, y: 220 }, { x: 420, y: 520 }, { x: 780, y: 520 }];
   for (const c of cols) {
@@ -884,6 +866,9 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   // Floor rug (mirrored)
   ctx.fillStyle = p.rugWarm;
   rr(ctx, 914, 55, 270, 210, 8); ctx.fill();
+
+  // Red Lamborghini (mirrored — nose points left)
+  drawLambo(ctx, 1042, 100, "#C62828", true);
 
   // ── Bookshelf — right wall ────────────────────────────────────────────────────
   shadow(ctx, p.shadow, 8);
@@ -1004,6 +989,144 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P) {
   for (let bx = 988; bx < 1112; bx += 8) {
     ctx.beginPath(); ctx.moveTo(bx, 7); ctx.lineTo(bx, 29); ctx.stroke();
   }
+}
+
+// ─── Lamborghini (top-down) ───────────────────────────────────────────────────
+function drawLambo(ctx: CanvasRenderingContext2D, cx: number, cy: number, color: string, flip: boolean) {
+  ctx.save();
+  if (flip) {
+    ctx.translate(cx * 2, 0);
+    ctx.scale(-1, 1);
+  }
+
+  const W = 108, H = 48;
+  const x = cx - W / 2, y = cy - H / 2;
+
+  // Drop shadow
+  shadow(ctx, "rgba(0,0,0,0.55)", 14);
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  rr(ctx, x + 6, y + 8, W, H, 5); ctx.fill();
+  noShadow(ctx);
+
+  // Body — angular Lambo silhouette (nose points right)
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x,         y + H * 0.38);  // rear-left top
+  ctx.lineTo(x + 10,    y + 2);          // rear top-left corner
+  ctx.lineTo(x + W * 0.78, y + 2);       // shoulder top
+  ctx.lineTo(x + W,     y + H * 0.32);   // nose top
+  ctx.lineTo(x + W,     y + H * 0.68);   // nose bottom
+  ctx.lineTo(x + W * 0.78, y + H - 2);   // shoulder bottom
+  ctx.lineTo(x + 10,    y + H - 2);      // rear bottom-left corner
+  ctx.lineTo(x,         y + H * 0.62);   // rear-left bottom
+  ctx.closePath();
+  ctx.fill();
+
+  // Body highlight (specular gloss strip)
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.beginPath();
+  ctx.moveTo(x + 12, y + 4);
+  ctx.lineTo(x + W * 0.76, y + 4);
+  ctx.lineTo(x + W * 0.65, y + H * 0.28);
+  ctx.lineTo(x + 14, y + H * 0.28);
+  ctx.closePath();
+  ctx.fill();
+
+  // Roof/cabin (dark center panel)
+  ctx.fillStyle = "rgba(10,10,15,0.88)";
+  ctx.beginPath();
+  ctx.moveTo(x + W * 0.24, y + H * 0.18);
+  ctx.lineTo(x + W * 0.7,  y + H * 0.1);
+  ctx.lineTo(x + W * 0.82, y + H * 0.34);
+  ctx.lineTo(x + W * 0.82, y + H * 0.66);
+  ctx.lineTo(x + W * 0.7,  y + H * 0.9);
+  ctx.lineTo(x + W * 0.24, y + H * 0.82);
+  ctx.lineTo(x + W * 0.18, y + H * 0.66);
+  ctx.lineTo(x + W * 0.18, y + H * 0.34);
+  ctx.closePath();
+  ctx.fill();
+
+  // Windshield (front glass — angled inward)
+  ctx.fillStyle = "rgba(140,215,255,0.65)";
+  ctx.beginPath();
+  ctx.moveTo(x + W * 0.7,  y + H * 0.12);
+  ctx.lineTo(x + W * 0.84, y + H * 0.3);
+  ctx.lineTo(x + W * 0.84, y + H * 0.7);
+  ctx.lineTo(x + W * 0.7,  y + H * 0.88);
+  ctx.closePath();
+  ctx.fill();
+
+  // Rear window
+  ctx.fillStyle = "rgba(80,140,200,0.4)";
+  ctx.beginPath();
+  ctx.moveTo(x + W * 0.24, y + H * 0.2);
+  ctx.lineTo(x + W * 0.18, y + H * 0.34);
+  ctx.lineTo(x + W * 0.18, y + H * 0.66);
+  ctx.lineTo(x + W * 0.24, y + H * 0.8);
+  ctx.closePath();
+  ctx.fill();
+
+  // Wheels (4 corners)
+  const wheels: [number, number][] = [
+    [x + 4,       y + 2],
+    [x + 4,       y + H - 12],
+    [x + W - 22,  y + 2],
+    [x + W - 22,  y + H - 12],
+  ];
+  for (const [wx, wy] of wheels) {
+    ctx.fillStyle = "#111";
+    rr(ctx, wx, wy, 18, 10, 2); ctx.fill();
+    ctx.strokeStyle = "#2a2a2a"; ctx.lineWidth = 0.5;
+    rr(ctx, wx, wy, 18, 10, 2); ctx.stroke();
+    // Rim
+    ctx.fillStyle = "#d0d0d0";
+    ctx.beginPath(); ctx.arc(wx + 9, wy + 5, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#bbb"; ctx.lineWidth = 0.7;
+    for (let s = 0; s < 5; s++) {
+      const a = (s / 5) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(wx + 9, wy + 5);
+      ctx.lineTo(wx + 9 + Math.cos(a) * 3.8, wy + 5 + Math.sin(a) * 3.8);
+      ctx.stroke();
+    }
+  }
+
+  // Headlights (right / front)
+  ctx.fillStyle = "rgba(255,255,200,0.95)";
+  ctx.beginPath(); ctx.ellipse(x + W - 3, y + H * 0.3, 5, 3, 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x + W - 3, y + H * 0.7, 5, 3, -0.3, 0, Math.PI * 2); ctx.fill();
+  // Headlight glow
+  const hg = ctx.createRadialGradient(x + W, cy, 0, x + W, cy, 22);
+  hg.addColorStop(0, "rgba(255,255,180,0.18)");
+  hg.addColorStop(1, "transparent");
+  ctx.fillStyle = hg; ctx.fillRect(x + W - 22, y - 10, 40, H + 20);
+
+  // Taillights (left / rear)
+  ctx.fillStyle = "rgba(215,25,25,0.9)";
+  ctx.fillRect(x + 3, y + H * 0.22, 7, 6);
+  ctx.fillRect(x + 3, y + H * 0.72, 7, 6);
+
+  // Rear spoiler
+  ctx.fillStyle = color;
+  ctx.fillRect(x - 6, y + H * 0.26, 7, H * 0.48);
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillRect(x - 6, y + H * 0.26, 7, 2);
+  ctx.fillRect(x - 6, y + H * 0.26 + H * 0.48 - 2, 7, 2);
+
+  // Side vent slits (Lambo detail)
+  ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1;
+  for (let v = 0; v < 3; v++) {
+    ctx.beginPath();
+    ctx.moveTo(x + 14, y + H * 0.28 + v * 3);
+    ctx.lineTo(x + 22, y + H * 0.28 + v * 3);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + 14, y + H * 0.68 + v * 3);
+    ctx.lineTo(x + 22, y + H * 0.68 + v * 3);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
 // ─── Avatar ────────────────────────────────────────────────────────────────────
@@ -1241,18 +1364,22 @@ export function OfficeCanvas({
     x = Math.max(AVATAR_R, Math.min(CANVAS_W - AVATAR_R, x));
     y = Math.max(AVATAR_R, Math.min(CANVAS_H - AVATAR_R, y));
 
-    // Collision: locked offices are solid walls — can't enter from outside
+    // Collision: locked offices are impassable in both directions
     const { x: ox, y: oy } = posRef.current;
-    const lockedZones = [];
-    if (officesRef.current[0].locked) lockedZones.push(PRIVATE_OFFICE_ZONE);
-    if (officesRef.current[1].locked) lockedZones.push(PRIVATE_OFFICE_2_ZONE);
-    for (const z of lockedZones) {
+    const myIdx = myOfficeIndexRef.current;
+    for (let i = 0; i < 2; i++) {
+      if (!officesRef.current[i].locked) continue;
+      const z = i === 0 ? PRIVATE_OFFICE_ZONE : PRIVATE_OFFICE_2_ZONE;
       const inside = (px: number, py: number) =>
         px > z.x + 7 && px < z.x + z.w - 7 && py > z.y + 7 && py < z.y + z.h - 7;
-      if (inside(x, y) && !inside(ox, oy)) {
-        // Try sliding along each axis independently
-        if (!inside(ox, y)) x = ox;
-        else if (!inside(x, oy)) y = oy;
+      const wasInside = inside(ox, oy);
+      const nowInside = inside(x, y);
+      // Owner: can't cross boundary in either direction
+      // Non-owner: can't enter from outside
+      const blocked = myIdx === i ? wasInside !== nowInside : (!wasInside && nowInside);
+      if (blocked) {
+        if (inside(ox, y) === wasInside) x = ox;
+        else if (inside(x, oy) === wasInside) y = oy;
         else { x = ox; y = oy; }
       }
     }
