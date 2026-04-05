@@ -37,7 +37,9 @@ function palette(isDark: boolean) {
     coolCarpetAlt: "rgba(16,80,60,0.9)",
     coolCarpetLine:"rgba(40,160,120,0.07)",
     // ── Walls ────────────────────────────────────────────────────────────────
-    wallFill:      "#3a2a18",   // warm brown — clearly visible against dark floor
+    wallFill:      "#3a2a18",
+    wallHighlight: "#5a4228",   // lighter face — top/inner edge of each wall
+    wallShadow:    "#1a1008",   // darker base — bottom/outer edge
     wallBorder:    "rgba(255,200,120,0.15)",
     // ── Lights ───────────────────────────────────────────────────────────────
     lightGlow:     "rgba(255,220,130,0.10)",
@@ -107,7 +109,9 @@ function palette(isDark: boolean) {
     coolCarpetAlt: "rgba(26,114,86,0.92)",
     coolCarpetLine:"rgba(48,175,140,0.08)",
     // ── Walls ────────────────────────────────────────────────────────────────
-    wallFill:      "#6b4e28",   // rich warm brown — strong contrast, very Gather.town
+    wallFill:      "#6b4e28",
+    wallHighlight: "#9a7240",   // lighter face — top/inner edge of each wall
+    wallShadow:    "#3d2a12",   // darker base — bottom/outer edge
     wallBorder:    "rgba(0,0,0,0.28)",
     // ── Lights ───────────────────────────────────────────────────────────────
     lightGlow:     "rgba(255,235,155,0.28)",
@@ -177,30 +181,46 @@ function noShadow(ctx: CanvasRenderingContext2D) {
   ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
 }
 
-// ─── Background — large-format tile floor with corridor paths ─────────────────
+// ─── Background — individual 32 px stone tiles, Gather.town style ─────────────
 function drawBackground(ctx: CanvasRenderingContext2D, p: P) {
-  // Uniform floor — no checkerboard
-  ctx.fillStyle = p.bg;
+  const isDark = p.bg === "#1e1810";
+  const T = 32; // tile size matches Gather.town's 32 px grid
+
+  // Four tile shades — slight variation per tile, no repeating checkerboard
+  const regularTiles = isDark
+    ? ["#241a0e", "#281d10", "#221708", "#2c1f12"] as const
+    : ["#cabb86", "#cebf8a", "#c6b780", "#d2c592"] as const;
+  // Corridor / path tiles — slightly warmer / lighter
+  const pathTiles = isDark
+    ? ["#30200e", "#34220e", "#2e1e0c", "#382510"] as const
+    : ["#d8cb8e", "#dccf94", "#d4c788", "#e0d39a"] as const;
+  // Grout is the base colour — tiles are drawn 1 px inset so grout shows through
+  const groutColor = isDark ? "#120d08" : "#a08c5c";
+
+  // Corridor rectangles [x1, y1, x2, y2]
+  const corridors: [number, number, number, number][] = [
+    [300,  90, 900, 180],   // top corridor: office 1 ↔ office 2 doors
+    [545, 180, 655, 245],   // spine down to War Room
+    [755, 488, 910, 570],   // War Room → Lounge
+  ];
+  function inCorridor(px: number, py: number) {
+    return corridors.some(([x1,y1,x2,y2]) => px >= x1 && px < x2 && py >= y1 && py < y2);
+  }
+
+  // Base grout fill
+  ctx.fillStyle = groutColor;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // Corridor paths — slightly lighter/darker strips connecting every room
-  ctx.fillStyle = p.pathFill;
-  // Top corridor: office 1 door ↔ office 2 door  (y: 90–180, x: 300–900)
-  ctx.fillRect(300, 90, 600, 90);
-  // Spine from top corridor down into War Room entrance (x: 545–655, y: 180–245)
-  ctx.fillRect(545, 180, 110, 65);
-  // War Room → Lounge passage (x: 755–910, y: 488–570)
-  ctx.fillRect(755, 488, 155, 82);
-
-  // Large-format grout grid (120 px tiles, same colour everywhere)
-  const T = 120;
-  ctx.strokeStyle = p.grout;
-  ctx.lineWidth = 1;
-  for (let tx = 0; tx <= CANVAS_W; tx += T) {
-    ctx.beginPath(); ctx.moveTo(tx, 0); ctx.lineTo(tx, CANVAS_H); ctx.stroke();
-  }
-  for (let ty = 0; ty <= CANVAS_H; ty += T) {
-    ctx.beginPath(); ctx.moveTo(0, ty); ctx.lineTo(CANVAS_W, ty); ctx.stroke();
+  // Individual tiles (1 px inset → grout line visible between every tile)
+  for (let tx = 0; tx < CANVAS_W; tx += T) {
+    for (let ty = 0; ty < CANVAS_H; ty += T) {
+      const col = Math.floor(tx / T);
+      const row = Math.floor(ty / T);
+      // Pseudo-random index: avoids any repeating diagonal pattern
+      const v = ((col * 13 + row * 7) ^ (col + row)) & 3;
+      ctx.fillStyle = inCorridor(tx + T / 2, ty + T / 2) ? pathTiles[v] : regularTiles[v];
+      ctx.fillRect(tx + 1, ty + 1, T - 2, T - 2);
+    }
   }
 }
 
@@ -397,35 +417,69 @@ function drawZones(
       (z.id === "private-office" && offices[0].locked) ||
       (z.id === "private-office-2" && offices[1].locked);
 
-    // Thick walls
-    ctx.fillStyle = p.wallFill;
+    // ── Wall helpers with Gather.town-style depth ──────────────────────────
+    const HI = 3; // highlight strip thickness
+    // Horizontal wall (top/bottom) — highlight on bottom face (room-facing)
+    const wH = (wx: number, wy: number, ww: number, wh2: number, roomBelow: boolean) => {
+      ctx.fillStyle = p.wallShadow;  ctx.fillRect(wx, wy, ww, wh2);
+      ctx.fillStyle = p.wallFill;    ctx.fillRect(wx, wy, ww, wh2 - HI);
+      ctx.fillStyle = p.wallHighlight;
+      ctx.fillRect(wx, roomBelow ? wy + wh2 - HI : wy, ww, HI);
+    };
+    // Vertical wall (left/right) — highlight on right face (room-facing)
+    const wV = (wx: number, wy: number, ww: number, wh2: number, roomRight: boolean) => {
+      ctx.fillStyle = p.wallShadow;  ctx.fillRect(wx, wy, ww, wh2);
+      ctx.fillStyle = p.wallFill;    ctx.fillRect(wx + HI, wy, ww - HI, wh2);
+      ctx.fillStyle = p.wallHighlight;
+      ctx.fillRect(roomRight ? wx + ww - HI : wx, wy, HI, wh2);
+    };
+
     if (z.id === "private-office") {
       const { x, y, w, h } = PRIVATE_OFFICE_ZONE;
       const wallX = x + w;
-      ctx.fillRect(x, y, w + WT, WT);
-      ctx.fillRect(x, y, WT, h);
-      ctx.fillRect(x, y + h, w + WT, WT);
-      // Right wall with door gap — always show door (closed when locked)
-      ctx.fillRect(wallX, y, WT, DOOR.y - y);
-      ctx.fillRect(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h));
+      wH(x, y, w + WT, WT, true);             // top
+      wV(x, y, WT, h, true);                  // left (canvas edge)
+      wH(x, y + h, w + WT, WT, false);        // bottom
+      wV(wallX, y, WT, DOOR.y - y, true);                           // right-top
+      wV(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h), true); // right-bottom
       drawDoor(ctx, isLocked || doorClosed, p, false);
     } else if (z.id === "private-office-2") {
       const { x, y, w, h } = PRIVATE_OFFICE_2_ZONE;
-      const wallX = x; // door is on LEFT wall
-      ctx.fillRect(x, y, w, WT);                 // top
-      ctx.fillRect(x, y, WT, h);                 // left placeholder (canvas edge at x=900)
-      ctx.fillRect(x + w, y, WT, h + WT);        // right (canvas edge)
-      ctx.fillRect(x, y + h, w + WT, WT);        // bottom
-      // Left wall with door gap — always show door (closed when locked)
-      ctx.fillRect(wallX, y, WT, DOOR_2.y - y);
-      ctx.fillRect(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h));
+      const wallX = x;
+      wH(x, y, w, WT, true);                  // top
+      wV(x, y, WT, h, true);                  // left placeholder
+      wV(x + w, y, WT, h + WT, false);        // right (canvas edge)
+      wH(x, y + h, w + WT, WT, false);        // bottom
+      wV(wallX, y, WT, DOOR_2.y - y, true);                              // left-top
+      wV(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h), true); // left-bottom
       drawDoor(ctx, isLocked || doorClosed, p, true);
     } else {
-      ctx.fillRect(z.x, z.y, z.w, WT);
-      ctx.fillRect(z.x, z.y + z.h, z.w, WT);
-      ctx.fillRect(z.x, z.y, WT, z.h);
-      ctx.fillRect(z.x + z.w, z.y, WT, z.h + WT);
+      wH(z.x, z.y, z.w, WT, true);
+      wH(z.x, z.y + z.h, z.w, WT, false);
+      wV(z.x, z.y, WT, z.h, true);
+      wV(z.x + z.w, z.y, WT, z.h + WT, false);
     }
+
+    // ── Inner-room drop shadow — creates enclosed-space depth ─────────────
+    const SD = 14; // shadow reach in px
+    const sa = p.bg === "#1e1810" ? 0.22 : 0.16;
+    const { x: zx, y: zy, w: zw, h: zh } = z;
+    // Top wall shadow
+    const gT = ctx.createLinearGradient(0, zy + WT, 0, zy + WT + SD);
+    gT.addColorStop(0, `rgba(0,0,0,${sa})`); gT.addColorStop(1, "transparent");
+    ctx.fillStyle = gT; ctx.fillRect(zx + WT, zy + WT, zw - WT, SD);
+    // Left wall shadow
+    const gL = ctx.createLinearGradient(zx + WT, 0, zx + WT + SD, 0);
+    gL.addColorStop(0, `rgba(0,0,0,${sa})`); gL.addColorStop(1, "transparent");
+    ctx.fillStyle = gL; ctx.fillRect(zx + WT, zy + WT, SD, zh - WT);
+    // Right wall shadow
+    const gR = ctx.createLinearGradient(zx + zw + WT, 0, zx + zw + WT - SD, 0);
+    gR.addColorStop(0, `rgba(0,0,0,${sa})`); gR.addColorStop(1, "transparent");
+    ctx.fillStyle = gR; ctx.fillRect(zx + zw + WT - SD, zy + WT, SD, zh - WT);
+    // Bottom wall shadow
+    const gB = ctx.createLinearGradient(0, zy + zh + WT, 0, zy + zh + WT - SD);
+    gB.addColorStop(0, `rgba(0,0,0,${sa})`); gB.addColorStop(1, "transparent");
+    ctx.fillStyle = gB; ctx.fillRect(zx + WT, zy + zh + WT - SD, zw - WT, SD);
 
     // Wall border highlight — style-tinted for private offices
     const borderColor =
