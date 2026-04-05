@@ -5,164 +5,164 @@ import {
   PRIVATE_OFFICE_ZONE, PRIVATE_OFFICE_2_ZONE, detectZone, pctToPx, pxToPct,
 } from "../zones";
 
-const AVATAR_R = 20;
+const AVATAR_R = 18;
 const SPEED = 260;
 const LERP_SPEED = 12;
 
 const STATUS_COLORS: Record<UserStatus, string> = {
-  available:   "#3dffa0",
-  "deep-work": "#ff6464",
-  "on-a-call": "#ffbe32",
+  available:   "#30F090",
+  "deep-work": "#F84040",
+  "on-a-call": "#F8C820",
 };
 
 // ─── Theme palettes ────────────────────────────────────────────────────────────
-// Both themes use the warm earthy Gather.town aesthetic.
-// Dark = nighttime office  |  Light = daytime office
+// SNES/GBA-era flat colour palette. No gradients on structural elements.
+// Dark = dungeon / night office  |  Light = daytime office
 function palette(isDark: boolean) {
   return isDark ? {
-    // ── Base floor (dark warm stone) ─────────────────────────────────────────
-    bg:            "#1e1810",
-    tile1:         "#221c12",
-    tile2:         "#261f14",
-    grout:         "rgba(255,220,150,0.05)",
-    pathFill:      "rgba(255,220,150,0.07)",
+    // ── Base floor (dark stone — Pokémon dungeon) ────────────────────────────
+    bg:            "#18140C",
+    tile1:         "#201A10",
+    tile2:         "#281E14",
+    grout:         "#100C08",
+    pathFill:      "#302418",
     // ── Room floors ──────────────────────────────────────────────────────────
-    wood1:         "rgba(155,100,38,0.92)",
-    wood2:         "rgba(175,115,48,0.88)",
-    woodGrain:     "rgba(90,50,10,0.3)",
-    warmCarpet:    "rgba(130,35,25,0.92)",
-    warmCarpetAlt: "rgba(115,28,20,0.92)",
-    warmCarpetLine:"rgba(190,70,50,0.07)",
-    coolCarpet:    "rgba(20,90,68,0.9)",
-    coolCarpetAlt: "rgba(16,80,60,0.9)",
-    coolCarpetLine:"rgba(40,160,120,0.07)",
-    // ── Walls ────────────────────────────────────────────────────────────────
-    wallFill:      "#3a2a18",
-    wallHighlight: "#5a4228",   // lighter face — top/inner edge of each wall
-    wallShadow:    "#1a1008",   // darker base — bottom/outer edge
-    wallBorder:    "rgba(255,200,120,0.15)",
-    // ── Lights ───────────────────────────────────────────────────────────────
-    lightGlow:     "rgba(255,220,130,0.10)",
-    lightFixture:  "rgba(255,240,190,0.95)",
-    lightRing:     "rgba(255,225,140,0.35)",
-    // ── Labels ───────────────────────────────────────────────────────────────
-    zoneLabel:     "rgba(255,230,180,0.18)",
-    // ── Avatar ───────────────────────────────────────────────────────────────
-    avatarFill:    "#4a3820",
-    avatarMeFill:  "#6c63ff",
-    label:         "rgba(255,240,200,0.9)",
-    labelMuted:    "rgba(255,240,200,0.5)",
-    indicator:     "rgba(30,22,12,0.9)",
-    indicatorTxt:  "#f0e8d0",
+    wood1:         "#884820",
+    wood2:         "#A05828",
+    woodGrain:     "#602808",
+    warmCarpet:    "#883020",
+    warmCarpetAlt: "#702818",
+    warmCarpetLine:"#A84030",
+    coolCarpet:    "#185848",
+    coolCarpetAlt: "#104038",
+    coolCarpetLine:"#208868",
+    // ── Walls (SNES flat — no gradients) ─────────────────────────────────────
+    wallFill:      "#503020",
+    wallHighlight: "#785038",  // top/left bright face
+    wallShadow:    "#281408",  // bottom/right shadow face
+    wallBorder:    "#C89050",
+    // ── Ceiling light markers ─────────────────────────────────────────────────
+    lightGlow:     "#F8E890",
+    lightFixture:  "#F0D060",
+    lightRing:     "#C8A828",
+    // ── Zone labels ──────────────────────────────────────────────────────────
+    zoneLabel:     "#E8D890",
+    // ── Avatar / UI ──────────────────────────────────────────────────────────
+    avatarFill:    "#584028",
+    avatarMeFill:  "#5848D8",
+    label:         "#F0E8D0",
+    labelMuted:    "#A09070",
+    indicator:     "#201408",
+    indicatorTxt:  "#F0E8D0",
     // ── Furniture ────────────────────────────────────────────────────────────
-    deskDark:      "rgba(90,58,22,0.95)",
-    deskMid:       "rgba(115,76,28,0.9)",
-    deskLight:     "rgba(148,100,38,0.75)",
-    deskEdge:      "rgba(185,132,55,0.55)",
-    chairFill:     "rgba(38,28,18,0.95)",
-    chairStroke:   "rgba(110,85,45,0.75)",
-    screenFill:    "rgba(8,18,42,0.97)",
-    screenGlow:    "rgba(60,140,255,0.55)",
-    screenGlowOut: "rgba(60,140,255,0.09)",
-    tableWar:      "rgba(75,48,20,0.95)",
-    tableWarEdge:  "rgba(148,100,40,0.65)",
-    chairWarFill:  "rgba(80,20,14,0.9)",
-    chairWarStroke:"rgba(185,65,45,0.75)",
-    sofaFill:      "rgba(18,72,55,0.92)",
-    sofaStroke:    "rgba(38,155,115,0.65)",
-    cushionFill:   "rgba(24,100,78,0.75)",
-    coffeeTable:   "rgba(85,58,22,0.9)",
-    tvFill:        "rgba(8,10,22,0.97)",
-    tvScreen:      "rgba(20,55,175,0.55)",
-    plantPot:      "rgba(110,62,22,0.9)",
-    plantLeaf:     "rgba(28,165,58,0.95)",
-    plantLeaf2:    "rgba(45,195,72,0.72)",
-    bookShelf:     "rgba(68,45,18,0.9)",
-    bookEdge:      "rgba(108,75,28,0.65)",
-    rugWarm:       "rgba(200,130,55,0.06)",
-    rugCool:       "rgba(40,190,140,0.06)",
-    shadow:        "rgba(0,0,0,0.6)",
-    doorFill:      "rgba(155,115,48,0.75)",
-    doorText:      "rgba(220,185,100,0.95)",
-    counterFill:   "rgba(68,50,28,0.75)",
-    counterTop:    "rgba(88,68,35,0.65)",
-    sinkFill:      "rgba(40,55,75,0.9)",
-    glassBlue:     "rgba(80,165,245,0.38)",
-    mugFill:       "rgba(225,185,85,0.8)",
-    whiteboard:    "rgba(240,235,210,0.12)",
-    whiteboardLine:"rgba(120,180,255,0.55)",
+    deskDark:      "#583010",
+    deskMid:       "#784018",
+    deskLight:     "#A05820",
+    deskEdge:      "#C07828",
+    chairFill:     "#281808",
+    chairStroke:   "#705030",
+    screenFill:    "#080C20",
+    screenGlow:    "#3060E8",
+    screenGlowOut: "#102880",
+    tableWar:      "#503010",
+    tableWarEdge:  "#A06020",
+    chairWarFill:  "#601010",
+    chairWarStroke:"#C04030",
+    sofaFill:      "#104838",
+    sofaStroke:    "#208868",
+    cushionFill:   "#186050",
+    coffeeTable:   "#583818",
+    tvFill:        "#080810",
+    tvScreen:      "#1830B0",
+    plantPot:      "#784018",
+    plantLeaf:     "#18A030",
+    plantLeaf2:    "#28C040",
+    bookShelf:     "#402808",
+    bookEdge:      "#704018",
+    rugWarm:       "rgba(200,130,55,0.08)",
+    rugCool:       "rgba(40,190,140,0.08)",
+    shadow:        "rgba(0,0,0,0.55)",
+    doorFill:      "#A07030",
+    doorText:      "#F0D880",
+    counterFill:   "#503018",
+    counterTop:    "#704020",
+    sinkFill:      "#284858",
+    glassBlue:     "#4898D8",
+    mugFill:       "#D8B020",
+    whiteboard:    "#F0ECD8",
+    whiteboardLine:"#2840D8",
   } : {
-    // ── Base floor (warm sandstone — the Gather.town corridor look) ──────────
-    bg:            "#d0bc90",
-    tile1:         "#d4c095",
-    tile2:         "#d8c49a",
-    grout:         "rgba(0,0,0,0.09)",
-    pathFill:      "rgba(0,0,0,0.07)",
+    // ── Base floor (warm sandy — Pokémon town tiles) ──────────────────────────
+    bg:            "#A89860",
+    tile1:         "#B8A870",
+    tile2:         "#C0B078",
+    grout:         "#806840",
+    pathFill:      "#D0C080",
     // ── Room floors ──────────────────────────────────────────────────────────
-    wood1:         "rgba(198,138,58,0.98)",
-    wood2:         "rgba(182,122,48,0.95)",
-    woodGrain:     "rgba(118,68,15,0.25)",
-    warmCarpet:    "rgba(178,58,42,0.95)",
-    warmCarpetAlt: "rgba(160,50,36,0.95)",
-    warmCarpetLine:"rgba(225,92,70,0.08)",
-    coolCarpet:    "rgba(32,128,98,0.92)",
-    coolCarpetAlt: "rgba(26,114,86,0.92)",
-    coolCarpetLine:"rgba(48,175,140,0.08)",
-    // ── Walls ────────────────────────────────────────────────────────────────
-    wallFill:      "#6b4e28",
-    wallHighlight: "#9a7240",   // lighter face — top/inner edge of each wall
-    wallShadow:    "#3d2a12",   // darker base — bottom/outer edge
-    wallBorder:    "rgba(0,0,0,0.28)",
-    // ── Lights ───────────────────────────────────────────────────────────────
-    lightGlow:     "rgba(255,235,155,0.28)",
-    lightFixture:  "rgba(230,200,80,0.95)",
-    lightRing:     "rgba(245,215,105,0.5)",
-    // ── Labels ───────────────────────────────────────────────────────────────
-    zoneLabel:     "rgba(255,255,255,0.55)",
-    // ── Avatar ───────────────────────────────────────────────────────────────
-    avatarFill:    "#9e845a",
-    avatarMeFill:  "#5b52ee",
-    label:         "rgba(30,18,8,0.92)",
-    labelMuted:    "rgba(30,18,8,0.55)",
-    indicator:     "rgba(238,228,205,0.95)",
-    indicatorTxt:  "#28180a",
+    wood1:         "#C87830",
+    wood2:         "#E09040",
+    woodGrain:     "#885018",
+    warmCarpet:    "#B03828",
+    warmCarpetAlt: "#902818",
+    warmCarpetLine:"#D85840",
+    coolCarpet:    "#207868",
+    coolCarpetAlt: "#186058",
+    coolCarpetLine:"#30B090",
+    // ── Walls (SNES flat — no gradients) ─────────────────────────────────────
+    wallFill:      "#785030",
+    wallHighlight: "#A87040",  // top/left bright face
+    wallShadow:    "#402010",  // bottom/right shadow face
+    wallBorder:    "#E0A040",
+    // ── Ceiling light markers ─────────────────────────────────────────────────
+    lightGlow:     "#F8F0A0",
+    lightFixture:  "#F0D840",
+    lightRing:     "#C8A020",
+    // ── Zone labels ──────────────────────────────────────────────────────────
+    zoneLabel:     "#402010",
+    // ── Avatar / UI ──────────────────────────────────────────────────────────
+    avatarFill:    "#907050",
+    avatarMeFill:  "#4840C8",
+    label:         "#201008",
+    labelMuted:    "#605040",
+    indicator:     "#E8D8B0",
+    indicatorTxt:  "#201008",
     // ── Furniture ────────────────────────────────────────────────────────────
-    deskDark:      "rgba(138,90,38,0.97)",
-    deskMid:       "rgba(165,112,48,0.92)",
-    deskLight:     "rgba(195,142,65,0.75)",
-    deskEdge:      "rgba(215,168,82,0.58)",
-    chairFill:     "rgba(55,40,22,0.85)",
-    chairStroke:   "rgba(118,95,52,0.75)",
-    screenFill:    "rgba(12,18,48,0.95)",
-    screenGlow:    "rgba(55,105,235,0.5)",
-    screenGlowOut: "rgba(55,105,235,0.08)",
-    tableWar:      "rgba(108,70,28,0.92)",
-    tableWarEdge:  "rgba(165,115,48,0.68)",
-    chairWarFill:  "rgba(142,42,28,0.82)",
-    chairWarStroke:"rgba(200,78,56,0.68)",
-    sofaFill:      "rgba(24,108,82,0.85)",
-    sofaStroke:    "rgba(35,168,125,0.65)",
-    cushionFill:   "rgba(30,128,96,0.68)",
-    coffeeTable:   "rgba(138,98,42,0.88)",
-    tvFill:        "rgba(12,14,32,0.95)",
-    tvScreen:      "rgba(32,62,195,0.5)",
-    plantPot:      "rgba(155,92,35,0.95)",
-    plantLeaf:     "rgba(38,188,65,0.98)",
-    plantLeaf2:    "rgba(58,215,82,0.78)",
-    bookShelf:     "rgba(108,72,28,0.88)",
-    bookEdge:      "rgba(148,102,42,0.62)",
-    rugWarm:       "rgba(215,155,65,0.08)",
-    rugCool:       "rgba(38,195,148,0.08)",
-    shadow:        "rgba(0,0,0,0.22)",
-    doorFill:      "rgba(138,102,42,0.85)",
-    doorText:      "rgba(68,48,18,0.95)",
-    counterFill:   "rgba(168,128,72,0.68)",
-    counterTop:    "rgba(188,148,88,0.62)",
-    sinkFill:      "rgba(145,165,195,0.75)",
-    glassBlue:     "rgba(72,148,228,0.35)",
-    mugFill:       "rgba(215,162,48,0.85)",
-    whiteboard:    "rgba(255,255,248,0.82)",
-    whiteboardLine:"rgba(48,78,215,0.48)",
+    deskDark:      "#805020",
+    deskMid:       "#A06828",
+    deskLight:     "#C88030",
+    deskEdge:      "#E0A038",
+    chairFill:     "#382010",
+    chairStroke:   "#806040",
+    screenFill:    "#0C1028",
+    screenGlow:    "#2858D8",
+    screenGlowOut: "#1038A0",
+    tableWar:      "#684020",
+    tableWarEdge:  "#B07830",
+    chairWarFill:  "#901820",
+    chairWarStroke:"#E04838",
+    sofaFill:      "#186858",
+    sofaStroke:    "#28A880",
+    cushionFill:   "#1E8870",
+    coffeeTable:   "#806030",
+    tvFill:        "#0C0C18",
+    tvScreen:      "#1840C8",
+    plantPot:      "#906028",
+    plantLeaf:     "#20C038",
+    plantLeaf2:    "#30E050",
+    bookShelf:     "#603820",
+    bookEdge:      "#905028",
+    rugWarm:       "rgba(215,155,65,0.1)",
+    rugCool:       "rgba(38,195,148,0.1)",
+    shadow:        "rgba(0,0,0,0.3)",
+    doorFill:      "#C08838",
+    doorText:      "#402010",
+    counterFill:   "#B08840",
+    counterTop:    "#D0A850",
+    sinkFill:      "#9AACC8",
+    glassBlue:     "#4898D8",
+    mugFill:       "#E8C030",
+    whiteboard:    "#F8F8F0",
+    whiteboardLine:"#2840D8",
   };
 }
 
@@ -181,115 +181,128 @@ function noShadow(ctx: CanvasRenderingContext2D) {
   ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
 }
 
-// ─── Background — individual 32 px stone tiles, Gather.town style ─────────────
+// ─── Background — 16 px SNES/Pokémon-style flat stone tiles ──────────────────
 function drawBackground(ctx: CanvasRenderingContext2D, p: P) {
-  const isDark = p.bg === "#1e1810";
-  const T = 32; // tile size matches Gather.town's 32 px grid
+  const isDark = p.bg === "#18140C";
+  const T = 16; // 16 px tiles — classic SNES/GBA tile size
 
-  // Four tile shades — slight variation per tile, no repeating checkerboard
+  // Four stone shades — no gradients, purely flat
   const regularTiles = isDark
-    ? ["#241a0e", "#281d10", "#221708", "#2c1f12"] as const
-    : ["#cabb86", "#cebf8a", "#c6b780", "#d2c592"] as const;
-  // Corridor / path tiles — slightly warmer / lighter
+    ? ["#201A10", "#281E14", "#1C1608", "#302418"] as const
+    : ["#B0A068", "#B8A870", "#A89860", "#C0B078"] as const;
+  // Corridor / path tiles — clearly warmer/lighter than open floor
   const pathTiles = isDark
-    ? ["#30200e", "#34220e", "#2e1e0c", "#382510"] as const
-    : ["#d8cb8e", "#dccf94", "#d4c788", "#e0d39a"] as const;
-  // Grout is the base colour — tiles are drawn 1 px inset so grout shows through
-  const groutColor = isDark ? "#120d08" : "#a08c5c";
+    ? ["#382810", "#402E14", "#30220C", "#4A3418"] as const
+    : ["#C8B068", "#D0B870", "#C0A860", "#D8C078"] as const;
 
-  // Corridor rectangles [x1, y1, x2, y2]
+  // Grout line colour
+  ctx.fillStyle = p.grout;
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  // Corridor paths connecting rooms [x1,y1,x2,y2]
   const corridors: [number, number, number, number][] = [
-    [300,  90, 900, 180],   // top corridor: office 1 ↔ office 2 doors
-    [545, 180, 655, 245],   // spine down to War Room
-    [755, 488, 910, 570],   // War Room → Lounge
+    [300,  90, 900, 195],   // top hall: office 1 door ↔ office 2 door
+    [530, 190, 670, 250],   // spine down to War Room
+    [750, 480, 920, 580],   // War Room → Lounge connector
   ];
   function inCorridor(px: number, py: number) {
     return corridors.some(([x1,y1,x2,y2]) => px >= x1 && px < x2 && py >= y1 && py < y2);
   }
 
-  // Base grout fill
-  ctx.fillStyle = groutColor;
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-  // Individual tiles (1 px inset → grout line visible between every tile)
+  // Draw every 16×16 tile — 1 px inset so grout line shows between tiles
   for (let tx = 0; tx < CANVAS_W; tx += T) {
     for (let ty = 0; ty < CANVAS_H; ty += T) {
-      const col = Math.floor(tx / T);
-      const row = Math.floor(ty / T);
-      // Pseudo-random index: avoids any repeating diagonal pattern
+      const col = tx / T | 0;
+      const row = ty / T | 0;
       const v = ((col * 13 + row * 7) ^ (col + row)) & 3;
       ctx.fillStyle = inCorridor(tx + T / 2, ty + T / 2) ? pathTiles[v] : regularTiles[v];
       ctx.fillRect(tx + 1, ty + 1, T - 2, T - 2);
     }
   }
+
+  // Darker 2-px border on corridor edges for the "path" look
+  ctx.fillStyle = isDark ? "#100C06" : "#887040";
+  for (const [x1,y1,x2,y2] of corridors) {
+    ctx.fillRect(x1, y1, x2 - x1, 2);     // top edge
+    ctx.fillRect(x1, y2 - 2, x2 - x1, 2); // bottom edge
+    ctx.fillRect(x1, y1, 2, y2 - y1);     // left edge
+    ctx.fillRect(x2 - 2, y1, 2, y2 - y1); // right edge
+  }
 }
 
-// ─── Room floors ───────────────────────────────────────────────────────────────
+// ─── Room floors — flat SNES-style tiles ──────────────────────────────────────
 function drawWoodFloor(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, p: P) {
+  // Base fill
   ctx.fillStyle = p.wood1;
   ctx.fillRect(x, y, w, h);
-  const plankH = 20;
-  for (let py = y; py < y + h; py += plankH) {
-    ctx.fillStyle = (Math.floor((py - y) / plankH) % 2 === 0) ? p.wood1 : p.wood2;
-    ctx.fillRect(x, py, w, plankH);
-    // Grain lines
-    ctx.strokeStyle = p.woodGrain;
-    ctx.lineWidth = 0.5;
-    ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x + w, py); ctx.stroke();
-    // Random knot/grain accent
-    const kx = x + ((py * 37 + 131) % w);
-    ctx.beginPath(); ctx.moveTo(kx, py + 4); ctx.lineTo(kx + 18, py + 10); ctx.stroke();
+  // 16 px plank stripes — alternating light/dark, hard edges (no gradients)
+  const PH = 16;
+  for (let py = y; py < y + h; py += PH) {
+    const even = Math.floor((py - y) / PH) % 2 === 0;
+    ctx.fillStyle = even ? p.wood1 : p.wood2;
+    ctx.fillRect(x, py, w, Math.min(PH, y + h - py));
+    // Single-pixel dark divider line at the top of each plank
+    ctx.fillStyle = p.woodGrain;
+    ctx.fillRect(x, py, w, 1);
+  }
+  // Plank end joints — vertical lines every ~80px, offset per row
+  ctx.fillStyle = p.woodGrain;
+  for (let py = y; py < y + h; py += PH) {
+    const offset = Math.floor((py - y) / PH) % 3 * 28;
+    for (let px = x + offset; px < x + w; px += 80) {
+      ctx.fillRect(px, py, 1, PH);
+    }
   }
 }
 
-function drawCarpet(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, c1: string, c2: string, line: string) {
-  // Solid base
+function drawCarpet(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, c1: string, c2: string, _line: string) {
+  // Solid base colour
   ctx.fillStyle = c1;
   ctx.fillRect(x, y, w, h);
-  // Subtle horizontal stripe texture (alternating bands)
-  const stripeH = 14;
-  for (let ty = y; ty < y + h; ty += stripeH * 2) {
-    ctx.fillStyle = c2;
-    ctx.fillRect(x, ty + stripeH, w, Math.min(stripeH, y + h - (ty + stripeH)));
+  // 8 px checker pattern — classic SNES carpet texture
+  const CS = 8;
+  ctx.fillStyle = c2;
+  for (let cx2 = x; cx2 < x + w; cx2 += CS) {
+    for (let cy2 = y; cy2 < y + h; cy2 += CS) {
+      const col = (cx2 - x) / CS | 0;
+      const row = (cy2 - y) / CS | 0;
+      if ((col + row) % 2 === 0) {
+        ctx.fillRect(cx2, cy2, Math.min(CS, x + w - cx2), Math.min(CS, y + h - cy2));
+      }
+    }
   }
-  // Very subtle line accents
-  ctx.strokeStyle = line;
-  ctx.lineWidth = 0.5;
-  for (let ty = y; ty <= y + h; ty += stripeH) {
-    ctx.beginPath(); ctx.moveTo(x, ty); ctx.lineTo(x + w, ty); ctx.stroke();
-  }
+  // 1-px dark border around room carpet for definition
+  ctx.fillStyle = c2;
+  ctx.fillRect(x, y, w, 2);
+  ctx.fillRect(x, y + h - 2, w, 2);
+  ctx.fillRect(x, y, 2, h);
+  ctx.fillRect(x + w - 2, y, 2, h);
 }
 
-// ─── Ceiling lights ────────────────────────────────────────────────────────────
+// ─── Ceiling lights — pixel-art flat fixtures, no gradients ───────────────────
 function drawLights(ctx: CanvasRenderingContext2D, p: P) {
   const lights = [
-    { x: 155, y: 130, r: 130 },   // Private Office
-    { x: 580, y: 350, r: 140 },   // War Room left
-    { x: 700, y: 430, r: 110 },   // War Room right
-    { x: 1040, y: 640, r: 130 },  // Lounge
-    { x: 380, y: 100, r: 90 },    // Open floor 1
-    { x: 820, y: 160, r: 80 },    // Open floor 2
+    { x: 155, y: 28  },   // Private Office
+    { x: 1045, y: 28 },   // Private Office 2
+    { x: 598, y: 280 },   // War Room
+    { x: 1040, y: 590},   // Lounge
+    { x: 380, y: 210 },   // Open floor 1
+    { x: 820, y: 210 },   // Open floor 2
   ];
   for (const l of lights) {
-    const g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r);
-    g.addColorStop(0, p.lightGlow);
-    g.addColorStop(1, "transparent");
-    ctx.fillStyle = g;
-    ctx.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2);
-    // Fixture dot
-    ctx.beginPath(); ctx.arc(l.x, l.y, 4, 0, Math.PI * 2);
+    // Ceiling mount — 2-px square ring (pixel art fixture)
+    ctx.fillStyle = p.wallShadow;
+    ctx.fillRect(l.x - 7, l.y - 3, 14, 6);
     ctx.fillStyle = p.lightFixture;
-    ctx.fill();
-    ctx.beginPath(); ctx.arc(l.x, l.y, 9, 0, Math.PI * 2);
-    ctx.strokeStyle = p.lightRing;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    ctx.fillRect(l.x - 5, l.y - 2, 10, 4);
+    ctx.fillStyle = p.lightGlow;
+    ctx.fillRect(l.x - 3, l.y - 1, 6, 2);
   }
 }
 
 // ─── Per-style office floor ───────────────────────────────────────────────────
 function drawOfficeFloor(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, style: number, p: P) {
-  const isDark = p.bg === "#1e1810";
+  const isDark = p.bg === "#18140C";
   switch (style) {
     case 1: { // Marble Suite — white/cream with grey veining + gold grout
       ctx.fillStyle = isDark ? "#16140e" : "#f5f2ea";
@@ -406,51 +419,55 @@ function drawZones(
     if (z.id === "private-office-2" && offices[1].ownerName) {
       label = `${offices[1].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
     }
-    ctx.font = "bold 12px Inter, system-ui, sans-serif";
+    ctx.font = "bold 10px 'Courier New', monospace";
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.fillStyle = p.zoneLabel;
-    ctx.fillText(label, z.x + z.w / 2, z.y + z.h - 16);
+    ctx.fillText(label, z.x + z.w / 2, z.y + z.h - 14);
 
     // Locked state
     const isLocked =
       (z.id === "private-office" && offices[0].locked) ||
       (z.id === "private-office-2" && offices[1].locked);
 
-    // ── Wall helpers — 3-face depth like Gather.town ──────────────────────
-    const FF = 10; // front-face extension (the visible "height" of the wall)
-    const TF = Math.ceil(WT * 0.4); // top-face strip (lit from above)
+    // ── Wall helpers — SNES-style 3-tone flat blocks (no gradients) ───────────
+    const FF = 8; // front-face extension (wall "height" visible in room)
+    const TF = 3; // top/left highlight strip width
 
-    // Horizontal wall.  roomBelow=true → top-of-room wall; shows front face below.
+    // Horizontal wall.  roomBelow=true → top wall; shows front face below.
     const wH = (wx: number, wy: number, ww: number, wh2: number, roomBelow: boolean) => {
+      // Main body
+      ctx.fillStyle = p.wallFill;
+      ctx.fillRect(wx, wy, ww, wh2);
+      // Top highlight (2-3px bright strip)
+      ctx.fillStyle = p.wallHighlight;
+      ctx.fillRect(wx, wy, ww, TF);
       if (roomBelow) {
-        // Top surface (lit from above) — lighter
-        ctx.fillStyle = p.wallHighlight; ctx.fillRect(wx, wy, ww, TF);
-        // Main wall body
-        ctx.fillStyle = p.wallFill;      ctx.fillRect(wx, wy + TF, ww, wh2 - TF);
-        // Front face — extends INTO room below wall (shows wall height)
-        ctx.fillStyle = p.wallShadow;    ctx.fillRect(wx, wy + wh2, ww, FF);
-        const fg = ctx.createLinearGradient(0, wy + wh2, 0, wy + wh2 + FF);
-        fg.addColorStop(0, "rgba(0,0,0,0.18)"); fg.addColorStop(1, "rgba(0,0,0,0.6)");
-        ctx.fillStyle = fg; ctx.fillRect(wx, wy + wh2, ww, FF);
+        // Front face — dark strip below wall (shows wall has height, like Pokémon buildings)
+        ctx.fillStyle = p.wallShadow;
+        ctx.fillRect(wx, wy + wh2, ww, FF);
+        // Single-pixel black line at junction for crispness
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(wx, wy + wh2 + FF, ww, 1);
       } else {
-        // Bottom wall — only top-face visible (room is above, no front face)
-        ctx.fillStyle = p.wallFill;      ctx.fillRect(wx, wy, ww, wh2);
-        ctx.fillStyle = p.wallHighlight; ctx.fillRect(wx, wy, ww, TF);
+        // Bottom wall — single-pixel shadow on underside
+        ctx.fillStyle = p.wallShadow;
+        ctx.fillRect(wx, wy + wh2 - 2, ww, 2);
       }
     };
 
-    // Vertical wall.  roomRight=true → left-of-room wall; shows thin right front face.
+    // Vertical wall.  roomRight=true → left wall; shows right shadow face.
     const wV = (wx: number, wy: number, ww: number, wh2: number, roomRight: boolean) => {
-      ctx.fillStyle = p.wallFill;      ctx.fillRect(wx, wy, ww, wh2);
-      ctx.fillStyle = p.wallHighlight; ctx.fillRect(wx, wy, TF, wh2);
+      ctx.fillStyle = p.wallFill;
+      ctx.fillRect(wx, wy, ww, wh2);
+      ctx.fillStyle = p.wallHighlight;
+      ctx.fillRect(wx, wy, TF, wh2);
       if (roomRight) {
-        // Thin right-face shadow (wall's visible side edge facing into room)
-        const RF = 5;
-        ctx.fillStyle = p.wallShadow; ctx.fillRect(wx + ww, wy, RF, wh2);
-        const rg = ctx.createLinearGradient(wx + ww, 0, wx + ww + RF, 0);
-        rg.addColorStop(0, "rgba(0,0,0,0.45)"); rg.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = rg; ctx.fillRect(wx + ww, wy, RF, wh2);
+        // Right shadow face (3px)
+        ctx.fillStyle = p.wallShadow;
+        ctx.fillRect(wx + ww, wy, 3, wh2);
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(wx + ww + 3, wy, 1, wh2);
       }
     };
 
@@ -480,26 +497,13 @@ function drawZones(
       wV(z.x + z.w, z.y, WT, z.h + WT, false);
     }
 
-    // ── Inner-room drop shadow — creates enclosed-space depth ─────────────
-    const SD = 14; // shadow reach in px
-    const sa = p.bg === "#1e1810" ? 0.22 : 0.16;
+    // ── Inner-room dark border line (1px, pixel-art style) ───────────────────
     const { x: zx, y: zy, w: zw, h: zh } = z;
-    // Top wall shadow
-    const gT = ctx.createLinearGradient(0, zy + WT, 0, zy + WT + SD);
-    gT.addColorStop(0, `rgba(0,0,0,${sa})`); gT.addColorStop(1, "transparent");
-    ctx.fillStyle = gT; ctx.fillRect(zx + WT, zy + WT, zw - WT, SD);
-    // Left wall shadow
-    const gL = ctx.createLinearGradient(zx + WT, 0, zx + WT + SD, 0);
-    gL.addColorStop(0, `rgba(0,0,0,${sa})`); gL.addColorStop(1, "transparent");
-    ctx.fillStyle = gL; ctx.fillRect(zx + WT, zy + WT, SD, zh - WT);
-    // Right wall shadow
-    const gR = ctx.createLinearGradient(zx + zw + WT, 0, zx + zw + WT - SD, 0);
-    gR.addColorStop(0, `rgba(0,0,0,${sa})`); gR.addColorStop(1, "transparent");
-    ctx.fillStyle = gR; ctx.fillRect(zx + zw + WT - SD, zy + WT, SD, zh - WT);
-    // Bottom wall shadow
-    const gB = ctx.createLinearGradient(0, zy + zh + WT, 0, zy + zh + WT - SD);
-    gB.addColorStop(0, `rgba(0,0,0,${sa})`); gB.addColorStop(1, "transparent");
-    ctx.fillStyle = gB; ctx.fillRect(zx + WT, zy + zh + WT - SD, zw - WT, SD);
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fillRect(zx + WT, zy + WT, zw - WT, 2);     // top inner edge
+    ctx.fillRect(zx + WT, zy + WT, 2, zh - WT);     // left inner edge
+    ctx.fillRect(zx + zw + WT - 2, zy + WT, 2, zh - WT); // right inner edge
+    ctx.fillRect(zx + WT, zy + zh + WT - 2, zw - WT, 2); // bottom inner edge
 
     // Wall border highlight — style-tinted for private offices
     const borderColor =
@@ -532,46 +536,53 @@ function drawZones(
   }
 }
 
-// ─── Door ─────────────────────────────────────────────────────────────────────
+// ─── Door — pixel art flat door ────────────────────────────────────────────────
 function drawDoor(ctx: CanvasRenderingContext2D, closed: boolean, p: P, isOffice2: boolean) {
   const door = isOffice2 ? DOOR_2 : DOOR;
   const { y, h } = door;
   const wallX = isOffice2
-    ? PRIVATE_OFFICE_2_ZONE.x          // left wall of office 2
-    : PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w; // right wall of office 1
+    ? PRIVATE_OFFICE_2_ZONE.x
+    : PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w;
+
+  const DW = 10; // door panel width
 
   if (closed) {
+    // Closed door panel — dark wood with frame
+    const dx = isOffice2 ? wallX : wallX - DW;
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(dx - 1, y - 1, DW + 2, h + 2);
     ctx.fillStyle = p.doorFill;
-    if (isOffice2) {
-      rr(ctx, wallX, y, 10, h, 2); ctx.fill();
-      ctx.font = "13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("🔒", wallX + 5, y + h / 2);
-    } else {
-      rr(ctx, wallX - 10, y, 10, h, 2); ctx.fill();
-      ctx.font = "13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("🔒", wallX - 5, y + h / 2);
-    }
+    ctx.fillRect(dx, y, DW, h);
+    // Door highlight (top strip)
+    ctx.fillStyle = p.wallHighlight;
+    ctx.fillRect(dx, y, DW, 2);
+    // Lock icon — bright yellow square
+    ctx.fillStyle = "#F8C820";
+    ctx.fillRect(dx + 2, y + h / 2 - 3, 6, 6);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(dx + 3, y + h / 2 - 2, 4, 4);
+    ctx.fillStyle = "#F8C820";
+    ctx.fillRect(dx + 4, y + h / 2 - 4, 2, 3);
   } else {
-    ctx.strokeStyle = p.doorFill;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    if (isOffice2) {
-      ctx.moveTo(wallX, y); ctx.lineTo(wallX + 18, y + h * 0.65);
-    } else {
-      ctx.moveTo(wallX, y); ctx.lineTo(wallX - 18, y + h * 0.65);
-    }
-    ctx.stroke();
+    // Open door — bright gap in wall + angled door panel
+    const gx = isOffice2 ? wallX : wallX - DW;
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(gx, y, DW, h);
+    // Door ajar (4-px strip at angle)
+    ctx.fillStyle = p.doorFill;
+    ctx.fillRect(isOffice2 ? wallX + DW : wallX - DW - 4, y, 4, h);
   }
 
-  ctx.font = "10px Inter, system-ui, sans-serif";
+  // "Open/Close" hint text
+  ctx.font = "bold 9px 'Courier New', monospace";
   ctx.fillStyle = p.doorText;
   ctx.textBaseline = "middle";
   if (isOffice2) {
     ctx.textAlign = "right";
-    ctx.fillText(closed ? "Open" : "Close", wallX - 4, y + h / 2);
+    ctx.fillText(closed ? "OPEN" : "CLOSE", wallX - 2, y + h / 2);
   } else {
     ctx.textAlign = "left";
-    ctx.fillText(closed ? "Open" : "Close", wallX + 10, y + h / 2);
+    ctx.fillText(closed ? "OPEN" : "CLOSE", wallX + DW + 2, y + h / 2);
   }
 }
 
@@ -1303,122 +1314,157 @@ function drawLambo(ctx: CanvasRenderingContext2D, cx: number, cy: number, color:
   ctx.restore();
 }
 
-// ─── Avatar ────────────────────────────────────────────────────────────────────
+// ─── Avatar — 16-bit pixel-art sprite (8×16 grid at PS=3 → 24×48 px) ─────────
 function drawAvatar(
   ctx: CanvasRenderingContext2D,
   x: number, y: number,
   user: User,
   isMe: boolean,
-  p: P,
+  _p: P,
   speakingLevel: number,
   now: number
 ) {
   const statusColor = STATUS_COLORS[user.status];
 
-  // Deterministic per-user colours from name
+  // Deterministic per-user colours — SNES-era saturated palette
   const hash = user.name.split("").reduce((a, c) => (Math.imul(a, 31) + c.charCodeAt(0)) | 0, 17);
-  const OUTFITS = ["#e91e8c","#43a047","#1976d2","#f57c00","#7b1fa2","#0097a7","#c62828","#2e7d32","#e65100","#006064"];
-  const HAIRS   = ["#3e2723","#212121","#795548","#b71c1c","#37474f","#4a148c","#e65100","#1a237e"];
-  const SKINS   = ["#ffcc80","#ffb74d","#a1887f","#8d6e63","#ffe0b2","#bcaaa4"];
-  const outfitColor = isMe ? "#6c63ff" : OUTFITS[Math.abs(hash)         % OUTFITS.length];
-  const hairColor   =                    HAIRS  [Math.abs(hash >> 3)     % HAIRS.length];
-  const skinColor   =                    SKINS  [Math.abs(hash >> 6)     % SKINS.length];
-  const pantsColor  = isMe ? "#4a3fcc" : OUTFITS[Math.abs(hash >> 9)     % OUTFITS.length];
+  const OUTFITS = ["#D03060","#1870B8","#208038","#C87820","#6830A8","#1888A8","#C02020","#205870","#A02878","#187850"];
+  const HAIRS   = ["#200808","#101010","#583018","#900808","#101820","#380860","#982808","#0C1820"];
+  const SKINS   = ["#E8C088","#D8A860","#B88048","#906840","#F0D8A8","#C8A878"];
 
-  // ── Speaking ring ─────────────────────────────────────────────────────────
+  const outfitColor = isMe ? "#4838D8" : OUTFITS[Math.abs(hash)     % OUTFITS.length];
+  const hairColor   =                    HAIRS  [Math.abs(hash >> 3) % HAIRS.length];
+  const skinColor   =                    SKINS  [Math.abs(hash >> 6) % SKINS.length];
+  const pantsColor  = isMe ? "#302090" : OUTFITS[Math.abs(hash >> 9) % OUTFITS.length];
+  const outlineDark = "#080408"; // universal sprite outline
+
+  // ── Pixel sprite data — 8 cols × 16 rows ─────────────────────────────────
+  // Values: 0=transparent 1=skin 2=hair 3=shirt 4=pants 5=shoe 6=outline 7=eye
+  //         8=shirt_shadow 9=pants_shadow
+  const SPR: number[][] = [
+    [0,0,6,6,6,6,0,0],  //  0 hair top outline
+    [0,6,2,2,2,2,6,0],  //  1 hair
+    [6,2,2,2,2,2,2,6],  //  2 hair wide
+    [6,2,1,1,1,1,2,6],  //  3 face top (hair sides)
+    [0,6,1,7,1,7,6,0],  //  4 face — eyes (7=dark)
+    [0,6,1,1,1,1,6,0],  //  5 face lower
+    [0,0,6,1,1,6,0,0],  //  6 chin/neck
+    [0,6,3,3,3,3,6,0],  //  7 shirt collar
+    [6,3,3,3,3,3,3,6],  //  8 shirt body
+    [6,8,3,3,3,3,8,6],  //  9 shirt lower (shadow sides)
+    [6,8,3,3,3,3,8,6],  // 10 shirt bottom
+    [0,6,4,6,6,4,6,0],  // 11 pants top
+    [0,6,4,0,0,4,6,0],  // 12 pants mid
+    [0,6,9,0,0,9,6,0],  // 13 pants lower (shaded)
+    [0,6,5,6,6,5,6,0],  // 14 shoe top
+    [6,5,5,6,6,5,5,6],  // 15 shoe base
+  ];
+
+  const PS = 3; // each sprite pixel = 3×3 canvas pixels
+
+  // colour lookup — index matches SPR values
+  const COLS: (string | null)[] = [
+    null,             // 0 transparent
+    skinColor,        // 1 skin
+    hairColor,        // 2 hair
+    outfitColor,      // 3 shirt
+    pantsColor,       // 4 pants
+    "#181010",        // 5 shoe
+    outlineDark,      // 6 outline
+    "#080808",        // 7 eye dark
+    shadeColor(outfitColor, -30), // 8 shirt shadow
+    shadeColor(pantsColor,  -30), // 9 pants shadow
+  ];
+
+  // Top-left of 8×16 sprite — feet land at y, center at x
+  const ox = Math.round(x) - 4 * PS;
+  const oy = Math.round(y) - 15 * PS;
+
+  // ── Speaking ring — pixel-style (flat square ring) ─────────────────────
   if (speakingLevel > 0.01) {
-    const pulse = speakingLevel * (0.55 + 0.45 * Math.sin(now / 180));
-    const ringR = 30 + 4 * Math.sin(now / 220) * speakingLevel;
-    ctx.beginPath(); ctx.arc(x, y - 4, ringR, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(61,255,160,${pulse})`; ctx.lineWidth = 3; ctx.stroke();
-    ctx.beginPath(); ctx.arc(x, y - 4, ringR + 6, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(61,255,160,${pulse * 0.3})`; ctx.lineWidth = 2; ctx.stroke();
+    const pulse = speakingLevel * (0.6 + 0.4 * Math.sin(now / 180));
+    const rr2 = 32 + (3 * Math.sin(now / 220) * speakingLevel) | 0;
+    const cx2 = Math.round(x), cy2 = Math.round(y) - 7 * PS;
+    ctx.fillStyle = `rgba(0,255,148,${pulse * 0.9})`;
+    // Flat rect ring (pixel art style — 2px thick)
+    ctx.fillRect(cx2 - rr2, cy2 - rr2, rr2 * 2, 2);
+    ctx.fillRect(cx2 - rr2, cy2 + rr2 - 2, rr2 * 2, 2);
+    ctx.fillRect(cx2 - rr2, cy2 - rr2, 2, rr2 * 2);
+    ctx.fillRect(cx2 + rr2 - 2, cy2 - rr2, 2, rr2 * 2);
   }
 
-  // ── Ground shadow ─────────────────────────────────────────────────────────
-  ctx.fillStyle = "rgba(0,0,0,0.28)";
-  ctx.beginPath(); ctx.ellipse(x, y + 14, 14, 5, 0, 0, Math.PI * 2); ctx.fill();
+  // ── Ground shadow (flat dark ellipse under feet) ──────────────────────
+  ctx.fillStyle = "rgba(0,0,0,0.4)";
+  ctx.fillRect(ox + 2, oy + 16 * PS, 22, 3);
 
-  // ── Shoes ─────────────────────────────────────────────────────────────────
-  ctx.fillStyle = "#222";
-  rr(ctx, x - 9, y + 8,  8, 7, 2); ctx.fill();
-  rr(ctx, x + 1, y + 8,  8, 7, 2); ctx.fill();
+  // ── Draw sprite pixels ─────────────────────────────────────────────────
+  for (let row = 0; row < SPR.length; row++) {
+    for (let col = 0; col < SPR[row].length; col++) {
+      const v = SPR[row][col];
+      const c = COLS[v];
+      if (c === null) continue;
+      ctx.fillStyle = c;
+      ctx.fillRect(ox + col * PS, oy + row * PS, PS, PS);
+    }
+  }
 
-  // ── Legs / trousers ───────────────────────────────────────────────────────
-  ctx.fillStyle = pantsColor;
-  ctx.fillRect(x - 8, y + 1, 7, 9);
-  ctx.fillRect(x + 1, y + 1, 7, 9);
-  ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 1;
-  ctx.strokeRect(x - 8, y + 1, 7, 9);
-  ctx.strokeRect(x + 1, y + 1, 7, 9);
-
-  // ── Body / shirt ──────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 7);
-  ctx.fillStyle = outfitColor;
-  rr(ctx, x - 10, y - 9, 20, 13, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = "rgba(0,0,0,0.45)"; ctx.lineWidth = 1.5;
-  rr(ctx, x - 10, y - 9, 20, 13, 3); ctx.stroke();
-  // Collar V
-  ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(x - 3, y - 9); ctx.lineTo(x, y - 4); ctx.lineTo(x + 3, y - 9); ctx.stroke();
-
-  // ── Head ──────────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 10);
-  ctx.fillStyle = skinColor;
-  ctx.beginPath(); ctx.arc(x, y - 18, 11, 0, Math.PI * 2); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(x, y - 18, 11, 0, Math.PI * 2); ctx.stroke();
-
-  // ── Hair ──────────────────────────────────────────────────────────────────
-  ctx.fillStyle = hairColor;
-  // Top cap
-  ctx.beginPath(); ctx.ellipse(x, y - 25, 11, 6, 0, Math.PI, Math.PI * 2); ctx.fill();
-  // Side tufts
-  ctx.beginPath(); ctx.arc(x - 10, y - 20, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(x + 10, y - 20, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.ellipse(x, y - 20, 11, 5, 0, Math.PI, Math.PI * 2); ctx.stroke();
-
-  // ── Eyes ──────────────────────────────────────────────────────────────────
-  // Whites
-  ctx.fillStyle = "#fff";
-  ctx.beginPath(); ctx.ellipse(x - 4, y - 18, 3.5, 3, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(x + 4, y - 18, 3.5, 3, 0, 0, Math.PI * 2); ctx.fill();
-  // Pupils
-  ctx.fillStyle = "#1a1a1a";
-  ctx.beginPath(); ctx.arc(x - 3.5, y - 17.5, 2, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(x + 4.5, y - 17.5, 2, 0, Math.PI * 2); ctx.fill();
-  // Shine
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
-  ctx.beginPath(); ctx.arc(x - 3,   y - 18.5, 0.8, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(x + 5,   y - 18.5, 0.8, 0, Math.PI * 2); ctx.fill();
-
-  // ── Name bubble ───────────────────────────────────────────────────────────
+  // ── Name label — NES-style dialog box ────────────────────────────────
   const firstName = user.name.split(" ")[0];
-  ctx.font = "bold 10px 'Courier New', monospace";
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  const nw = ctx.measureText(firstName).width + 14;
-  const ny = y - 42;
-  ctx.fillStyle = isMe ? "rgba(108,99,255,0.94)" : "rgba(20,12,4,0.78)";
-  rr(ctx, x - nw / 2, ny - 8, nw, 16, 5); ctx.fill();
-  ctx.strokeStyle = isMe ? "rgba(160,150,255,0.6)" : "rgba(255,255,255,0.15)";
-  ctx.lineWidth = 1;
-  rr(ctx, x - nw / 2, ny - 8, nw, 16, 5); ctx.stroke();
-  ctx.fillStyle = "#fff";
-  ctx.fillText(firstName, x, ny);
+  ctx.font = "bold 9px 'Courier New', monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const tw = ctx.measureText(firstName).width;
+  const nw = tw + 12;
+  const nx = Math.round(x);
+  const ny = oy - 12;
 
-  // ── Mute badge ────────────────────────────────────────────────────────────
+  // Outer 1-px black border
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(nx - (nw >> 1) - 2, ny - 7, nw + 4, 14);
+  // Background
+  ctx.fillStyle = isMe ? "#201870" : "#180C28";
+  ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, nw + 2, 12);
+  // Bright 1-px pixel border (top + bottom + sides)
+  ctx.fillStyle = isMe ? "#8878F8" : "#605878";
+  ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, nw + 2, 1);
+  ctx.fillRect(nx - (nw >> 1) - 1, ny + 5, nw + 2, 1);
+  ctx.fillRect(nx - (nw >> 1) - 1, ny - 5, 1, 10);
+  ctx.fillRect(nx + (nw >> 1) + 1, ny - 5, 1, 10);
+  // Text
+  ctx.fillStyle = "#F8F8F8";
+  ctx.fillText(firstName, nx, ny);
+
+  // ── Status indicator — 4×4 pixel square ──────────────────────────────
+  const sx = ox + 8 * PS + 2;
+  const sy = oy + 8 * PS;
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(sx - 1, sy - 1, 7, 7);
+  ctx.fillStyle = statusColor;
+  ctx.fillRect(sx, sy, 5, 5);
+
+  // ── Mute indicator — red X block ─────────────────────────────────────
   if (user.isMuted) {
-    ctx.font = "11px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText("🔇", x + 16, y - 26);
+    const mx = ox + 8 * PS + 2;
+    const my = oy + 3 * PS;
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(mx - 1, my - 1, 9, 9);
+    ctx.fillStyle = "#F82020";
+    ctx.fillRect(mx, my, 7, 7);
+    ctx.fillStyle = "#F8F8F8";
+    ctx.fillRect(mx + 1, my + 1, 2, 2);
+    ctx.fillRect(mx + 4, my + 4, 2, 2);
+    ctx.fillRect(mx + 4, my + 1, 2, 2);
+    ctx.fillRect(mx + 1, my + 4, 2, 2);
   }
+}
 
-  // ── Status dot ────────────────────────────────────────────────────────────
-  ctx.beginPath(); ctx.arc(x + 10, y - 9, 5, 0, Math.PI * 2);
-  ctx.fillStyle = statusColor; ctx.fill();
-  ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = 1.5; ctx.stroke();
+/** Darken/lighten a hex colour by `amount` (negative = darker). */
+function shadeColor(hex: string, amount: number): string {
+  const n = parseInt(hex.replace("#",""), 16);
+  const r = Math.max(0, Math.min(255, (n >> 16) + amount));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 0xFF) + amount));
+  const b = Math.max(0, Math.min(255, (n & 0xFF) + amount));
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
 // ─── Zone indicator ───────────────────────────────────────────────────────────
@@ -1440,14 +1486,30 @@ function drawCanvasBtn(
   ctx: CanvasRenderingContext2D,
   btn: { x: number; y: number; w: number; h: number },
   label: string,
-  color: string
+  _color: string
 ) {
-  ctx.fillStyle = color;
-  ctx.beginPath(); ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 6); ctx.fill();
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 11px Inter, system-ui, sans-serif";
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillText(label, btn.x + btn.w / 2, btn.y + btn.h / 2);
+  const { x, y, w, h } = btn;
+  // NES-style dialog box: black border → dark bg → bright inner border
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
+  ctx.fillStyle = "#180C28";
+  ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+  ctx.fillStyle = "#2C1848";
+  ctx.fillRect(x, y, w, h);
+  // Top-left bright corner
+  ctx.fillStyle = "#F8C820";
+  ctx.fillRect(x, y, w, 2);
+  ctx.fillRect(x, y + 2, 2, h - 4);
+  // Bottom-right dark corner
+  ctx.fillStyle = "#604010";
+  ctx.fillRect(x + 2, y + h - 2, w - 2, 2);
+  ctx.fillRect(x + w - 2, y + 2, 2, h - 4);
+  // Text
+  ctx.fillStyle = "#F8F0A8";
+  ctx.font = "bold 10px 'Courier New', monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label, x + w / 2, y + h / 2);
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
