@@ -1321,7 +1321,8 @@ function drawAvatar(
   _p: P,
   speakingLevel: number,
   now: number,
-  isMoving: boolean
+  isMoving: boolean,
+  isSitting: boolean
 ) {
   const statusColor = STATUS_COLORS[user.status];
 
@@ -1355,27 +1356,42 @@ function drawAvatar(
   ];
 
   // Walk cycle — two leg frames alternated every 180 ms while moving
-  // Frame 0: legs spread apart (stride)
   const LEGS_STRIDE: number[][] = [
-    [0,6,4,6,6,4,6,0],  // 11 pants top
-    [0,6,4,0,0,4,6,0],  // 12 legs apart
-    [0,6,9,0,0,9,6,0],  // 13 legs lower
-    [0,6,5,6,6,5,6,0],  // 14 shoes at sides
-    [6,5,5,6,6,5,5,6],  // 15 shoe base wide
+    [0,6,4,6,6,4,6,0],  // pants top
+    [0,6,4,0,0,4,6,0],  // legs apart
+    [0,6,9,0,0,9,6,0],  // legs lower
+    [0,6,5,6,6,5,6,0],  // shoes at sides
+    [6,5,5,6,6,5,5,6],  // shoe base wide
   ];
-  // Frame 1: legs together (step)
   const LEGS_STEP: number[][] = [
-    [0,0,6,4,4,6,0,0],  // 11 both legs centre
-    [0,0,4,4,4,4,0,0],  // 12 legs together
-    [0,0,9,4,4,9,0,0],  // 13 lower together
-    [0,0,6,5,5,6,0,0],  // 14 shoes together
-    [0,0,5,5,5,5,0,0],  // 15 shoe base
+    [0,0,6,4,4,6,0,0],  // both legs centre
+    [0,0,4,4,4,4,0,0],  // together
+    [0,0,9,4,4,9,0,0],  // lower together
+    [0,0,6,5,5,6,0,0],  // shoes together
+    [0,0,5,5,5,5,0,0],  // shoe base
   ];
+  // Sitting: legs horizontal, arms reaching forward for typing
+  const typingFrame = Math.floor(now / 300) % 2;
+  const LEGS_SIT: number[][] = [
+    [6,4,4,4,4,4,4,6],  // lap (horizontal)
+    [4,4,0,0,0,0,4,4],  // legs to sides
+    [9,9,0,0,0,0,9,9],  // lower
+    [5,5,6,0,0,6,5,5],  // shoes wide
+    [0,0,0,0,0,0,0,0],  // hidden by chair
+  ];
+  // Arms row (row 9 gets animated when typing)
+  const TYPING_A = [6,8,3,3,3,3,8,6];  // arms rest
+  const TYPING_B = [6,3,3,3,3,3,3,6];  // arms lean forward (slightly different shade)
 
-  // Pick leg frame: alternate every 180 ms when walking, freeze at stride when still
+  const bodyRows = [...BODY];
+  if (isSitting) bodyRows[9] = typingFrame === 0 ? TYPING_A : TYPING_B;
+
   const legFrame = isMoving ? Math.floor(now / 180) % 2 : 0;
-  const LEGS = legFrame === 0 ? LEGS_STRIDE : LEGS_STEP;
-  const SPR = [...BODY, ...LEGS];
+  const LEGS = isSitting ? LEGS_SIT : (legFrame === 0 ? LEGS_STRIDE : LEGS_STEP);
+  const SPR = [...bodyRows, ...LEGS];
+
+  // Sitting: shift sprite downward slightly (character sinks into chair)
+  const sitOffsetY = isSitting ? 4 : 0;
 
   const PS = 3; // each sprite pixel = 3×3 canvas pixels
 
@@ -1395,22 +1411,9 @@ function drawAvatar(
 
   // Top-left of 8×16 sprite — feet land at y, center at x
   const ox = Math.round(x) - 4 * PS;
-  const oy = Math.round(y) - 15 * PS;
+  const oy = Math.round(y) - 15 * PS + sitOffsetY;
 
-  // ── Speaking ring — pixel-style (flat square ring) ─────────────────────
-  if (speakingLevel > 0.01) {
-    const pulse = speakingLevel * (0.6 + 0.4 * Math.sin(now / 180));
-    const rr2 = 32 + (3 * Math.sin(now / 220) * speakingLevel) | 0;
-    const cx2 = Math.round(x), cy2 = Math.round(y) - 7 * PS;
-    ctx.fillStyle = `rgba(0,255,148,${pulse * 0.9})`;
-    // Flat rect ring (pixel art style — 2px thick)
-    ctx.fillRect(cx2 - rr2, cy2 - rr2, rr2 * 2, 2);
-    ctx.fillRect(cx2 - rr2, cy2 + rr2 - 2, rr2 * 2, 2);
-    ctx.fillRect(cx2 - rr2, cy2 - rr2, 2, rr2 * 2);
-    ctx.fillRect(cx2 + rr2 - 2, cy2 - rr2, 2, rr2 * 2);
-  }
-
-  // ── Ground shadow (flat dark ellipse under feet) ──────────────────────
+  // ── Ground shadow ─────────────────────────────────────────────────────
   ctx.fillStyle = "rgba(0,0,0,0.4)";
   ctx.fillRect(ox + 2, oy + 16 * PS, 22, 3);
 
@@ -1425,7 +1428,7 @@ function drawAvatar(
     }
   }
 
-  // ── Name label — NES-style dialog box ────────────────────────────────
+  // ── Name label + mic icon ─────────────────────────────────────────────
   const firstName = user.name.split(" ")[0];
   ctx.font = "bold 9px 'Courier New', monospace";
   ctx.textAlign = "center";
@@ -1433,7 +1436,7 @@ function drawAvatar(
   const tw = ctx.measureText(firstName).width;
   const nw = tw + 12;
   const nx = Math.round(x);
-  const ny = oy - 12;
+  const ny = oy - 14;
 
   // Outer 1-px black border
   ctx.fillStyle = "#000000";
@@ -1441,38 +1444,64 @@ function drawAvatar(
   // Background
   ctx.fillStyle = isMe ? "#201870" : "#180C28";
   ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, nw + 2, 12);
-  // Bright 1-px pixel border (top + bottom + sides)
+  // Bright pixel border
   ctx.fillStyle = isMe ? "#8878F8" : "#605878";
   ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, nw + 2, 1);
   ctx.fillRect(nx - (nw >> 1) - 1, ny + 5, nw + 2, 1);
   ctx.fillRect(nx - (nw >> 1) - 1, ny - 5, 1, 10);
   ctx.fillRect(nx + (nw >> 1) + 1, ny - 5, 1, 10);
-  // Text
+  // Name text
   ctx.fillStyle = "#F8F8F8";
   ctx.fillText(firstName, nx, ny);
 
-  // ── Status indicator — 4×4 pixel square ──────────────────────────────
+  // ── Pixel-art microphone icon (right of name label) ────────────────────
+  // 5 wide × 7 tall at 2px = 10×14 — placed just right of name box
+  const micX = nx + (nw >> 1) + 5;
+  const micY = ny - 7;
+  const MS = 2; // mic pixel size
+  // Mic colour: green=speaking, red=muted, grey=normal
+  const micColor = user.isMuted ? "#F82020" : (speakingLevel > 0.05 ? "#20F860" : "#807090");
+
+  // Mic body (capsule: 3×4 centre)
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(micX + 1 * MS - 1, micY - 1, 3 * MS + 2, 4 * MS + 2);
+  ctx.fillStyle = micColor;
+  ctx.fillRect(micX + 1 * MS, micY, 3 * MS, 4 * MS);
+  // Slightly lighter top highlight
+  ctx.fillStyle = "#FFFFFF44";
+  ctx.fillRect(micX + 1 * MS, micY, MS, 2 * MS);
+  // Stem
+  ctx.fillStyle = micColor;
+  ctx.fillRect(micX + 2 * MS, micY + 4 * MS, MS, 2 * MS);
+  // Base stand
+  ctx.fillRect(micX + MS, micY + 6 * MS, 3 * MS, MS);
+
+  // Muted: red slash across mic
+  if (user.isMuted) {
+    ctx.fillStyle = "#FF0000";
+    ctx.fillRect(micX, micY + 3 * MS, 5 * MS, MS);
+  }
+
+  // Speaking signals — stacked horizontal bars fading outward
+  if (speakingLevel > 0.05 && !user.isMuted) {
+    const wave = Math.floor(now / 150) % 3; // 0,1,2 bars animated
+    const sigX = micX + 5 * MS + 2;
+    ctx.fillStyle = "#20F860";
+    // Bar 1 (close, always shown)
+    ctx.fillRect(sigX, micY + MS, MS, 3 * MS);
+    // Bar 2 (medium, shown when wave >= 1)
+    if (wave >= 1) ctx.fillRect(sigX + MS + 1, micY, MS, 5 * MS);
+    // Bar 3 (far, shown when wave >= 2)
+    if (wave >= 2) ctx.fillRect(sigX + 2 * (MS + 1), micY - MS, MS, 7 * MS);
+  }
+
+  // ── Status dot — small square bottom-right of sprite ─────────────────
   const sx = ox + 8 * PS + 2;
   const sy = oy + 8 * PS;
   ctx.fillStyle = "#000000";
   ctx.fillRect(sx - 1, sy - 1, 7, 7);
   ctx.fillStyle = statusColor;
   ctx.fillRect(sx, sy, 5, 5);
-
-  // ── Mute indicator — red X block ─────────────────────────────────────
-  if (user.isMuted) {
-    const mx = ox + 8 * PS + 2;
-    const my = oy + 3 * PS;
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(mx - 1, my - 1, 9, 9);
-    ctx.fillStyle = "#F82020";
-    ctx.fillRect(mx, my, 7, 7);
-    ctx.fillStyle = "#F8F8F8";
-    ctx.fillRect(mx + 1, my + 1, 2, 2);
-    ctx.fillRect(mx + 4, my + 4, 2, 2);
-    ctx.fillRect(mx + 4, my + 1, 2, 2);
-    ctx.fillRect(mx + 1, my + 4, 2, 2);
-  }
 }
 
 /** Darken/lighten a hex colour by `amount` (negative = darker). */
@@ -1498,6 +1527,13 @@ const KNOCK_BTN_2 = { x: 820, y: 118, w: 72, h: 28 } as const;
 const LOCK_BTN_2  = { x: 804, y: 82,  w: 88, h: 28 } as const;
 
 const BTN_RANGE = 130;
+
+// ─── Chair sit positions (centre of seat) ─────────────────────────────────────
+const SIT_SPOTS = [
+  { x: 92,   y: 252 },   // Office 1 executive chair
+  { x: 1108, y: 252 },   // Office 2 executive chair
+] as const;
+const SIT_RADIUS = 22;
 
 function drawCanvasBtn(
   ctx: CanvasRenderingContext2D,
@@ -1611,6 +1647,9 @@ export function OfficeCanvas({
   const showLock1Ref  = useRef(false);
   const showLock2Ref  = useRef(false);
 
+  // Sitting state — null = standing, object = locked to chair position
+  const sittingRef = useRef<{ x: number; y: number } | null>(null);
+
   useEffect(() => {
     if (myPosition && !syncedRef.current) {
       posRef.current = pctToPx(myPosition);
@@ -1635,10 +1674,13 @@ export function OfficeCanvas({
     let { x, y } = posRef.current;
     let moved = false;
 
-    if (keys.has("w") || keys.has("arrowup"))    { y -= SPEED * dt; moved = true; }
-    if (keys.has("s") || keys.has("arrowdown"))  { y += SPEED * dt; moved = true; }
-    if (keys.has("a") || keys.has("arrowleft"))  { x -= SPEED * dt; moved = true; }
-    if (keys.has("d") || keys.has("arrowright")) { x += SPEED * dt; moved = true; }
+    // While sitting: block all movement; space key handled in onKeyDown
+    if (!sittingRef.current) {
+      if (keys.has("w") || keys.has("arrowup"))    { y -= SPEED * dt; moved = true; }
+      if (keys.has("s") || keys.has("arrowdown"))  { y += SPEED * dt; moved = true; }
+      if (keys.has("a") || keys.has("arrowleft"))  { x -= SPEED * dt; moved = true; }
+      if (keys.has("d") || keys.has("arrowright")) { x += SPEED * dt; moved = true; }
+    }
 
     x = Math.max(AVATAR_R, Math.min(CANVAS_W - AVATAR_R, x));
     y = Math.max(AVATAR_R, Math.min(CANVAS_H - AVATAR_R, y));
@@ -1661,6 +1703,23 @@ export function OfficeCanvas({
         else if (inside(x, oy) === wasInside) y = oy;
         else { x = ox; y = oy; }
       }
+    }
+
+    // Auto-sit: walk onto a chair → snap and lock
+    if (!sittingRef.current) {
+      for (const spot of SIT_SPOTS) {
+        if ((x - spot.x) ** 2 + (y - spot.y) ** 2 < SIT_RADIUS ** 2) {
+          sittingRef.current = { x: spot.x, y: spot.y };
+          x = spot.x; y = spot.y;
+          break;
+        }
+      }
+    }
+    // If sitting, keep position pinned to chair
+    if (sittingRef.current) {
+      x = sittingRef.current.x;
+      y = sittingRef.current.y;
+      moved = false;
     }
 
     posRef.current = { x, y };
@@ -1725,11 +1784,11 @@ export function OfficeCanvas({
       const iy = cur.y + (target.y - cur.y) * alpha;
       interpRef.current.set(user.id, { x: ix, y: iy });
       const otherMoving = Math.abs(target.x - ix) + Math.abs(target.y - iy) > 1;
-      drawAvatar(ctx, ix, iy, user, false, p, levels.get(user.id) ?? 0, time, otherMoving);
+      drawAvatar(ctx, ix, iy, user, false, p, levels.get(user.id) ?? 0, time, otherMoving, false);
     }
 
     const meUser = roomRef.current.users.find((u) => u.id === myId);
-    if (meUser) drawAvatar(ctx, x, y, meUser, true, p, levels.get(meUser.id) ?? 0, time, moved);
+    if (meUser) drawAvatar(ctx, x, y, meUser, true, p, levels.get(meUser.id) ?? 0, time, moved, !!sittingRef.current);
 
     const d1 = Math.sqrt((x - DOOR1_CENTER.x) ** 2 + (y - DOOR1_CENTER.y) ** 2);
     const d2 = Math.sqrt((x - DOOR2_CENTER.x) ** 2 + (y - DOOR2_CENTER.y) ** 2);
@@ -1742,8 +1801,22 @@ export function OfficeCanvas({
     const sK2 = myIdx !== 1 && offs[1].locked && zone !== "Private Office 2" && d2 <= BTN_RANGE;
     showKnock1Ref.current = sK1;
     showKnock2Ref.current = sK2;
-    if (sK1) drawCanvasBtn(ctx, KNOCK_BTN_1, "🚪 Knock", "rgba(255,140,0,0.9)");
-    if (sK2) drawCanvasBtn(ctx, KNOCK_BTN_2, "🚪 Knock", "rgba(255,140,0,0.9)");
+    if (sK1) drawCanvasBtn(ctx, KNOCK_BTN_1, "KNOCK", "rgba(255,140,0,0.9)");
+    if (sK2) drawCanvasBtn(ctx, KNOCK_BTN_2, "KNOCK", "rgba(255,140,0,0.9)");
+
+    // Show "sit" prompt near chairs when standing close but not yet sitting
+    if (!sittingRef.current) {
+      for (const spot of SIT_SPOTS) {
+        const dist = Math.sqrt((x - spot.x) ** 2 + (y - spot.y) ** 2);
+        if (dist < SIT_RADIUS + 30) {
+          drawCanvasBtn(ctx, { x: spot.x - 44, y: spot.y - 48, w: 88, h: 22 }, "WALK TO SIT", "");
+        }
+      }
+    }
+    // "Stand up" hint while seated
+    if (sittingRef.current) {
+      drawCanvasBtn(ctx, { x: x - 58, y: y - 56, w: 116, h: 22 }, "SPACE = STAND UP", "");
+    }
 
     ctx.restore();
     rafRef.current = requestAnimationFrame(tick);
@@ -1752,6 +1825,12 @@ export function OfficeCanvas({
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const k = e.key.toLowerCase();
+      // Space = stand up from chair
+      if (e.key === " " && sittingRef.current) {
+        e.preventDefault();
+        sittingRef.current = null;
+        return;
+      }
       if (["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(k)) {
         e.preventDefault();
         keysRef.current.add(k);
