@@ -183,113 +183,112 @@ function noShadow(ctx: CanvasRenderingContext2D) {
 
 // ─── Nature — grass tufts + pixel-art trees ───────────────────────────────────
 
-/** Tiny pixel-art microphone deterministic seeded positions */
-function seededPts(x1: number, y1: number, x2: number, y2: number, n: number, seed: number): [number, number][] {
-  const pts: [number, number][] = [];
-  let s = seed | 1;
-  for (let i = 0; i < n; i++) {
-    s = Math.imul(s, 1664525) + 1013904223 | 0;
-    const tx = x1 + (s >>> 0) % (x2 - x1);
-    s = Math.imul(s, 1664525) + 1013904223 | 0;
-    const ty = y1 + (s >>> 0) % (y2 - y1);
-    pts.push([tx, ty]);
-  }
-  return pts;
-}
+// ─── Nature — proper grass patches and trees ──────────────────────────────────
 
-function drawTree(ctx: CanvasRenderingContext2D, cx: number, cy: number, isDark: boolean) {
-  const P = 3; // pixels per "sprite pixel"
-  // 9×8 foliage grid: 0=transparent, 1=dark, 2=mid, 3=highlight
-  const F = [
-    [0,0,1,1,1,1,1,0,0],
-    [0,1,2,2,2,2,2,1,0],
-    [1,2,3,3,2,2,2,2,1],
-    [1,2,3,3,2,2,2,2,1],
-    [1,2,2,2,2,2,2,2,1],
-    [0,1,2,2,2,2,2,1,0],
-    [0,0,1,2,2,2,1,0,0],
-    [0,0,0,1,1,1,0,0,0],
-  ];
-  const c1 = isDark ? "#0C3008" : "#145010"; // dark outline
-  const c2 = isDark ? "#1A6010" : "#28901A"; // main green
-  const c3 = isDark ? "#28A018" : "#40C828"; // highlight
-  const cols = [null, c1, c2, c3];
-  const ox = cx - 4 * P, oy = cy - 7 * P;
+function drawTree(ctx: CanvasRenderingContext2D, cx: number, cy: number, isDark: boolean, scale = 1) {
+  const R = 30 * scale; // foliage radius
 
-  // Drop shadow
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(cx - 13, cy + 2, 26, 5);
+  // Ground shadow
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(cx + 5, cy + R * 0.35, R * 0.85, R * 0.3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
   // Trunk
-  ctx.fillStyle = isDark ? "#381808" : "#603010";
-  ctx.fillRect(cx - P, cy - P + 1, P * 2, P * 2 + 1);
-  ctx.fillStyle = isDark ? "#502010" : "#904820";
-  ctx.fillRect(cx - P, cy - P + 1, P - 1, P * 2 + 1);
-  // Foliage
-  for (let row = 0; row < F.length; row++) {
-    for (let col = 0; col < F[row].length; col++) {
-      const v = F[row][col];
-      const c = cols[v];
-      if (!c) continue;
-      ctx.fillStyle = c;
-      ctx.fillRect(ox + col * P, oy + row * P, P, P);
-    }
-  }
+  const tw = 8 * scale, th = 18 * scale;
+  ctx.fillStyle = isDark ? "#4A2810" : "#7A4820";
+  ctx.fillRect(cx - tw / 2, cy - th * 0.3, tw, th);
+  // Trunk highlight
+  ctx.fillStyle = isDark ? "#6A3C18" : "#A06430";
+  ctx.fillRect(cx - tw / 2, cy - th * 0.3, tw * 0.35, th);
+
+  // Foliage — three layered circles for depth
+  // Outer/shadow ring
+  ctx.fillStyle = isDark ? "#0E3808" : "#1A5C10";
+  ctx.beginPath();
+  ctx.arc(cx, cy - R * 0.55, R, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Main canopy
+  ctx.fillStyle = isDark ? "#1E6C14" : "#2E9C1C";
+  ctx.beginPath();
+  ctx.arc(cx, cy - R * 0.65, R * 0.85, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Mid highlight
+  ctx.fillStyle = isDark ? "#2A9020" : "#42C028";
+  ctx.beginPath();
+  ctx.arc(cx - R * 0.2, cy - R * 0.8, R * 0.55, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Top shine
+  ctx.fillStyle = isDark ? "#38B82A" : "#5CE038";
+  ctx.beginPath();
+  ctx.arc(cx - R * 0.25, cy - R * 0.95, R * 0.28, 0, Math.PI * 2);
+  ctx.fill();
 }
 
-function drawGrassTuft(ctx: CanvasRenderingContext2D, gx: number, gy: number, isDark: boolean) {
-  const base = isDark ? "#1A5010" : "#308020";
-  const tip  = isDark ? "#207018" : "#40B020";
-  // 3 blades: dark base, lighter tip
-  const blades = [[0, 0], [5, -2], [10, 0]] as const;
-  for (const [bx, bo] of blades) {
-    ctx.fillStyle = base;
-    ctx.fillRect(gx + bx, gy + 3, 2, 5);
-    ctx.fillStyle = tip;
-    ctx.fillRect(gx + bx, gy + bo, 2, 4);
-  }
+function drawGrassPatch(ctx: CanvasRenderingContext2D, cx: number, cy: number, rx: number, ry: number, isDark: boolean) {
+  // Base patch — filled ellipse
+  ctx.fillStyle = isDark ? "#1C5010" : "#2E8018";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Lighter inner glow
+  ctx.fillStyle = isDark ? "#267018" : "#3EA022";
+  ctx.beginPath();
+  ctx.ellipse(cx - rx * 0.1, cy - ry * 0.1, rx * 0.65, ry * 0.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Bright highlight spot top-left
+  ctx.fillStyle = isDark ? "#30901E" : "#52C030";
+  ctx.beginPath();
+  ctx.ellipse(cx - rx * 0.25, cy - ry * 0.3, rx * 0.3, ry * 0.28, 0, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawNature(ctx: CanvasRenderingContext2D, p: P) {
   const isDark = p.bg === "#18140C";
 
-  // ── Tree positions — manually placed in open-floor areas ──────────────────
-  const trees: [number, number][] = [
-    // Top strip between offices (y=5-80, x=310-890)
-    [328, 42], [432, 22], [536, 48], [640, 28], [750, 44], [858, 20],
-    // Left of War Room (x=310-435, y=260-540)
-    [322, 278], [368, 390], [318, 500],
-    // Right of War Room (x=762-888, y=260-540)
-    [778, 282], [840, 395], [772, 505],
-    // Bottom left (x=10-435, y=565-780)
-    [38, 600], [148, 675], [268, 630], [390, 705], [420, 620],
-    // Bottom middle (x=440-760, y=565-780)
-    [510, 640], [618, 700], [720, 650],
-    // Far left strip (x=10-50, y=300-540)
-    [24, 340], [30, 470],
-    // Far bottom-right (x=762-888, y=565-780)
-    [800, 600], [862, 710],
+  // ── Grass patches — large organic blobs in open floor areas ──────────────
+  const grassPatches: [number, number, number, number][] = [
+    // [cx, cy, rx, ry]
+    // Top strip between offices
+    [355, 45,  55, 28], [500, 30,  70, 24], [650, 50,  50, 22], [820, 35,  60, 26],
+    // Left of War Room
+    [345, 310, 40, 30], [380, 450, 55, 28], [330, 520, 45, 22],
+    // Right of War Room
+    [855, 320, 45, 28], [830, 440, 55, 26], [858, 520, 40, 22],
+    // Bottom open area
+    [80,  640, 70, 35], [240, 690, 80, 32], [400, 650, 65, 30],
+    [550, 680, 75, 34], [700, 645, 60, 28], [840, 700, 65, 30],
+    // Far left strip
+    [28, 360, 30, 50], [32, 490, 28, 45],
   ];
 
-  // ── Grass tufts — scattered in open areas ─────────────────────────────────
-  const grassZones: [number, number, number, number, number, number][] = [
-    // [x1, y1, x2, y2, count, seed]
-    [312, 8,  888, 82, 28, 1001],  // top between offices
-    [312, 260, 432, 538, 16, 2002], // left of war room
-    [764, 260, 886, 538, 14, 3003], // right of war room
-    [10,  568, 888, 792, 42, 4004], // bottom open floor
-    [10,  295, 48,  535, 8,  5005], // far left strip
-  ];
-
-  // Draw grass tufts first (behind trees)
-  for (const [x1, y1, x2, y2, n, seed] of grassZones) {
-    for (const [gx, gy] of seededPts(x1, y1, x2 - 12, y2 - 8, n, seed)) {
-      drawGrassTuft(ctx, gx, gy, isDark);
-    }
+  for (const [cx, cy, rx, ry] of grassPatches) {
+    drawGrassPatch(ctx, cx, cy, rx, ry, isDark);
   }
 
-  // Draw trees on top of grass
-  for (const [tx, ty] of trees) {
-    drawTree(ctx, tx, ty, isDark);
+  // ── Trees — placed in and around the grass patches ────────────────────────
+  const trees: [number, number, number][] = [
+    // [cx, cy, scale]
+    // Top strip
+    [335, 38, 1.0], [510, 25, 0.9], [645, 42, 1.1], [825, 28, 0.95],
+    // Left of War Room
+    [342, 305, 1.0], [375, 445, 0.95], [328, 515, 0.85],
+    // Right of War Room
+    [858, 315, 1.0], [832, 435, 0.9], [860, 515, 0.85],
+    // Bottom open area
+    [75,  632, 1.1], [242, 682, 1.0], [402, 643, 0.95],
+    [552, 672, 1.05],[702, 638, 1.0], [842, 692, 0.9],
+    // Far left
+    [28,  355, 0.8], [30,  485, 0.75],
+  ];
+
+  for (const [cx, cy, scale] of trees) {
+    drawTree(ctx, cx, cy, isDark, scale);
   }
 }
 
