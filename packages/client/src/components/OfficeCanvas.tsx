@@ -643,42 +643,39 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [numbe
     rr(ctx, 76, 200 + i * 18, 20, 5, 2); ctx.fill();
   }
 
-  // ── Monitor ───────────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 12);
+  // ── Monitor (flat top-down: small screen on desk) ────────────────────────────
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(107, 147, 46, 30);          // outer bezel
   ctx.fillStyle = p.screenFill;
-  rr(ctx, 100, 150, 86, 50, 3); ctx.fill();
-  noShadow(ctx);
-  // Screen glow
-  ctx.fillStyle = p.screenGlowOut;
-  rr(ctx, 95, 145, 96, 60, 5); ctx.fill();
+  ctx.fillRect(108, 148, 44, 28);          // screen body
   ctx.fillStyle = p.screenGlow;
-  rr(ctx, 104, 153, 78, 42, 2); ctx.fill();
-  // Screen content (fake window)
-  ctx.fillStyle = "rgba(255,255,255,0.07)";
-  rr(ctx, 106, 155, 50, 20, 1); ctx.fill();
-  rr(ctx, 106, 178, 30, 8, 1); ctx.fill();
-  rr(ctx, 140, 178, 20, 8, 1); ctx.fill();
-  // Monitor stand
+  ctx.fillRect(110, 150, 40, 24);          // screen glow
+  // Screen content rows (fake UI)
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(112, 152, 28, 4);
+  ctx.fillRect(112, 158, 20, 3);
+  ctx.fillRect(112, 163, 24, 3);
+  ctx.fillRect(134, 158, 12, 8);
+  // Stand
   ctx.fillStyle = p.deskMid;
-  ctx.fillRect(137, 200, 9, 8);
-  ctx.fillRect(128, 207, 26, 4);
+  ctx.fillRect(127, 177, 6, 8);
+  ctx.fillRect(121, 184, 18, 3);
 
   // Keyboard
   ctx.fillStyle = p.chairFill;
-  rr(ctx, 160, 170, 56, 18, 2); ctx.fill();
+  rr(ctx, 152, 170, 44, 14, 2); ctx.fill();
   ctx.strokeStyle = p.chairStroke;
   ctx.lineWidth = 0.5;
-  for (let ki = 0; ki < 5; ki++) {
-    for (let kj = 0; kj < 9; kj++) {
-      rr(ctx, 162 + kj * 6, 172 + ki * 3, 5, 2, 0.5); ctx.stroke();
+  for (let ki = 0; ki < 3; ki++) {
+    for (let kj = 0; kj < 7; kj++) {
+      rr(ctx, 154 + kj * 6, 172 + ki * 4, 5, 3, 0.5); ctx.stroke();
     }
   }
   // Mouse
   ctx.fillStyle = p.chairFill;
-  rr(ctx, 220, 172, 14, 20, 5); ctx.fill();
-  ctx.strokeStyle = p.chairStroke;
-  ctx.lineWidth = 0.5;
-  ctx.beginPath(); ctx.moveTo(220, 182); ctx.lineTo(234, 182); ctx.stroke();
+  rr(ctx, 200, 172, 12, 16, 4); ctx.fill();
+  ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(200, 180); ctx.lineTo(212, 180); ctx.stroke();
 
   // ── Executive chair ───────────────────────────────────────────────────────────
   shadow(ctx, p.shadow, 12);
@@ -1095,26 +1092,27 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [numbe
     rr(ctx, 1104, 200 + i * 18, 20, 5, 2); ctx.fill();
   }
 
-  // ── Monitor (mirrored) ────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 12);
+  // ── Monitor (mirrored, same flat top-down style) ─────────────────────────────
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(1047, 147, 46, 30);
   ctx.fillStyle = p.screenFill;
-  rr(ctx, 1014, 150, 86, 50, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.fillStyle = p.screenGlowOut;
-  rr(ctx, 1009, 145, 96, 60, 5); ctx.fill();
+  ctx.fillRect(1048, 148, 44, 28);
   ctx.fillStyle = p.screenGlow;
-  rr(ctx, 1018, 153, 78, 42, 2); ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.07)";
-  rr(ctx, 1020, 155, 50, 20, 1); ctx.fill();
-  rr(ctx, 1020, 178, 30, 8, 1); ctx.fill();
+  ctx.fillRect(1050, 150, 40, 24);
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(1052, 152, 28, 4);
+  ctx.fillRect(1052, 158, 20, 3);
+  ctx.fillRect(1052, 163, 24, 3);
+  ctx.fillRect(1074, 158, 12, 8);
+  // Stand
   ctx.fillStyle = p.deskMid;
-  ctx.fillRect(1054, 200, 9, 8);
-  ctx.fillRect(1046, 207, 26, 4);
+  ctx.fillRect(1067, 177, 6, 8);
+  ctx.fillRect(1061, 184, 18, 3);
 
   // Keyboard + mouse (mirrored)
   ctx.fillStyle = p.chairFill;
-  rr(ctx, 984, 170, 56, 18, 2); ctx.fill();
-  rr(ctx, 964, 172, 14, 20, 5); ctx.fill();
+  rr(ctx, 1004, 170, 44, 14, 2); ctx.fill();
+  rr(ctx, 988, 172, 12, 16, 4); ctx.fill();
 
   // ── Chair (mirrored) ──────────────────────────────────────────────────────────
   shadow(ctx, p.shadow, 12);
@@ -1322,7 +1320,8 @@ function drawAvatar(
   isMe: boolean,
   _p: P,
   speakingLevel: number,
-  now: number
+  now: number,
+  isMoving: boolean
 ) {
   const statusColor = STATUS_COLORS[user.status];
 
@@ -1341,7 +1340,7 @@ function drawAvatar(
   // ── Pixel sprite data — 8 cols × 16 rows ─────────────────────────────────
   // Values: 0=transparent 1=skin 2=hair 3=shirt 4=pants 5=shoe 6=outline 7=eye
   //         8=shirt_shadow 9=pants_shadow
-  const SPR: number[][] = [
+  const BODY: number[][] = [
     [0,0,6,6,6,6,0,0],  //  0 hair top outline
     [0,6,2,2,2,2,6,0],  //  1 hair
     [6,2,2,2,2,2,2,6],  //  2 hair wide
@@ -1353,12 +1352,30 @@ function drawAvatar(
     [6,3,3,3,3,3,3,6],  //  8 shirt body
     [6,8,3,3,3,3,8,6],  //  9 shirt lower (shadow sides)
     [6,8,3,3,3,3,8,6],  // 10 shirt bottom
-    [0,6,4,6,6,4,6,0],  // 11 pants top
-    [0,6,4,0,0,4,6,0],  // 12 pants mid
-    [0,6,9,0,0,9,6,0],  // 13 pants lower (shaded)
-    [0,6,5,6,6,5,6,0],  // 14 shoe top
-    [6,5,5,6,6,5,5,6],  // 15 shoe base
   ];
+
+  // Walk cycle — two leg frames alternated every 180 ms while moving
+  // Frame 0: legs spread apart (stride)
+  const LEGS_STRIDE: number[][] = [
+    [0,6,4,6,6,4,6,0],  // 11 pants top
+    [0,6,4,0,0,4,6,0],  // 12 legs apart
+    [0,6,9,0,0,9,6,0],  // 13 legs lower
+    [0,6,5,6,6,5,6,0],  // 14 shoes at sides
+    [6,5,5,6,6,5,5,6],  // 15 shoe base wide
+  ];
+  // Frame 1: legs together (step)
+  const LEGS_STEP: number[][] = [
+    [0,0,6,4,4,6,0,0],  // 11 both legs centre
+    [0,0,4,4,4,4,0,0],  // 12 legs together
+    [0,0,9,4,4,9,0,0],  // 13 lower together
+    [0,0,6,5,5,6,0,0],  // 14 shoes together
+    [0,0,5,5,5,5,0,0],  // 15 shoe base
+  ];
+
+  // Pick leg frame: alternate every 180 ms when walking, freeze at stride when still
+  const legFrame = isMoving ? Math.floor(now / 180) % 2 : 0;
+  const LEGS = legFrame === 0 ? LEGS_STRIDE : LEGS_STEP;
+  const SPR = [...BODY, ...LEGS];
 
   const PS = 3; // each sprite pixel = 3×3 canvas pixels
 
@@ -1707,11 +1724,12 @@ export function OfficeCanvas({
       const ix = cur.x + (target.x - cur.x) * alpha;
       const iy = cur.y + (target.y - cur.y) * alpha;
       interpRef.current.set(user.id, { x: ix, y: iy });
-      drawAvatar(ctx, ix, iy, user, false, p, levels.get(user.id) ?? 0, time);
+      const otherMoving = Math.abs(target.x - ix) + Math.abs(target.y - iy) > 1;
+      drawAvatar(ctx, ix, iy, user, false, p, levels.get(user.id) ?? 0, time, otherMoving);
     }
 
     const meUser = roomRef.current.users.find((u) => u.id === myId);
-    if (meUser) drawAvatar(ctx, x, y, meUser, true, p, levels.get(meUser.id) ?? 0, time);
+    if (meUser) drawAvatar(ctx, x, y, meUser, true, p, levels.get(meUser.id) ?? 0, time, moved);
 
     const d1 = Math.sqrt((x - DOOR1_CENTER.x) ** 2 + (y - DOOR1_CENTER.y) ** 2);
     const d2 = Math.sqrt((x - DOOR2_CENTER.x) ** 2 + (y - DOOR2_CENTER.y) ** 2);
