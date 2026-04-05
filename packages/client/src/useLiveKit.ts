@@ -33,8 +33,11 @@ export interface PeerAudioInfo {
 
 export function useLiveKit() {
   const roomRef = useRef<Room | null>(null);
+  const [lkRoom, setLkRoom] = useState<Room | null>(null);
   const [speakingNames, setSpeakingNames] = useState<Set<string>>(new Set());
   const [canPlaybackAudio, setCanPlaybackAudio] = useState(true);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [screenShareEnabled, setScreenShareEnabled] = useState(false);
 
   // Per-participant smoothed volume: avoids hard cuts when door closes or distance jumps
   const smoothedVolsRef = useRef<Map<string, number>>(new Map());
@@ -87,6 +90,7 @@ export function useLiveKit() {
     });
 
     await room.connect(LIVEKIT_URL, token);
+    setLkRoom(room);
     console.log("[LiveKit] connected:", room.name);
 
     try {
@@ -118,7 +122,30 @@ export function useLiveKit() {
   const disconnect = useCallback(() => {
     roomRef.current?.disconnect();
     roomRef.current = null;
+    setLkRoom(null);
+    setCameraEnabled(false);
+    setScreenShareEnabled(false);
     smoothedVolsRef.current.clear();
+  }, []);
+
+  const enableCamera = useCallback(async (enabled: boolean) => {
+    if (!roomRef.current) return;
+    try {
+      await roomRef.current.localParticipant.setCameraEnabled(enabled);
+      setCameraEnabled(enabled);
+    } catch (err) {
+      console.error("[LiveKit] camera toggle failed:", err);
+    }
+  }, []);
+
+  const enableScreenShare = useCallback(async (enabled: boolean) => {
+    if (!roomRef.current) return;
+    try {
+      await roomRef.current.localParticipant.setScreenShareEnabled(enabled);
+      setScreenShareEnabled(enabled);
+    } catch (err) {
+      console.error("[LiveKit] screen share toggle failed:", err);
+    }
   }, []);
 
   const setMicrophoneMuted = useCallback(async (muted: boolean) => {
@@ -206,5 +233,10 @@ export function useLiveKit() {
     speakingNames,
     canPlaybackAudio,
     resumeAudio,
+    lkRoom,
+    enableCamera,
+    enableScreenShare,
+    cameraEnabled,
+    screenShareEnabled,
   };
 }

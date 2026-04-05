@@ -117,8 +117,12 @@ export function useOffice() {
 
   const [knockQueue, setKnockQueue] = useState<KnockNotification[]>([]);
 
-  const { connect: lkConnect, disconnect: lkDisconnect, setMicrophoneMuted, setAudioOutputMuted, updateVolumes, speakingNames, canPlaybackAudio, resumeAudio } =
-    useLiveKit();
+  const {
+    connect: lkConnect, disconnect: lkDisconnect,
+    setMicrophoneMuted, setAudioOutputMuted, updateVolumes,
+    speakingNames, canPlaybackAudio, resumeAudio,
+    lkRoom, enableCamera, enableScreenShare, cameraEnabled, screenShareEnabled,
+  } = useLiveKit();
 
   const doorClosedRef = useRef(false);
   useEffect(() => {
@@ -342,5 +346,10 @@ export function useOffice() {
     speakingNames,
     canPlaybackAudio,
     resumeAudio,
+    lkRoom,
+    enableCamera,
+    enableScreenShare,
+    cameraEnabled,
+    screenShareEnabled,
   };
 }

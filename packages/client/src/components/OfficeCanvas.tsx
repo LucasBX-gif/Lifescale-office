@@ -1306,6 +1306,7 @@ interface Props {
   onLockOffice: (officeIndex: 0 | 1) => void;
   isDark: boolean;
   speakingNames: Set<string>;
+  respawnCount?: number;
 }
 
 export function OfficeCanvas({
@@ -1313,7 +1314,7 @@ export function OfficeCanvas({
   myOfficeIndex, offices,
   onMove, onZoneChange,
   privateOfficeDoorClosed, onDoorToggle, onKnock, onLockOffice,
-  isDark, speakingNames,
+  isDark, speakingNames, respawnCount = 0,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const posRef = useRef({ x: CANVAS_W / 2, y: CANVAS_H / 2 });
@@ -1389,6 +1390,13 @@ export function OfficeCanvas({
       syncedRef.current = true;
     }
   }, [myPosition]);
+
+  // Teleport to War Room corridor entrance when returning from video call
+  useEffect(() => {
+    if (respawnCount > 0) {
+      posRef.current = { x: 600, y: 160 }; // corridor above War Room door
+    }
+  }, [respawnCount]);
 
   const onMoveRef = useRef(onMove);
   useEffect(() => { onMoveRef.current = onMove; }, [onMove]);

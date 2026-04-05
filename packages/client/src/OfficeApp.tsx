@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useOffice } from "./useOffice";
 import { OfficeCanvas } from "./components/OfficeCanvas";
 import { Controls } from "./components/Controls";
 import { KnockNotification } from "./components/KnockNotification";
+import { WarRoomCall } from "./components/WarRoomCall";
 
 interface Props {
   workspaceId: string;
@@ -22,7 +23,31 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
     privateOfficeDoorClosed, togglePrivateOfficeDoor,
     lockOffice, setOfficeStyle, knock, knockQueue, respondToKnock, speakingNames,
     canPlaybackAudio, resumeAudio,
+    lkRoom, enableCamera, enableScreenShare, cameraEnabled, screenShareEnabled,
   } = useOffice();
+
+  const [inWarRoomCall, setInWarRoomCall] = useState(false);
+  const [respawnCount, setRespawnCount]   = useState(0);
+  const inWarRoomCallRef = useRef(false);
+
+  const handleZoneChange = useCallback((zone: string) => {
+    setCurrentZone(zone);
+    if (zone === "War Room" && !inWarRoomCallRef.current) {
+      inWarRoomCallRef.current = true;
+      setInWarRoomCall(true);
+    }
+  }, []);
+
+  const handleLeaveCall = useCallback(() => {
+    inWarRoomCallRef.current = false;
+    setInWarRoomCall(false);
+    setRespawnCount((n) => n + 1);
+    // Also disable camera/screen share so they don't stay on
+    enableCamera(false).catch(() => {});
+    enableScreenShare(false).catch(() => {});
+    // Sync server position to corridor above War Room door
+    move({ x: 50, y: 20 });
+  }, [move, enableCamera, enableScreenShare]);
 
   const hasJoinedRef = useRef(false);
   useEffect(() => {
@@ -78,24 +103,39 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
         </div>
       )}
 
-      <main className="app-main">
-        <OfficeCanvas
-          room={room}
-          myUserId={myUser?.id ?? null}
-          myPosition={myUser?.position ?? null}
-          myOfficeIndex={myOfficeIndex}
-          offices={room.offices}
-          onMove={move}
-          onStatusChange={setStatus}
-          onZoneChange={setCurrentZone}
-          privateOfficeDoorClosed={privateOfficeDoorClosed}
-          onDoorToggle={togglePrivateOfficeDoor}
-          onKnock={knock}
-          onLockOffice={lockOffice}
-          isDark={theme === "dark"}
-          speakingNames={speakingNames}
+      {inWarRoomCall && lkRoom && myUser ? (
+        <WarRoomCall
+          room={lkRoom}
+          myUser={myUser}
+          isMuted={myUser.isMuted}
+          onToggleMute={toggleMute}
+          cameraEnabled={cameraEnabled}
+          onToggleCamera={() => enableCamera(!cameraEnabled)}
+          screenShareEnabled={screenShareEnabled}
+          onToggleScreenShare={() => enableScreenShare(!screenShareEnabled)}
+          onLeave={handleLeaveCall}
         />
-      </main>
+      ) : (
+        <main className="app-main">
+          <OfficeCanvas
+            room={room}
+            myUserId={myUser?.id ?? null}
+            myPosition={myUser?.position ?? null}
+            myOfficeIndex={myOfficeIndex}
+            offices={room.offices}
+            onMove={move}
+            onStatusChange={setStatus}
+            onZoneChange={handleZoneChange}
+            privateOfficeDoorClosed={privateOfficeDoorClosed}
+            onDoorToggle={togglePrivateOfficeDoor}
+            onKnock={knock}
+            onLockOffice={lockOffice}
+            isDark={theme === "dark"}
+            speakingNames={speakingNames}
+            respawnCount={respawnCount}
+          />
+        </main>
+      )}
 
       {myUser && (
         <Controls
