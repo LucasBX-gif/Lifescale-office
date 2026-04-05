@@ -45,69 +45,54 @@ export function Controls({ user, currentZone, myOfficeIndex, offices, onToggleMu
       {showStyles && ownsOffice && (
         <div style={{
           position: "absolute",
-          bottom: "calc(100% + 8px)",
+          bottom: "calc(100% + 6px)",
           left: "50%",
           transform: "translateX(-50%)",
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: "14px 16px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
+          background: "#111111",
+          border: "2px solid #8B5E3C",
+          borderRadius: 2,
+          padding: "10px 12px",
           zIndex: 100,
-          minWidth: 340,
+          minWidth: 320,
+          fontFamily: "'Courier New', monospace",
         }}>
-          <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.06em", marginBottom: 10 }}>
-            OFFICE THEME
+          <p style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8B5E3C", letterSpacing: "0.1em", marginBottom: 8, textTransform: "uppercase" }}>
+            Office Theme
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
             {OFFICE_THEMES.map((t, i) => (
               <button
                 key={i}
                 onClick={() => { onSetStyle(myOfficeIndex as 0 | 1, i); setShowStyles(false); }}
                 style={{
-                  background: "none",
-                  border: `2px solid ${currentStyle === i ? t.accent : "var(--border)"}`,
-                  borderRadius: 8,
+                  background: currentStyle === i ? "#1a1a1a" : "#0a0a0a",
+                  border: `2px solid ${currentStyle === i ? t.accent : "#333"}`,
+                  borderRadius: 2,
                   cursor: "pointer",
-                  padding: "6px 4px",
+                  padding: "5px 3px",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 5,
-                  transition: "border-color 0.15s",
+                  gap: 4,
                   outline: "none",
                 }}
               >
-                {/* Floor preview swatch */}
+                {/* Floor preview swatch — flat pixel block */}
                 <div style={{
-                  width: 44,
-                  height: 32,
-                  borderRadius: 5,
-                  background: `linear-gradient(135deg, ${t.floorA}, ${t.floorB})`,
-                  border: `1px solid ${t.accent}55`,
+                  width: 40,
+                  height: 28,
+                  background: t.floorA,
+                  border: `2px solid ${t.accent}`,
                   position: "relative",
                   overflow: "hidden",
                 }}>
-                  {/* Accent stripe */}
-                  <div style={{
-                    position: "absolute", bottom: 0, left: 0, right: 0,
-                    height: 5,
-                    background: t.accent,
-                    opacity: 0.85,
-                  }} />
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 4, background: t.accent }} />
                   {currentStyle === i && (
-                    <div style={{
-                      position: "absolute", inset: 0,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 14,
-                    }}>✓</div>
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: t.accent }}>✓</div>
                   )}
                 </div>
-                <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text)", textAlign: "center", lineHeight: 1.2 }}>
+                <span style={{ fontSize: "0.58rem", fontWeight: 700, color: currentStyle === i ? t.accent : "#888", textAlign: "center", lineHeight: 1.2, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   {t.name}
-                </span>
-                <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", textAlign: "center" }}>
-                  {t.desc}
                 </span>
               </button>
             ))}

@@ -20,27 +20,27 @@ const STATUS_COLORS: Record<UserStatus, string> = {
 // Dark = dungeon / night office  |  Light = daytime office
 function palette(isDark: boolean) {
   return isDark ? {
-    // ── Base floor (dark stone — Pokémon dungeon) ────────────────────────────
-    bg:            "#18140C",
-    tile1:         "#201A10",
-    tile2:         "#281E14",
-    grout:         "#100C08",
-    pathFill:      "#302418",
+    // ── Gather.town dark palette ─────────────────────────────────────────────
+    bg:            "#1a1a1a",   // charcoal canvas
+    tile1:         "#1e1e1e",
+    tile2:         "#1a1a1a",
+    grout:         "#141414",   // subtle grid lines
+    pathFill:      "#1e1e1e",
     // ── Room floors ──────────────────────────────────────────────────────────
-    wood1:         "#884820",
-    wood2:         "#A05828",
-    woodGrain:     "#602808",
-    warmCarpet:    "#883020",
-    warmCarpetAlt: "#702818",
-    warmCarpetLine:"#A84030",
-    coolCarpet:    "#185848",
-    coolCarpetAlt: "#104038",
-    coolCarpetLine:"#208868",
-    // ── Walls (SNES flat — no gradients) ─────────────────────────────────────
-    wallFill:      "#503020",
-    wallHighlight: "#785038",  // top/left bright face
-    wallShadow:    "#281408",  // bottom/right shadow face
-    wallBorder:    "#C89050",
+    wood1:         "#5C3D1E",   // dark warm wood floor
+    wood2:         "#6B4A28",
+    woodGrain:     "#3A2510",
+    warmCarpet:    "#5C3D1E",
+    warmCarpetAlt: "#4A3018",
+    warmCarpetLine:"#8B5E3C",
+    coolCarpet:    "#1A3D2E",   // teal for lounge
+    coolCarpetAlt: "#142E22",
+    coolCarpetLine:"#2E8B6A",
+    // ── Walls — thick wooden/brown borders ───────────────────────────────────
+    wallFill:      "#8B5E3C",   // warm brown wall panels
+    wallHighlight: "#9A6B47",
+    wallShadow:    "#5C3D1E",
+    wallBorder:    "#8B5E3C",
     // ── Ceiling light markers ─────────────────────────────────────────────────
     lightGlow:     "#F8E890",
     lightFixture:  "#F0D060",
@@ -48,47 +48,47 @@ function palette(isDark: boolean) {
     // ── Zone labels ──────────────────────────────────────────────────────────
     zoneLabel:     "#E8D890",
     // ── Avatar / UI ──────────────────────────────────────────────────────────
-    avatarFill:    "#584028",
-    avatarMeFill:  "#5848D8",
+    avatarFill:    "#5C3D1E",
+    avatarMeFill:  "#4488FF",   // bright blue for self
     label:         "#F0E8D0",
     labelMuted:    "#A09070",
-    indicator:     "#201408",
-    indicatorTxt:  "#F0E8D0",
-    // ── Furniture ────────────────────────────────────────────────────────────
-    deskDark:      "#583010",
-    deskMid:       "#784018",
-    deskLight:     "#A05820",
-    deskEdge:      "#C07828",
-    chairFill:     "#281808",
-    chairStroke:   "#705030",
-    screenFill:    "#080C20",
-    screenGlow:    "#3060E8",
-    screenGlowOut: "#102880",
-    tableWar:      "#503010",
-    tableWarEdge:  "#A06020",
-    chairWarFill:  "#601010",
-    chairWarStroke:"#C04030",
-    sofaFill:      "#104838",
-    sofaStroke:    "#208868",
-    cushionFill:   "#186050",
-    coffeeTable:   "#583818",
-    tvFill:        "#080810",
-    tvScreen:      "#1830B0",
-    plantPot:      "#784018",
-    plantLeaf:     "#18A030",
-    plantLeaf2:    "#28C040",
-    bookShelf:     "#402808",
-    bookEdge:      "#704018",
-    rugWarm:       "rgba(200,130,55,0.08)",
-    rugCool:       "rgba(40,190,140,0.08)",
-    shadow:        "rgba(0,0,0,0.55)",
-    doorFill:      "#A07030",
-    doorText:      "#F0D880",
-    counterFill:   "#503018",
-    counterTop:    "#704020",
-    sinkFill:      "#284858",
-    glassBlue:     "#4898D8",
-    mugFill:       "#D8B020",
+    indicator:     "#1a1a1a",
+    indicatorTxt:  "#E8D890",
+    // ── Furniture (flat pixel blocks) ────────────────────────────────────────
+    deskDark:      "#3A2510",   // dark brown desks
+    deskMid:       "#4A3018",
+    deskLight:     "#5A3820",
+    deskEdge:      "#6B4520",
+    chairFill:     "#8B2222",   // muted red chairs
+    chairStroke:   "#6B1212",
+    screenFill:    "#4488FF",   // bright blue screens
+    screenGlow:    "#66AAFF",
+    screenGlowOut: "#1A3A7A",
+    tableWar:      "#3A2510",
+    tableWarEdge:  "#6B4520",
+    chairWarFill:  "#8B2222",
+    chairWarStroke:"#AA3333",
+    sofaFill:      "#1A5C3A",   // dark teal sofas
+    sofaStroke:    "#2E8B6A",
+    cushionFill:   "#2E8B6A",
+    coffeeTable:   "#3A2510",
+    tvFill:        "#0a0a0a",
+    tvScreen:      "#4488FF",
+    plantPot:      "#6B4520",
+    plantLeaf:     "#2E8B6A",   // teal plants
+    plantLeaf2:    "#3AAA80",
+    bookShelf:     "#2A1A0A",
+    bookEdge:      "#4A2A10",
+    rugWarm:       "rgba(139,94,60,0.15)",
+    rugCool:       "rgba(46,139,106,0.15)",
+    shadow:        "rgba(0,0,0,0.8)",
+    doorFill:      "#8B5E3C",
+    doorText:      "#E8D890",
+    counterFill:   "#3A2510",
+    counterTop:    "#5A3820",
+    sinkFill:      "#1A3848",
+    glassBlue:     "#4488FF",
+    mugFill:       "#C8A020",
     whiteboard:    "#F0ECD8",
     whiteboardLine:"#2840D8",
   } : {
@@ -263,52 +263,20 @@ function drawRug3D(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: num
   rr(ctx, x + 3, y + 3, w * 0.5, h * 0.45, 5); ctx.fill();
 }
 
-// ─── Background — 16 px SNES/Pokémon-style flat stone tiles ──────────────────
+// ─── Background — dark charcoal grid (Gather.town style) ──────────────────────
 function drawBackground(ctx: CanvasRenderingContext2D, p: P) {
-  const isDark = p.bg === "#18140C";
-  const T = 16; // 16 px tiles — classic SNES/GBA tile size
-
-  // Four stone shades — no gradients, purely flat
-  const regularTiles = isDark
-    ? ["#201A10", "#281E14", "#1C1608", "#302418"] as const
-    : ["#B0A068", "#B8A870", "#A89860", "#C0B078"] as const;
-  // Corridor / path tiles — clearly warmer/lighter than open floor
-  const pathTiles = isDark
-    ? ["#382810", "#402E14", "#30220C", "#4A3418"] as const
-    : ["#C8B068", "#D0B870", "#C0A860", "#D8C078"] as const;
-
-  // Grout line colour
-  ctx.fillStyle = p.grout;
+  // Solid charcoal fill
+  ctx.fillStyle = p.bg;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-  // Corridor paths connecting rooms [x1,y1,x2,y2]
-  const corridors: [number, number, number, number][] = [
-    [300,  90, 900, 195],   // top hall: office 1 door ↔ office 2 door
-    [530, 190, 670, 250],   // spine down to War Room
-    [750, 480, 920, 580],   // War Room → Lounge connector
-  ];
-  function inCorridor(px: number, py: number) {
-    return corridors.some(([x1,y1,x2,y2]) => px >= x1 && px < x2 && py >= y1 && py < y2);
+  // Faint grid lines
+  ctx.strokeStyle = p.grout;
+  ctx.lineWidth = 1;
+  const G = 32;
+  for (let tx = 0; tx <= CANVAS_W; tx += G) {
+    ctx.beginPath(); ctx.moveTo(tx, 0); ctx.lineTo(tx, CANVAS_H); ctx.stroke();
   }
-
-  // Draw every 16×16 tile — 1 px inset so grout line shows between tiles
-  for (let tx = 0; tx < CANVAS_W; tx += T) {
-    for (let ty = 0; ty < CANVAS_H; ty += T) {
-      const col = tx / T | 0;
-      const row = ty / T | 0;
-      const v = ((col * 13 + row * 7) ^ (col + row)) & 3;
-      ctx.fillStyle = inCorridor(tx + T / 2, ty + T / 2) ? pathTiles[v] : regularTiles[v];
-      ctx.fillRect(tx + 1, ty + 1, T - 2, T - 2);
-    }
-  }
-
-  // Darker 2-px border on corridor edges for the "path" look
-  ctx.fillStyle = isDark ? "#100C06" : "#887040";
-  for (const [x1,y1,x2,y2] of corridors) {
-    ctx.fillRect(x1, y1, x2 - x1, 2);     // top edge
-    ctx.fillRect(x1, y2 - 2, x2 - x1, 2); // bottom edge
-    ctx.fillRect(x1, y1, 2, y2 - y1);     // left edge
-    ctx.fillRect(x2 - 2, y1, 2, y2 - y1); // right edge
+  for (let ty = 0; ty <= CANVAS_H; ty += G) {
+    ctx.beginPath(); ctx.moveTo(0, ty); ctx.lineTo(CANVAS_W, ty); ctx.stroke();
   }
 }
 
@@ -461,16 +429,6 @@ function drawOfficeFloor(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   }
 }
 
-// Style-specific wall border & rug tint
-function officeStyleColors(style: number) {
-  switch (style) {
-    case 1: return { border: "rgba(212,175,55,0.85)",  rug: "rgba(212,175,55,0.07)"  };
-    case 2: return { border: "rgba(0,200,255,0.8)",    rug: "rgba(0,180,255,0.07)"   };
-    case 3: return { border: "rgba(140,190,160,0.8)",  rug: "rgba(160,215,185,0.07)" };
-    case 4: return { border: "rgba(200,160,25,0.85)",  rug: "rgba(210,170,40,0.07)"  };
-    default: return { border: "rgba(185,138,55,0.85)",  rug: "rgba(195,148,60,0.08)"  };
-  }
-}
 
 // ─── Zones — walls & labels ───────────────────────────────────────────────────
 function drawZones(
@@ -512,65 +470,55 @@ function drawZones(
       (z.id === "private-office" && offices[0].locked) ||
       (z.id === "private-office-2" && offices[1].locked);
 
-    // ── Wall helpers — SNES-style 3-tone flat blocks (no gradients) ───────────
-    const FF = 8; // front-face extension (wall "height" visible in room)
-    const TF = 3; // top/left highlight strip width
-
-    // Horizontal wall.  roomBelow=true → top wall; shows front face below.
-    const wH = (wx: number, wy: number, ww: number, wh2: number, roomBelow: boolean) => {
-      // Main body
+    // ── Wall helpers — flat Gather.town-style thick wooden borders ───────────
+    // Horizontal wall — flat solid brown block
+    const wH = (wx: number, wy: number, ww: number, wh2: number, _roomBelow: boolean) => {
       ctx.fillStyle = p.wallFill;
       ctx.fillRect(wx, wy, ww, wh2);
-      // Top highlight (2-3px bright strip)
+      // Top highlight pixel line
       ctx.fillStyle = p.wallHighlight;
-      ctx.fillRect(wx, wy, ww, TF);
-      if (roomBelow) {
-        // Front face — dark strip below wall (shows wall has height, like Pokémon buildings)
-        ctx.fillStyle = p.wallShadow;
-        ctx.fillRect(wx, wy + wh2, ww, FF);
-        // Single-pixel black line at junction for crispness
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(wx, wy + wh2 + FF, ww, 1);
-      } else {
-        // Bottom wall — single-pixel shadow on underside
-        ctx.fillStyle = p.wallShadow;
-        ctx.fillRect(wx, wy + wh2 - 2, ww, 2);
-      }
+      ctx.fillRect(wx, wy, ww, 2);
+      // Bottom shadow line
+      ctx.fillStyle = p.wallShadow;
+      ctx.fillRect(wx, wy + wh2 - 2, ww, 2);
     };
 
-    // Vertical wall.  roomRight=true → left wall; shows right shadow face.
+    // Vertical wall — flat solid brown block
     const wV = (wx: number, wy: number, ww: number, wh2: number, roomRight: boolean) => {
       ctx.fillStyle = p.wallFill;
       ctx.fillRect(wx, wy, ww, wh2);
       ctx.fillStyle = p.wallHighlight;
-      ctx.fillRect(wx, wy, TF, wh2);
+      ctx.fillRect(wx, wy, 2, wh2);
       if (roomRight) {
-        // Right shadow face (3px)
         ctx.fillStyle = p.wallShadow;
-        ctx.fillRect(wx + ww, wy, 3, wh2);
+        ctx.fillRect(wx + ww - 2, wy, 2, wh2);
         ctx.fillStyle = "#000000";
-        ctx.fillRect(wx + ww + 3, wy, 1, wh2);
+        ctx.fillRect(wx + ww, wy, 1, wh2);
       }
     };
+
+    // ── Pixel drop shadow (solid dark rect offset 6px) ───────────────────────
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(z.x + 6, z.y + 6, z.w + WT, z.h + WT);
 
     if (z.id === "private-office") {
       const { x, y, w, h } = PRIVATE_OFFICE_ZONE;
       const wallX = x + w;
-      wH(x, y, w + WT, WT, true);             // top
-      wV(x, y, WT, h, true);                  // left (canvas edge)
-      wH(x, y + h, w + WT, WT, false);        // bottom
-      wV(wallX, y, WT, DOOR.y - y, true);                           // right-top
-      wV(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h), true); // right-bottom
+      wH(x, y, w + WT, WT, true);
+      wV(x, y, WT, h, true);
+      wH(x, y + h, w + WT, WT, false);
+      wV(wallX, y, WT, DOOR.y - y, true);
+      wV(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h), true);
       drawDoor(ctx, isLocked || doorClosed, p, false);
     } else if (z.id === "private-office-2") {
       const { x, y, w, h } = PRIVATE_OFFICE_2_ZONE;
       const wallX = x;
-      wH(x, y, w, WT, true);                  // top
-      wV(x, y, WT, h, true);                  // left placeholder
-      wV(x + w, y, WT, h + WT, false);        // right (canvas edge)
-      wH(x, y + h, w + WT, WT, false);        // bottom
-      wV(wallX, y, WT, DOOR_2.y - y, true);                              // left-top
-      wV(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h), true); // left-bottom
+      wH(x, y, w, WT, true);
+      wV(x, y, WT, h, true);
+      wV(x + w, y, WT, h + WT, false);
+      wH(x, y + h, w + WT, WT, false);
+      wV(wallX, y, WT, DOOR_2.y - y, true);
+      wV(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h), true);
       drawDoor(ctx, isLocked || doorClosed, p, true);
     } else {
       wH(z.x, z.y, z.w, WT, true);
@@ -579,42 +527,12 @@ function drawZones(
       wV(z.x + z.w, z.y, WT, z.h + WT, false);
     }
 
-    // ── Inner-room dark border line (1px, pixel-art style) ───────────────────
-    const { x: zx, y: zy, w: zw, h: zh } = z;
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.fillRect(zx + WT, zy + WT, zw - WT, 2);     // top inner edge
-    ctx.fillRect(zx + WT, zy + WT, 2, zh - WT);     // left inner edge
-    ctx.fillRect(zx + zw + WT - 2, zy + WT, 2, zh - WT); // right inner edge
-    ctx.fillRect(zx + WT, zy + zh + WT - 2, zw - WT, 2); // bottom inner edge
-
-    // Wall border highlight — style-tinted for private offices
-    const borderColor =
-      z.id === "private-office"   ? officeStyleColors(offices[0].style ?? 0).border :
-      z.id === "private-office-2" ? officeStyleColors(offices[1].style ?? 0).border :
-      z.border;
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 1;
-    if (z.id === "private-office") {
-      const { x, y, w, h } = PRIVATE_OFFICE_ZONE;
-      const wallX = x + w;
-      ctx.beginPath();
-      ctx.moveTo(x + WT, y + WT); ctx.lineTo(x + w, y + WT);
-      ctx.moveTo(wallX + WT, y + WT); ctx.lineTo(wallX + WT, DOOR.y);
-      ctx.moveTo(wallX + WT, DOOR.y + DOOR.h); ctx.lineTo(wallX + WT, y + h);
-      ctx.moveTo(x + w, y + h + WT); ctx.lineTo(x + WT, y + h + WT);
-      ctx.moveTo(x + WT, y + h + WT); ctx.lineTo(x + WT, y + WT);
-      ctx.stroke();
-    } else if (z.id === "private-office-2") {
-      const { x, y, w, h } = PRIVATE_OFFICE_2_ZONE;
-      ctx.beginPath();
-      ctx.moveTo(x, y + WT); ctx.lineTo(x + w, y + WT);
-      ctx.moveTo(x, DOOR_2.y); ctx.lineTo(x, y + WT);
-      ctx.moveTo(x, DOOR_2.y + DOOR_2.h); ctx.lineTo(x, y + h);
-      ctx.moveTo(x, y + h + WT); ctx.lineTo(x + w, y + h + WT);
-      ctx.stroke();
-    } else {
-      ctx.strokeRect(z.x + WT, z.y + WT, z.w - WT, z.h - WT);
-    }
+    // ── 1px black inner border for crispness ─────────────────────────────────
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(z.x + WT, z.y + WT, z.w - WT, 1);
+    ctx.fillRect(z.x + WT, z.y + WT, 1, z.h - WT);
+    ctx.fillRect(z.x + z.w + WT - 1, z.y + WT, 1, z.h - WT);
+    ctx.fillRect(z.x + WT, z.y + z.h + WT - 1, z.w - WT, 1);
   }
 }
 
@@ -668,650 +586,195 @@ function drawDoor(ctx: CanvasRenderingContext2D, closed: boolean, p: P, isOffice
   }
 }
 
-// ─── Furniture ────────────────────────────────────────────────────────────────
+// ─── Furniture — flat pixel blocks (Gather.town style) ─────────────────────────
 function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [number, number]) {
 
-  // ══ PRIVATE OFFICE (0,0 → 300,280) ══════════════════════════════════════════
+  // ── Flat-block helpers ────────────────────────────────────────────────────────
+  const desk = (x: number, y: number, w: number, h: number) => {
+    ctx.fillStyle = p.deskDark; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = p.deskLight; ctx.fillRect(x, y, w, 3);
+    ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+  };
+  const screen = (x: number, y: number, w: number, h: number) => {
+    ctx.fillStyle = "#000"; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+    ctx.fillStyle = p.screenFill; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fillRect(x, y, w, 3);
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    for (let sy2 = y + 1; sy2 < y + h; sy2 += 3) ctx.fillRect(x, sy2, w, 1);
+  };
+  const chair = (cx: number, cy: number, w = 20, h = 16) => {
+    ctx.fillStyle = p.chairFill;
+    ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
+    ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 1;
+    ctx.strokeRect(cx - w / 2, cy - h / 2, w, h);
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    ctx.fillRect(cx - w / 2 + 2, cy - h / 2 + 2, w - 4, 4);
+  };
+  const bookShelf = (x: number, y: number, w: number, h: number) => {
+    ctx.fillStyle = p.bookShelf; ctx.fillRect(x, y, w, h);
+    const bc = ["#e05555","#4488FF","#3dffa0","#ffbe32","#a855f7","#ff8c42","#06b6d4","#E8D890"];
+    let bx = x + 2;
+    let bi = 0;
+    while (bx < x + w - 4) {
+      const bw = 3 + bi % 3;
+      ctx.fillStyle = bc[bi % bc.length];
+      ctx.fillRect(bx, y + 2, bw, h - 4);
+      bx += bw + 1; bi++;
+    }
+    ctx.fillStyle = p.bookEdge; ctx.fillRect(x, y, w, 2);
+  };
+  const plant = (cx: number, cy: number, r = 10) => {
+    ctx.fillStyle = p.plantPot; ctx.fillRect(cx - 7, cy - 2, 14, 10);
+    ctx.fillStyle = p.plantLeaf;
+    ctx.beginPath(); ctx.arc(cx, cy - r, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = p.plantLeaf2;
+    ctx.beginPath(); ctx.arc(cx + r * 0.4, cy - r * 1.4, r * 0.65, 0, Math.PI * 2); ctx.fill();
+  };
+  const win = (x: number, y: number, w: number, h: number) => {
+    ctx.fillStyle = p.glassBlue; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fillRect(x + 2, y + 2, w / 2 - 3, h - 4);
+    ctx.fillStyle = "#000"; ctx.fillRect(x + w / 2 - 1, y, 2, h);
+    ctx.strokeStyle = "#000"; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+  };
 
-  // 3-D decorative rug — centred under the desk area
+  // ══ PRIVATE OFFICE 1 (0,0 → 300,280) ══════════════════════════════════════════
+
   drawRug3D(ctx, 155, 195, 162, 100, officeStyles[0]);
 
+  bookShelf(14, 18, 20, 240);        // left wall
 
-  // ── Bookshelf — full left wall ───────────────────────────────────────────────
-  shadow(ctx, p.shadow, 8);
-  ctx.fillStyle = p.bookShelf;
-  rr(ctx, 8, 8, 34, 260, 2); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.bookEdge;
-  ctx.lineWidth = 1;
-  rr(ctx, 8, 8, 34, 260, 2); ctx.stroke();
-  // Shelves
-  for (let i = 0; i < 5; i++) {
-    ctx.fillStyle = p.bookEdge;
-    ctx.fillRect(8, 58 + i * 50, 34, 3);
-  }
-  // Books on each shelf
-  const bookCols = ["#e05555","#6c63ff","#3dffa0","#ffbe32","#06b6d4","#a855f7","#ff8c42","#e05555","#3dffa0","#6c63ff"];
-  for (let shelf = 0; shelf < 5; shelf++) {
-    let bx = 10;
-    const by = 10 + shelf * 50;
-    for (let b = 0; b < 6 && bx < 40; b++) {
-      const bw = 3 + (b * 7 + shelf * 3) % 3;
-      ctx.fillStyle = bookCols[(shelf * 6 + b) % bookCols.length];
-      ctx.fillRect(bx, by + 2, bw, 44);
-      bx += bw + 1;
-    }
-  }
+  desk(50, 140, 200, 52);            // main desk
+  desk(50, 192, 60, 60);             // return
 
-  // ── Executive L-desk ─────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 10);
-  ctx.fillStyle = p.deskDark;
-  rr(ctx, 55, 145, 195, 58, 4); ctx.fill();   // main desk surface
-  rr(ctx, 55, 185, 64, 75, 4); ctx.fill();    // return (side piece)
-  noShadow(ctx);
-  // Surface highlight
-  ctx.fillStyle = p.deskLight;
-  rr(ctx, 58, 148, 189, 8, 2); ctx.fill();
-  rr(ctx, 58, 188, 58, 8, 2); ctx.fill();
-  // Edge trim
-  ctx.strokeStyle = p.deskEdge;
-  ctx.lineWidth = 1.5;
-  rr(ctx, 55, 145, 195, 58, 4); ctx.stroke();
-  rr(ctx, 55, 185, 64, 75, 4); ctx.stroke();
-  // Drawer handles on return
-  for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = p.deskEdge;
-    rr(ctx, 76, 200 + i * 18, 20, 5, 2); ctx.fill();
-  }
+  screen(95, 143, 44, 28);           // monitor
 
-  // ── Monitor (flat top-down: small screen on desk) ────────────────────────────
-  ctx.fillStyle = "#000000";
-  ctx.fillRect(107, 147, 46, 30);          // outer bezel
-  ctx.fillStyle = p.screenFill;
-  ctx.fillRect(108, 148, 44, 28);          // screen body
-  ctx.fillStyle = p.screenGlow;
-  ctx.fillRect(110, 150, 40, 24);          // screen glow
-  // Screen content rows (fake UI)
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.fillRect(112, 152, 28, 4);
-  ctx.fillRect(112, 158, 20, 3);
-  ctx.fillRect(112, 163, 24, 3);
-  ctx.fillRect(134, 158, 12, 8);
-  // Stand
-  ctx.fillStyle = p.deskMid;
-  ctx.fillRect(127, 177, 6, 8);
-  ctx.fillRect(121, 184, 18, 3);
+  ctx.fillStyle = "#2a2a2a"; ctx.fillRect(148, 162, 50, 13);   // keyboard
 
-  // Keyboard
-  ctx.fillStyle = p.chairFill;
-  rr(ctx, 152, 170, 44, 14, 2); ctx.fill();
-  ctx.strokeStyle = p.chairStroke;
-  ctx.lineWidth = 0.5;
-  for (let ki = 0; ki < 3; ki++) {
-    for (let kj = 0; kj < 7; kj++) {
-      rr(ctx, 154 + kj * 6, 172 + ki * 4, 5, 3, 0.5); ctx.stroke();
-    }
-  }
-  // Mouse
-  ctx.fillStyle = p.chairFill;
-  rr(ctx, 200, 172, 12, 16, 4); ctx.fill();
-  ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 0.5;
-  ctx.beginPath(); ctx.moveTo(200, 180); ctx.lineTo(212, 180); ctx.stroke();
+  chair(92, 252);
 
-  // ── Executive chair ───────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 12);
-  // Back
-  ctx.fillStyle = p.chairFill;
-  rr(ctx, 70, 218, 44, 36, 6); ctx.fill();
-  // Seat
-  rr(ctx, 66, 240, 52, 22, 5); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.chairStroke;
-  ctx.lineWidth = 1.5;
-  rr(ctx, 70, 218, 44, 36, 6); ctx.stroke();
-  rr(ctx, 66, 240, 52, 22, 5); ctx.stroke();
-  // Armrests
-  ctx.fillStyle = p.chairFill;
-  ctx.fillRect(64, 236, 6, 20);
-  ctx.fillRect(116, 236, 6, 20);
-  // Chair base (5 wheels star)
-  ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 2;
-  for (let a = 0; a < 5; a++) {
-    const ang = (a / 5) * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(92, 265);
-    ctx.lineTo(92 + Math.cos(ang) * 16, 265 + Math.sin(ang) * 10);
-    ctx.stroke();
-  }
+  ctx.fillStyle = p.deskMid; ctx.fillRect(228, 238, 38, 32);   // side table
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1; ctx.strokeRect(228, 238, 38, 32);
+  ctx.fillStyle = p.deskDark; ctx.fillRect(245, 222, 4, 16);   // lamp pole
+  ctx.fillStyle = p.mugFill;  ctx.fillRect(236, 214, 22, 10);  // lamp shade
 
-  // ── Side table + lamp ─────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 6);
-  ctx.fillStyle = p.deskMid;
-  rr(ctx, 225, 235, 40, 35, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1;
-  rr(ctx, 225, 235, 40, 35, 3); ctx.stroke();
-  // Lamp
-  ctx.fillStyle = p.deskDark;
-  ctx.fillRect(242, 218, 4, 17);
-  ctx.fillStyle = p.mugFill;
-  rr(ctx, 233, 208, 22, 14, 3); ctx.fill();
-  // Lamp glow on table
-  const lampG = ctx.createRadialGradient(244, 235, 0, 244, 235, 30);
-  lampG.addColorStop(0, "rgba(255,240,180,0.12)");
-  lampG.addColorStop(1, "transparent");
-  ctx.fillStyle = lampG;
-  ctx.fillRect(214, 215, 60, 60);
-  // Coffee mug on table
-  ctx.fillStyle = p.mugFill;
-  rr(ctx, 236, 248, 12, 16, 2); ctx.fill();
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 0.8;
-  ctx.beginPath(); ctx.arc(250, 256, 5, -0.5, 0.5); ctx.stroke();
+  plant(264, 248, 14);               // corner plant
 
-  // ── Corner plant ──────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 8);
-  ctx.fillStyle = p.plantPot;
-  rr(ctx, 254, 240, 28, 28, 3); ctx.fill();
-  noShadow(ctx);
-  // Soil
-  ctx.fillStyle = "rgba(30,20,10,0.6)";
-  rr(ctx, 256, 240, 24, 8, 2); ctx.fill();
-  // Leaves
-  ctx.fillStyle = p.plantLeaf;
-  ctx.beginPath(); ctx.ellipse(264, 225, 20, 10, -0.3, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(272, 218, 16, 8, 0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(256, 222, 12, 7, 0.8, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = p.plantLeaf2;
-  ctx.beginPath(); ctx.ellipse(268, 230, 10, 5, -0.2, 0, Math.PI * 2); ctx.fill();
-
-  // ── Window (top wall) ─────────────────────────────────────────────────────────
-  ctx.fillStyle = p.glassBlue;
-  rr(ctx, 86, 7, 130, 22, 3); ctx.fill();
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  rr(ctx, 86, 7, 130, 22, 3); ctx.stroke();
-  // Window panes
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(151, 7); ctx.lineTo(151, 29); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(86, 18); ctx.lineTo(216, 18); ctx.stroke();
-  // Blind lines
-  ctx.strokeStyle = "rgba(255,255,255,0.06)";
-  ctx.lineWidth = 0.5;
-  for (let bx = 90; bx < 214; bx += 8) {
-    ctx.beginPath(); ctx.moveTo(bx, 7); ctx.lineTo(bx, 29); ctx.stroke();
-  }
+  win(86, 8, 130, 20);               // window
 
   // ══ WAR ROOM (440,240 → 760,550) ═════════════════════════════════════════════
 
-  // Rug under table
-  ctx.fillStyle = p.rugWarm;
-  rr(ctx, 458, 264, 286, 268, 10); ctx.fill();
+  ctx.fillStyle = p.rugWarm; ctx.fillRect(454, 254, 292, 282);
 
-  // ── Conference table ─────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 16);
-  ctx.fillStyle = p.tableWar;
-  rr(ctx, 488, 302, 228, 160, 10); ctx.fill();
-  noShadow(ctx);
-  // Table surface reflection
-  ctx.fillStyle = "rgba(255,255,255,0.04)";
-  rr(ctx, 492, 306, 110, 60, 6); ctx.fill();
-  // Table edge trim
-  ctx.strokeStyle = p.tableWarEdge;
-  ctx.lineWidth = 2;
-  rr(ctx, 488, 302, 228, 160, 10); ctx.stroke();
-  // Center line
-  ctx.strokeStyle = "rgba(255,255,255,0.04)";
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(488, 382); ctx.lineTo(716, 382); ctx.stroke();
-  // Items on table: laptops, papers, glasses
-  for (let i = 0; i < 3; i++) {
-    const tx = 508 + i * 70;
-    // Laptop
-    ctx.fillStyle = p.screenFill;
-    rr(ctx, tx, 320, 40, 26, 2); ctx.fill();
-    ctx.fillStyle = p.screenGlow;
-    rr(ctx, tx + 2, 322, 36, 22, 1); ctx.fill();
-    // Paper
-    ctx.fillStyle = "rgba(255,255,255,0.08)";
-    rr(ctx, tx + 5, 355, 30, 22, 1); ctx.fill();
-  }
-  // Water glasses
-  for (let i = 0; i < 4; i++) {
-    ctx.fillStyle = p.glassBlue;
-    rr(ctx, 500 + i * 54, 392, 12, 18, 2); ctx.fill();
-    ctx.strokeStyle = "rgba(100,200,255,0.3)"; ctx.lineWidth = 0.5;
-    rr(ctx, 500 + i * 54, 392, 12, 18, 2); ctx.stroke();
-  }
+  desk(484, 296, 236, 166);          // conference table
 
-  // ── Chairs around table ───────────────────────────────────────────────────────
-  const chairWRPositions = [
-    // top row
-    { x: 504, y: 270, rot: 0 }, { x: 564, y: 270, rot: 0 }, { x: 624, y: 270, rot: 0 },
-    // bottom row
-    { x: 504, y: 468, rot: Math.PI }, { x: 564, y: 468, rot: Math.PI }, { x: 624, y: 468, rot: Math.PI },
-    // left
-    { x: 455, y: 330, rot: Math.PI / 2 }, { x: 455, y: 395, rot: Math.PI / 2 },
-    // right
-    { x: 718, y: 330, rot: -Math.PI / 2 }, { x: 718, y: 395, rot: -Math.PI / 2 },
-  ];
-  for (const c of chairWRPositions) {
-    ctx.save();
-    ctx.translate(c.x + 22, c.y + 12);
-    ctx.rotate(c.rot);
-    shadow(ctx, p.shadow, 5);
-    ctx.fillStyle = p.chairWarFill;
-    rr(ctx, -22, -12, 44, 24, 5); ctx.fill();
-    noShadow(ctx);
-    ctx.strokeStyle = p.chairWarStroke; ctx.lineWidth = 1.5;
-    rr(ctx, -22, -12, 44, 24, 5); ctx.stroke();
-    // Cushion
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    rr(ctx, -18, -8, 36, 16, 3); ctx.fill();
-    ctx.restore();
-  }
+  for (const [cx2, cy2] of [
+    [504,270],[564,270],[624,270],[684,270],
+    [504,474],[564,474],[624,474],[684,474],
+    [462,340],[462,400],
+    [722,340],[722,400],
+  ] as [number,number][]) chair(cx2, cy2);
 
-  // ── Whiteboard left wall ───────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 6);
-  ctx.fillStyle = p.whiteboard;
-  rr(ctx, 450, 262, 22, 110, 2); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  rr(ctx, 450, 262, 22, 110, 2); ctx.stroke();
-  // Marker drawings
-  ctx.strokeStyle = p.whiteboardLine; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(453, 278); ctx.lineTo(468, 278); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(453, 288); ctx.lineTo(465, 288); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(453, 298); ctx.lineTo(469, 298); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(453, 308); ctx.lineTo(461, 308); ctx.stroke();
-  // Box drawing (diagram)
-  ctx.strokeStyle = "rgba(255,150,100,0.5)"; ctx.lineWidth = 1;
-  rr(ctx, 453, 320, 14, 10, 1); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(460, 330); ctx.lineTo(460, 340); ctx.stroke();
-  rr(ctx, 453, 340, 14, 10, 1); ctx.stroke();
-  // Marker tray
-  ctx.fillStyle = p.deskMid;
-  ctx.fillRect(450, 372, 22, 5);
+  for (let i = 0; i < 3; i++) screen(504 + i * 70, 310, 36, 22);  // laptops
 
-  // ── Large TV / screen right wall ──────────────────────────────────────────────
-  shadow(ctx, p.shadow, 8);
-  ctx.fillStyle = p.tvFill;
-  rr(ctx, 755, 262, 20, 110, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.fillStyle = p.tvScreen;
-  rr(ctx, 757, 264, 16, 106, 2); ctx.fill();
-  // Screen content (presentation)
-  ctx.fillStyle = "rgba(255,255,255,0.06)";
-  rr(ctx, 758, 272, 14, 25, 1); ctx.fill();
-  rr(ctx, 758, 302, 14, 8, 1); ctx.fill();
-  rr(ctx, 758, 314, 14, 8, 1); ctx.fill();
-  ctx.strokeStyle = "rgba(60,160,255,0.4)"; ctx.lineWidth = 0.5;
-  rr(ctx, 755, 262, 20, 110, 3); ctx.stroke();
+  // Whiteboard left wall
+  ctx.fillStyle = "#F0ECD8"; ctx.fillRect(450, 262, 20, 110);
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1; ctx.strokeRect(450, 262, 20, 110);
+  ctx.strokeStyle = "#2840D8"; ctx.lineWidth = 1.5;
+  for (let li = 0; li < 4; li++) { ctx.beginPath(); ctx.moveTo(453, 278 + li * 22); ctx.lineTo(467, 278 + li * 22); ctx.stroke(); }
 
-  // ── Coffee station (back-right corner) ────────────────────────────────────────
-  shadow(ctx, p.shadow, 6);
-  ctx.fillStyle = p.counterFill;
-  rr(ctx, 680, 246, 72, 28, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.fillStyle = p.counterTop;
-  rr(ctx, 680, 246, 72, 8, 3); ctx.fill();
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  rr(ctx, 680, 246, 72, 28, 3); ctx.stroke();
-  // Coffee machine
-  ctx.fillStyle = p.deskDark;
-  rr(ctx, 700, 248, 22, 24, 3); ctx.fill();
-  ctx.fillStyle = p.screenGlow;
-  rr(ctx, 703, 250, 16, 8, 2); ctx.fill();
-  // Mugs
-  for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = ["#e05555","#6c63ff","#3dffa0"][i] + "bb";
-    rr(ctx, 682 + i * 8, 252, 6, 10, 1); ctx.fill();
-  }
+  screen(756, 262, 18, 110);         // TV right wall
+
+  ctx.fillStyle = p.deskMid; ctx.fillRect(682, 246, 68, 24);  // coffee station
+  ctx.fillStyle = p.deskDark; ctx.fillRect(700, 248, 20, 20);
+  screen(701, 249, 18, 8);
 
   // ══ LOUNGE (900,560 → 1200,800) ══════════════════════════════════════════════
 
-  // Rug
-  ctx.fillStyle = p.rugCool;
-  rr(ctx, 910, 572, 284, 224, 12); ctx.fill();
+  ctx.fillStyle = p.rugCool; ctx.fillRect(910, 570, 286, 226);
 
-  // ── L-shaped sofa ─────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 14);
-  ctx.fillStyle = p.sofaFill;
-  rr(ctx, 910, 576, 175, 56, 8); ctx.fill();   // main sofa
-  rr(ctx, 1046, 576, 56, 125, 8); ctx.fill();  // side piece
-  noShadow(ctx);
-  ctx.strokeStyle = p.sofaStroke; ctx.lineWidth = 2;
-  rr(ctx, 910, 576, 175, 56, 8); ctx.stroke();
-  rr(ctx, 1046, 576, 56, 125, 8); ctx.stroke();
-  // Back cushions
+  ctx.fillStyle = p.sofaFill; ctx.fillRect(910, 576, 176, 52);
+  ctx.strokeStyle = p.sofaStroke; ctx.lineWidth = 2; ctx.strokeRect(910, 576, 176, 52);
+  ctx.fillStyle = p.sofaFill; ctx.fillRect(1048, 576, 52, 122);
+  ctx.strokeRect(1048, 576, 52, 122);
   ctx.fillStyle = p.cushionFill;
-  for (let i = 0; i < 3; i++) { rr(ctx, 916 + i * 56, 578, 50, 20, 5); ctx.fill(); }
-  rr(ctx, 1050, 578, 46, 28, 5); ctx.fill();
-  rr(ctx, 1050, 610, 46, 28, 5); ctx.fill();
-  // Seat cushions
-  ctx.fillStyle = p.sofaFill;
-  for (let i = 0; i < 3; i++) { rr(ctx, 916 + i * 56, 600, 50, 28, 4); ctx.fill(); }
-  rr(ctx, 1050, 640, 46, 50, 4); ctx.fill();
-  // Throw pillow
-  ctx.fillStyle = "rgba(255,160,80,0.5)";
-  rr(ctx, 950, 600, 22, 22, 4); ctx.fill();
-  ctx.save(); ctx.translate(961, 611); ctx.rotate(0.4);
-  ctx.fillStyle = "rgba(255,200,80,0.4)";
-  rr(ctx, -10, -10, 20, 20, 3); ctx.fill();
-  ctx.restore();
+  for (let i = 0; i < 3; i++) ctx.fillRect(916 + i * 56, 578, 48, 16);
+  ctx.fillRect(1052, 580, 42, 26); ctx.fillRect(1052, 612, 42, 26);
 
-  // ── Armchair ────────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 8);
-  ctx.fillStyle = p.sofaFill;
-  rr(ctx, 910, 650, 60, 50, 8); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.sofaStroke; ctx.lineWidth = 1.5;
-  rr(ctx, 910, 650, 60, 50, 8); ctx.stroke();
-  ctx.fillStyle = p.cushionFill;
-  rr(ctx, 914, 658, 52, 34, 5); ctx.fill();
-  // Armrests
-  ctx.fillStyle = p.sofaFill;
-  ctx.fillRect(908, 650, 8, 40);
-  ctx.fillRect(962, 650, 8, 40);
+  ctx.fillStyle = p.sofaFill; ctx.fillRect(910, 650, 58, 48);
+  ctx.strokeStyle = p.sofaStroke; ctx.lineWidth = 1.5; ctx.strokeRect(910, 650, 58, 48);
+  ctx.fillStyle = p.cushionFill; ctx.fillRect(914, 656, 50, 30);
 
-  // ── Coffee table ─────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 10);
-  ctx.fillStyle = p.coffeeTable;
-  rr(ctx, 920, 640, 116, 62, 6); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1.5;
-  rr(ctx, 920, 640, 116, 62, 6); ctx.stroke();
-  // Surface reflection
-  ctx.fillStyle = "rgba(255,255,255,0.04)";
-  rr(ctx, 924, 643, 60, 20, 3); ctx.fill();
-  // Items on table
-  ctx.fillStyle = p.mugFill;
-  rr(ctx, 938, 652, 14, 18, 2); ctx.fill();
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 0.8;
-  ctx.beginPath(); ctx.arc(953, 661, 5, -0.5, 0.5); ctx.stroke();
-  // Laptop
-  ctx.fillStyle = p.screenFill;
-  rr(ctx, 960, 650, 34, 22, 2); ctx.fill();
-  ctx.fillStyle = p.screenGlow;
-  rr(ctx, 962, 652, 30, 18, 1); ctx.fill();
-  // Magazine/book
-  ctx.fillStyle = "rgba(255,255,255,0.1)";
-  rr(ctx, 930, 672, 40, 24, 2); ctx.fill();
+  desk(920, 638, 116, 58);           // coffee table
+  ctx.fillStyle = p.mugFill; ctx.fillRect(938, 650, 12, 16);  // mug
+  screen(960, 646, 34, 22);          // laptop
 
-  // ── TV wall ──────────────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 12);
-  ctx.fillStyle = p.tvFill;
-  rr(ctx, 907, 566, 100, 58, 5); ctx.fill();
-  noShadow(ctx);
-  ctx.fillStyle = p.tvScreen;
-  rr(ctx, 910, 569, 94, 52, 4); ctx.fill();
-  // TV content
-  ctx.fillStyle = "rgba(255,255,255,0.06)";
-  rr(ctx, 913, 573, 40, 44, 2); ctx.fill();
-  rr(ctx, 957, 573, 44, 20, 2); ctx.fill();
-  rr(ctx, 957, 597, 44, 20, 2); ctx.fill();
-  // TV glow
-  const tvG = ctx.createRadialGradient(957, 595, 0, 957, 595, 60);
-  tvG.addColorStop(0, "rgba(40,80,220,0.08)");
-  tvG.addColorStop(1, "transparent");
-  ctx.fillStyle = tvG; ctx.fillRect(897, 555, 120, 80);
-  // TV stand
-  ctx.fillStyle = p.deskDark;
-  ctx.fillRect(948, 624, 16, 8);
-  ctx.fillRect(940, 631, 32, 4);
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  rr(ctx, 907, 566, 100, 58, 5); ctx.stroke();
+  ctx.fillStyle = p.tvFill; ctx.fillRect(907, 566, 100, 56);
+  screen(910, 569, 94, 50);          // TV
 
-  // ── Large plants ──────────────────────────────────────────────────────────────
-  for (const [px, py, s] of [[1158, 735, 1.0], [1100, 570, 0.75]] as [number, number, number][]) {
-    shadow(ctx, p.shadow, 8 * s);
-    ctx.fillStyle = p.plantPot;
-    rr(ctx, px - 14 * s, py - 5 * s, 28 * s, 32 * s, 3); ctx.fill();
-    noShadow(ctx);
-    ctx.fillStyle = "rgba(20,12,5,0.6)";
-    rr(ctx, px - 12 * s, py - 5 * s, 24 * s, 10 * s, 2); ctx.fill();
-    ctx.fillStyle = p.plantLeaf;
-    ctx.beginPath(); ctx.ellipse(px, py - 18 * s, 22 * s, 12 * s, -0.3, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(px + 10 * s, py - 25 * s, 16 * s, 9 * s, 0.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(px - 10 * s, py - 22 * s, 14 * s, 8 * s, -0.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = p.plantLeaf2;
-    ctx.beginPath(); ctx.ellipse(px + 4 * s, py - 14 * s, 12 * s, 6 * s, 0.2, 0, Math.PI * 2); ctx.fill();
-    // Stems
-    ctx.strokeStyle = p.plantLeaf; ctx.lineWidth = s;
-    ctx.beginPath(); ctx.moveTo(px, py - 5 * s); ctx.quadraticCurveTo(px - 5 * s, py - 16 * s, px - 10 * s, py - 22 * s); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(px, py - 5 * s); ctx.quadraticCurveTo(px + 6 * s, py - 18 * s, px + 10 * s, py - 25 * s); ctx.stroke();
-  }
+  plant(1158, 736, 14);
+  plant(1102, 572, 10);
 
-  // ── Mini kitchen counter ──────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 6);
-  ctx.fillStyle = p.counterFill;
-  rr(ctx, 1108, 568, 90, 35, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.fillStyle = p.counterTop;
-  rr(ctx, 1108, 568, 90, 9, 3); ctx.fill();
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  rr(ctx, 1108, 568, 90, 35, 3); ctx.stroke();
-  // Sink
-  ctx.fillStyle = p.sinkFill;
-  rr(ctx, 1122, 571, 28, 22, 2); ctx.fill();
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 0.8;
-  rr(ctx, 1122, 571, 28, 22, 2); ctx.stroke();
-  ctx.fillStyle = p.glassBlue;
-  rr(ctx, 1124, 573, 24, 18, 1); ctx.fill();
-  // Faucet
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(1136, 571); ctx.lineTo(1136, 564); ctx.lineTo(1144, 564); ctx.stroke();
-  // Coffee machine
-  ctx.fillStyle = p.deskDark;
-  rr(ctx, 1158, 569, 28, 30, 3); ctx.fill();
-  ctx.fillStyle = p.screenGlow;
-  rr(ctx, 1160, 572, 24, 10, 2); ctx.fill();
-  ctx.fillStyle = "rgba(255,120,80,0.4)";
-  ctx.beginPath(); ctx.arc(1184, 577, 3, 0, Math.PI * 2); ctx.fill();
-
-  // ── Lamborghinis parked outside each office (above door gap, not blocking entrance) ──
-  // Blue — outside Office 1's right wall (door is at y 110-170, car parked above at y≈62)
+  // ══ LAMBORGHINIS ══════════════════════════════════════════════════════════════
   drawLambo(ctx, 382, 62, "#1565C0", false);
-  // Red — outside Office 2's left wall (mirrored)
   drawLambo(ctx, 818, 62, "#C62828", true);
 
-  // ── Structural columns ────────────────────────────────────────────────────────
-  const cols = [{ x: 420, y: 220 }, { x: 780, y: 220 }, { x: 420, y: 520 }, { x: 780, y: 520 }];
-  for (const c of cols) {
-    shadow(ctx, p.shadow, 8);
-    ctx.fillStyle = p.wallFill;
-    rr(ctx, c.x - 12, c.y - 12, 24, 24, 2); ctx.fill();
-    noShadow(ctx);
-    ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1.5;
-    rr(ctx, c.x - 12, c.y - 12, 24, 24, 2); ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    ctx.fillRect(c.x - 10, c.y - 10, 5, 20);
+  // ══ STRUCTURAL COLUMNS ════════════════════════════════════════════════════════
+  for (const c of [{x:420,y:220},{x:780,y:220},{x:420,y:520},{x:780,y:520}]) {
+    ctx.fillStyle = p.wallFill; ctx.fillRect(c.x - 10, c.y - 10, 20, 20);
+    ctx.fillStyle = p.wallHighlight; ctx.fillRect(c.x - 10, c.y - 10, 20, 2);
+    ctx.strokeStyle = "#000"; ctx.lineWidth = 1; ctx.strokeRect(c.x - 10, c.y - 10, 20, 20);
   }
 
-  // ══ PRIVATE OFFICE 2 (900,0 → 1200,280) — mirrored layout ════════════════════
+  // ══ PRIVATE OFFICE 2 (900,0 → 1200,280) ══════════════════════════════════════
 
-  // 3-D decorative rug (mirrored) — centred under the desk area
   drawRug3D(ctx, 1045, 195, 162, 100, officeStyles[1]);
 
-
-  // ── Whiteboard panel — right wall ────────────────────────────────────────────
-  shadow(ctx, p.shadow, 6);
-  ctx.fillStyle = "#F0EEE8";
-  rr(ctx, 1158, 8, 36, 160, 2); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.deskDark; ctx.lineWidth = 2;
-  rr(ctx, 1160, 10, 32, 156, 1); ctx.stroke();
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1;
-  rr(ctx, 1158, 8, 36, 160, 2); ctx.stroke();
-  // Diagrams drawn on board
+  // Whiteboard right wall
+  ctx.fillStyle = "#F0ECD8"; ctx.fillRect(1162, 8, 28, 160);
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1; ctx.strokeRect(1162, 8, 28, 160);
   ctx.strokeStyle = "#2840D8"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(1163, 24); ctx.lineTo(1187, 24); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(1183, 20); ctx.lineTo(1187, 24); ctx.lineTo(1183, 28); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(1163, 36); ctx.lineTo(1183, 36); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(1163, 46); ctx.lineTo(1186, 46); ctx.stroke();
-  rr(ctx, 1163, 57, 14, 12, 1); ctx.stroke();
-  ctx.beginPath(); ctx.arc(1183, 63, 5, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = "#C0392B"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(1163, 82); ctx.lineTo(1189, 82); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(1163, 90); ctx.lineTo(1181, 90); ctx.stroke();
-  // Sticky notes
-  ctx.fillStyle = "rgba(255,238,88,0.85)";  ctx.fillRect(1161, 108, 14, 12);
-  ctx.fillStyle = "rgba(128,203,196,0.85)"; ctx.fillRect(1179, 106, 14, 12);
-  ctx.fillStyle = "rgba(255,138,101,0.85)"; ctx.fillRect(1161, 124, 14, 12);
-  ctx.fillStyle = "rgba(206,147,216,0.85)"; ctx.fillRect(1179, 126, 14, 12);
-  // Marker tray
-  ctx.fillStyle = p.deskMid;
-  ctx.fillRect(1158, 168, 36, 5);
-  // Markers
-  for (let mi = 0; mi < 3; mi++) {
-    ctx.fillStyle = ["#2840D8","#C0392B","#27AE60"][mi];
-    ctx.fillRect(1162 + mi * 9, 169, 7, 3);
-  }
+  for (let li = 0; li < 5; li++) { const lw = [22,18,20,14,20][li]; ctx.beginPath(); ctx.moveTo(1165, 22 + li * 26); ctx.lineTo(1165 + lw, 22 + li * 26); ctx.stroke(); }
+  ctx.fillStyle = "rgba(255,238,88,0.9)"; ctx.fillRect(1165, 148, 12, 10);
+  ctx.fillStyle = "rgba(128,203,196,0.9)"; ctx.fillRect(1179, 146, 12, 10);
 
-  // ── Modern straight desk (glass-top) ─────────────────────────────────────────
-  shadow(ctx, p.shadow, 10);
-  ctx.fillStyle = p.deskMid;
-  rr(ctx, 928, 138, 222, 56, 4); ctx.fill();  // desk body
-  noShadow(ctx);
-  // Glass top tint
-  ctx.fillStyle = "rgba(160,210,255,0.08)";
-  rr(ctx, 928, 138, 222, 56, 4); ctx.fill();
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1.5;
-  rr(ctx, 928, 138, 222, 56, 4); ctx.stroke();
-  // Surface highlight strip
-  ctx.fillStyle = p.deskLight;
-  rr(ctx, 931, 140, 216, 6, 2); ctx.fill();
-  // Metal legs (four corners, top-down)
-  ctx.fillStyle = "#909090";
-  for (const [lx, ly] of [[931,141],[1143,141],[931,189],[1143,189]] as [number,number][]) {
-    ctx.fillRect(lx, ly, 7, 4);
-  }
+  ctx.fillStyle = p.deskMid; ctx.fillRect(930, 138, 218, 52);  // straight desk
+  ctx.fillStyle = p.deskLight; ctx.fillRect(930, 138, 218, 4);
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1; ctx.strokeRect(930, 138, 218, 52);
 
-  // ── Dual monitors ─────────────────────────────────────────────────────────────
-  // Left monitor
-  ctx.fillStyle = "#000000"; ctx.fillRect(958, 140, 42, 26);
-  ctx.fillStyle = p.screenFill; ctx.fillRect(959, 141, 40, 24);
-  ctx.fillStyle = p.screenGlow; ctx.fillRect(961, 143, 36, 20);
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.fillRect(963, 145, 22, 3);
-  ctx.fillRect(963, 150, 16, 3);
-  ctx.fillRect(963, 155, 20, 3);
-  ctx.fillStyle = p.deskMid;
-  ctx.fillRect(976, 166, 5, 6); ctx.fillRect(971, 171, 14, 3);
-  // Right monitor
-  ctx.fillStyle = "#000000"; ctx.fillRect(1005, 140, 42, 26);
-  ctx.fillStyle = p.screenFill; ctx.fillRect(1006, 141, 40, 24);
-  ctx.fillStyle = p.screenGlow; ctx.fillRect(1008, 143, 36, 20);
-  // Different content — code editor look
-  ctx.fillStyle = "rgba(100,220,100,0.25)";
-  ctx.fillRect(1010, 145, 28, 3);
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
-  ctx.fillRect(1014, 150, 22, 3);
-  ctx.fillRect(1012, 155, 18, 3);
-  ctx.fillRect(1016, 160, 24, 3);
-  ctx.fillStyle = p.deskMid;
-  ctx.fillRect(1023, 166, 5, 6); ctx.fillRect(1018, 171, 14, 3);
+  screen(960, 140, 40, 26);          // monitor 1
+  screen(1006, 140, 40, 26);         // monitor 2
 
-  // Compact wireless keyboard
-  ctx.fillStyle = p.deskLight;
-  rr(ctx, 1050, 162, 60, 16, 3); ctx.fill();
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 0.5;
-  for (let ki = 0; ki < 2; ki++) {
-    for (let kj = 0; kj < 9; kj++) {
-      rr(ctx, 1052 + kj * 6, 164 + ki * 6, 5, 5, 0.5); ctx.stroke();
-    }
-  }
-  // Trackpad
-  ctx.fillStyle = p.deskLight;
-  rr(ctx, 1115, 163, 22, 16, 2); ctx.fill();
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 0.5;
-  rr(ctx, 1115, 163, 22, 16, 2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(1115, 171); ctx.lineTo(1137, 171); ctx.stroke();
+  ctx.fillStyle = "#2a2a2a"; ctx.fillRect(1052, 163, 56, 13);  // keyboard
 
-  // ── Mesh ergonomic chair ──────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 12);
-  ctx.fillStyle = "#546E7A";
-  rr(ctx, 1086, 218, 44, 36, 6); ctx.fill();
-  noShadow(ctx);
-  // Mesh grid lines
-  ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = 0.6;
+  // Mesh chair
+  ctx.fillStyle = "#546E7A"; ctx.fillRect(1086, 218, 44, 36);
+  ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 0.6;
   for (let mi = 0; mi < 4; mi++) {
     ctx.beginPath(); ctx.moveTo(1090, 222 + mi * 8); ctx.lineTo(1126, 222 + mi * 8); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(1090 + mi * 10, 220); ctx.lineTo(1090 + mi * 10, 252); ctx.stroke();
   }
-  ctx.fillStyle = "#455A64";
-  rr(ctx, 1082, 240, 52, 22, 5); ctx.fill();
+  ctx.fillStyle = "#455A64"; ctx.fillRect(1082, 240, 52, 20);
   ctx.strokeStyle = "#37474F"; ctx.lineWidth = 1.5;
-  rr(ctx, 1086, 218, 44, 36, 6); ctx.stroke();
-  rr(ctx, 1082, 240, 52, 22, 5); ctx.stroke();
-  // Slim armrests
-  ctx.fillStyle = "#455A64";
-  ctx.fillRect(1080, 238, 5, 18);
-  ctx.fillRect(1115, 238, 5, 18);
-  // Base
-  ctx.strokeStyle = "#37474F"; ctx.lineWidth = 2;
-  for (let a = 0; a < 5; a++) {
-    const ang = (a / 5) * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(1108, 265);
-    ctx.lineTo(1108 + Math.cos(ang) * 16, 265 + Math.sin(ang) * 10);
-    ctx.stroke();
-  }
+  ctx.strokeRect(1086, 218, 44, 36); ctx.strokeRect(1082, 240, 52, 20);
 
-  // ── Bean bag (bottom-left corner) ────────────────────────────────────────────
-  shadow(ctx, p.shadow, 8);
+  // Bean bag
   ctx.fillStyle = "#E64A19";
-  ctx.beginPath(); ctx.ellipse(928, 252, 27, 20, 0, 0, Math.PI * 2); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = "rgba(0,0,0,0.14)"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.ellipse(928, 252, 19, 13, 0, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
-  ctx.beginPath(); ctx.ellipse(920, 244, 11, 7, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(928, 252, 26, 19, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.1)";
+  ctx.beginPath(); ctx.ellipse(920, 244, 14, 9, -0.4, 0, Math.PI * 2); ctx.fill();
 
-  // ── Standing lamp ─────────────────────────────────────────────────────────────
-  ctx.fillStyle = p.deskDark;
-  ctx.beginPath(); ctx.arc(910, 246, 5, 0, Math.PI * 2); ctx.fill();
-  ctx.fillRect(908, 196, 4, 50);
-  ctx.fillStyle = p.mugFill;
-  ctx.beginPath();
-  ctx.moveTo(899, 196); ctx.lineTo(921, 196); ctx.lineTo(917, 209); ctx.lineTo(903, 209);
-  ctx.closePath(); ctx.fill();
-  const lampG2 = ctx.createRadialGradient(910, 206, 0, 910, 206, 48);
-  lampG2.addColorStop(0, "rgba(255,240,180,0.10)");
-  lampG2.addColorStop(1, "transparent");
-  ctx.fillStyle = lampG2; ctx.fillRect(862, 160, 96, 96);
+  // Standing lamp
+  ctx.fillStyle = p.deskDark; ctx.beginPath(); ctx.arc(910, 246, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillRect(908, 198, 4, 48);
+  ctx.fillStyle = p.mugFill; ctx.fillRect(900, 192, 22, 10);
 
-  // ── Cactus (bottom-right corner) ─────────────────────────────────────────────
-  shadow(ctx, p.shadow, 6);
-  ctx.fillStyle = p.plantPot;
-  rr(ctx, 1148, 244, 28, 28, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.fillStyle = "rgba(30,20,10,0.6)";
-  rr(ctx, 1150, 244, 24, 8, 2); ctx.fill();
-  // Main column
-  ctx.fillStyle = "#3D8B37";
-  rr(ctx, 1157, 213, 10, 34, 4); ctx.fill();
-  // Left arm
-  rr(ctx, 1145, 224, 14, 6, 3); ctx.fill();
-  rr(ctx, 1143, 214, 6, 13, 3); ctx.fill();
-  // Right arm
-  rr(ctx, 1167, 228, 14, 6, 3); ctx.fill();
-  rr(ctx, 1177, 218, 6, 13, 3); ctx.fill();
-  // Spines
-  ctx.fillStyle = "#F5F5F5";
-  for (const [sx, sy] of [[1159,216],[1163,223],[1159,231],[1164,239],[1144,218],[1148,222],[1179,221],[1181,227]] as [number,number][]) {
-    ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI * 2); ctx.fill();
-  }
+  // Cactus
+  ctx.fillStyle = p.plantPot; ctx.fillRect(1148, 244, 26, 26);
+  ctx.fillStyle = "#3D8B37"; ctx.fillRect(1157, 215, 10, 32);
+  ctx.fillRect(1145, 226, 14, 6); ctx.fillRect(1143, 216, 6, 12);
+  ctx.fillRect(1167, 230, 14, 6); ctx.fillRect(1177, 220, 6, 12);
 
-  // ── Window (top wall) ─────────────────────────────────────────────────────────
-  ctx.fillStyle = p.glassBlue;
-  rr(ctx, 984, 7, 130, 22, 3); ctx.fill();
-  ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
-  rr(ctx, 984, 7, 130, 22, 3); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(1049, 7); ctx.lineTo(1049, 29); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(984, 18); ctx.lineTo(1114, 18); ctx.stroke();
-  ctx.strokeStyle = "rgba(255,255,255,0.06)"; ctx.lineWidth = 0.5;
-  for (let bx = 988; bx < 1112; bx += 8) {
-    ctx.beginPath(); ctx.moveTo(bx, 7); ctx.lineTo(bx, 29); ctx.stroke();
-  }
+  win(984, 8, 128, 20);              // window
 }
 
 // ─── Lamborghini (top-down) ───────────────────────────────────────────────────
@@ -1578,21 +1041,21 @@ function drawAvatar(
   const nx = Math.round(x);
   const ny = oy - 14;
 
-  // Outer 1-px black border
-  ctx.fillStyle = "#000000";
-  ctx.fillRect(nx - (nw >> 1) - 2, ny - 7, nw + 4, 14);
-  // Background
-  ctx.fillStyle = isMe ? "#201870" : "#180C28";
-  ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, nw + 2, 12);
-  // Bright pixel border
-  ctx.fillStyle = isMe ? "#8878F8" : "#605878";
-  ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, nw + 2, 1);
-  ctx.fillRect(nx - (nw >> 1) - 1, ny + 5, nw + 2, 1);
-  ctx.fillRect(nx - (nw >> 1) - 1, ny - 5, 1, 10);
-  ctx.fillRect(nx + (nw >> 1) + 1, ny - 5, 1, 10);
-  // Name text
-  ctx.fillStyle = "#F8F8F8";
-  ctx.fillText(firstName, nx, ny);
+  // White pill name tag — Gather.town style
+  // Shadow
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(nx - (nw >> 1) + 1, ny - 5, nw + 2, 13);
+  // White background pill
+  ctx.fillStyle = isMe ? "#E8F0FF" : "#F0F0EE";
+  ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, nw + 2, 13);
+  // Blue left accent bar for self
+  if (isMe) {
+    ctx.fillStyle = "#4488FF";
+    ctx.fillRect(nx - (nw >> 1) - 1, ny - 6, 3, 13);
+  }
+  // Name text (dark on white)
+  ctx.fillStyle = isMe ? "#1A2A5A" : "#111111";
+  ctx.fillText(firstName, isMe ? nx + 1 : nx, ny);
 
   // ── Pixel-art microphone icon (right of name label) ────────────────────
   // 5 wide × 7 tall at 2px = 10×14 — placed just right of name box
