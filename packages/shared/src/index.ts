@@ -19,8 +19,9 @@ export interface Position2D {
 }
 
 export interface OfficeAssignment {
-  ownerId: string;
+  ownerId: string;       // active session id — empty when owner is offline
   ownerName: string;
+  permanentOwnerName: string; // persists across disconnects; empty = unclaimed
   locked: boolean;
   style: number; // 0–4
 }

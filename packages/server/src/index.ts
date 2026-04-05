@@ -49,7 +49,7 @@ const io = new Server(httpServer, {
 });
 
 function emptyOffice(): OfficeAssignment {
-  return { ownerId: "", ownerName: "", locked: false, style: 0 };
+  return { ownerId: "", ownerName: "", permanentOwnerName: "", locked: false, style: 0 };
 }
 
 const rooms = new Map<string, Room>();
@@ -112,20 +112,25 @@ io.on("connection", (socket) => {
     socketUserMap.set(socket.id, user);
     room.users.push(user);
 
-    // Auto-assign to the first free office slot
-    const freeIdx = room.offices.findIndex((o) => !o.ownerId);
-    if (freeIdx !== -1) {
-      room.offices[freeIdx] = { ownerId: user.id, ownerName: name, locked: false };
+    // Restore permanent office if this person already owns one, otherwise claim a free slot
+    const existingIdx = room.offices.findIndex((o) => o.permanentOwnerName === name);
+    const claimIdx = existingIdx !== -1 ? existingIdx
+      : room.offices.findIndex((o) => !o.permanentOwnerName);
+    if (claimIdx !== -1) {
+      const office = room.offices[claimIdx];
+      office.ownerId = user.id;
+      office.ownerName = name;
+      if (!office.permanentOwnerName) office.permanentOwnerName = name;
     }
 
     socket.join(roomId);
     socket.emit(EVENTS.ROOM_STATE, room);
     socket.to(roomId).emit(EVENTS.USER_JOINED, user);
-    // Broadcast updated office assignments to existing members
-    if (freeIdx !== -1) {
+    // Broadcast updated office assignment to existing members
+    if (claimIdx !== -1) {
       socket.to(roomId).emit(EVENTS.OFFICE_UPDATED, {
-        officeIndex: freeIdx,
-        office: room.offices[freeIdx],
+        officeIndex: claimIdx,
+        office: room.offices[claimIdx],
       });
     }
 
@@ -240,10 +245,11 @@ function handleLeave(socketId: string) {
     room.users = room.users.filter((u) => u.id !== user.id);
     io.to(user.room).emit(EVENTS.USER_LEFT, { userId: user.id });
 
-    // Free any owned office
+    // Owner left — keep permanent reservation, just clear active session id and unlock
     const offIdx = room.offices.findIndex((o) => o.ownerId === user.id);
     if (offIdx !== -1) {
-      room.offices[offIdx] = emptyOffice();
+      room.offices[offIdx].ownerId = "";
+      room.offices[offIdx].locked = false;
       io.to(user.room).emit(EVENTS.OFFICE_UPDATED, {
         officeIndex: offIdx,
         office: room.offices[offIdx],
