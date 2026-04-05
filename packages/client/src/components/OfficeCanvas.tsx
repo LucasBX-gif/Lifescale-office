@@ -181,7 +181,87 @@ function noShadow(ctx: CanvasRenderingContext2D) {
   ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
 }
 
-// ─── Nature — grass tufts + pixel-art trees ───────────────────────────────────
+// ─── 3-D decorative rug ───────────────────────────────────────────────────────
+function drawRug3D(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, style: number) {
+  // face / side / accent per office style
+  const COLORS: [string, string, string][] = [
+    ["#7A1A2E", "#3D0D17", "#C43050"],  // 0 default — burgundy
+    ["#1A3568", "#0E1E3D", "#2860B8"],  // 1 gold    — navy
+    ["#0A485A", "#06262E", "#1880A0"],  // 2 cyan    — dark teal
+    ["#1A5828", "#0E3018", "#2A9844"],  // 3 mint    — forest
+    ["#7A3A10", "#3D1C08", "#C06020"],  // 4 golden  — rust
+  ];
+  const [face, side, accent] = COLORS[Math.max(0, Math.min(4, style))];
+  const x = cx - w / 2;
+  const y = cy - h / 2;
+  const depth = 6;
+
+  // Drop shadow
+  ctx.fillStyle = "rgba(0,0,0,0.40)";
+  rr(ctx, x + 4, y + 6, w + depth, h + depth, 6); ctx.fill();
+
+  // Bottom face (3-D thickness visible from above)
+  ctx.fillStyle = side;
+  ctx.beginPath();
+  ctx.moveTo(x + 5,           y + h);
+  ctx.lineTo(x + w - 5,       y + h);
+  ctx.lineTo(x + w - 5 + depth, y + h + depth);
+  ctx.lineTo(x + 5 + depth,   y + h + depth);
+  ctx.closePath();
+  ctx.fill();
+
+  // Right face
+  ctx.fillStyle = side;
+  ctx.beginPath();
+  ctx.moveTo(x + w,           y + 5);
+  ctx.lineTo(x + w,           y + h - 5);
+  ctx.lineTo(x + w + depth,   y + h - 5 + depth);
+  ctx.lineTo(x + w + depth,   y + 5 + depth);
+  ctx.closePath();
+  ctx.fill();
+
+  // Main top surface
+  ctx.fillStyle = face;
+  rr(ctx, x, y, w, h, 6); ctx.fill();
+
+  // Outer decorative border
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 2.5;
+  rr(ctx, x + 7, y + 7, w - 14, h - 14, 3); ctx.stroke();
+
+  // Inner border
+  ctx.lineWidth = 1;
+  rr(ctx, x + 12, y + 12, w - 24, h - 24, 2); ctx.stroke();
+
+  // Centre diamond medallion
+  ctx.lineWidth = 1.5;
+  const mw = w * 0.20, mh = h * 0.30;
+  ctx.beginPath();
+  ctx.moveTo(cx,       cy - mh);
+  ctx.lineTo(cx + mw,  cy);
+  ctx.lineTo(cx,       cy + mh);
+  ctx.lineTo(cx - mw,  cy);
+  ctx.closePath();
+  ctx.stroke();
+  // Tiny centre dot
+  ctx.fillStyle = accent;
+  ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
+
+  // Fringe — top edge
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 1;
+  for (let fx = x + 8; fx < x + w - 8; fx += 5) {
+    ctx.beginPath(); ctx.moveTo(fx, y); ctx.lineTo(fx - 1, y - 5); ctx.stroke();
+  }
+  // Fringe — bottom edge (on top surface before depth face)
+  for (let fx = x + 8; fx < x + w - 8; fx += 5) {
+    ctx.beginPath(); ctx.moveTo(fx, y + h); ctx.lineTo(fx + 1, y + h + 5); ctx.stroke();
+  }
+
+  // Subtle sheen — top-left highlight
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  rr(ctx, x + 3, y + 3, w * 0.5, h * 0.45, 5); ctx.fill();
+}
 
 // ─── Background — 16 px SNES/Pokémon-style flat stone tiles ──────────────────
 function drawBackground(ctx: CanvasRenderingContext2D, p: P) {
@@ -593,9 +673,8 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [numbe
 
   // ══ PRIVATE OFFICE (0,0 → 300,280) ══════════════════════════════════════════
 
-  // Floor rug
-  ctx.fillStyle = officeStyleColors(officeStyles[0]).rug;
-  rr(ctx, 16, 55, 270, 210, 8); ctx.fill();
+  // 3-D decorative rug — centred under the desk area
+  drawRug3D(ctx, 155, 195, 162, 100, officeStyles[0]);
 
 
   // ── Bookshelf — full left wall ───────────────────────────────────────────────
@@ -1049,9 +1128,8 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [numbe
 
   // ══ PRIVATE OFFICE 2 (900,0 → 1200,280) — mirrored layout ════════════════════
 
-  // Floor rug (mirrored)
-  ctx.fillStyle = officeStyleColors(officeStyles[1]).rug;
-  rr(ctx, 914, 55, 270, 210, 8); ctx.fill();
+  // 3-D decorative rug (mirrored) — centred under the desk area
+  drawRug3D(ctx, 1045, 195, 162, 100, officeStyles[1]);
 
 
   // ── Bookshelf — right wall ────────────────────────────────────────────────────
