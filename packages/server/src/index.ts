@@ -112,10 +112,11 @@ io.on("connection", (socket) => {
     socketUserMap.set(socket.id, user);
     room.users.push(user);
 
-    // Restore permanent office if this person already owns one, otherwise claim a free slot
+    // Restore permanent office for returning owner; only the room creator (first ever joiner)
+    // gets office 0 permanently — subsequent joiners get no office.
     const existingIdx = room.offices.findIndex((o) => o.permanentOwnerName === name);
     const claimIdx = existingIdx !== -1 ? existingIdx
-      : room.offices.findIndex((o) => !o.permanentOwnerName);
+      : (room.offices[0].permanentOwnerName ? -1 : 0);
     if (claimIdx !== -1) {
       const office = room.offices[claimIdx];
       office.ownerId = user.id;

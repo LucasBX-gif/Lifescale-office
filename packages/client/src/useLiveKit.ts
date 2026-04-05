@@ -7,6 +7,7 @@ import {
   Participant,
   Track,
   RemoteTrack,
+  VideoPresets,
 } from "livekit-client";
 
 const MAX_HEAR_DISTANCE = 700;
@@ -20,6 +21,15 @@ const ROOM_OPTIONS: RoomOptions = {
     autoGainControl: false,    // off — causes pumping artifacts
     sampleRate: 48000,
     channelCount: 1,
+  },
+  videoCaptureDefaults: {
+    resolution: VideoPresets.h1080.resolution, // capture at 1080p
+  },
+  publishDefaults: {
+    videoSimulcastLayers: [VideoPresets.h720, VideoPresets.h360], // adaptive quality
+    videoEncoding: VideoPresets.h720.encoding,  // max 720p @ ~2.5 Mbps
+    dtx: true,   // discontinuous transmission — saves bandwidth in silence
+    red: true,   // redundant audio encoding for packet loss resilience
   },
   adaptiveStream: true,
   dynacast: true,
@@ -190,7 +200,10 @@ export function useLiveKit() {
         const peerOfficeIdx =
           peer.zone === "Private Office" ? 0 : peer.zone === "Private Office 2" ? 1 : -1;
 
-        const bothInWarRoom = myZone === "War Room" && peer.zone === "War Room";
+        const bothInWarRoom  = myZone === "War Room" && peer.zone === "War Room";
+        // War Room is a video-call space — fully isolated from the corridor.
+        // If exactly one side is in the War Room, silence audio in both directions.
+        const warRoomBlocking = (myZone === "War Room") !== (peer.zone === "War Room");
 
         // Locked-door isolation: a locked office seals audio in both directions.
         // Blocked if I'm in a locked office and peer isn't in the same one,
@@ -204,7 +217,7 @@ export function useLiveKit() {
         let target: number;
         if (bothInWarRoom) {
           target = 1;
-        } else if (lockBlocking) {
+        } else if (warRoomBlocking || lockBlocking) {
           target = 0;
         } else {
           const dx = peer.positionPx.x - myPositionPx.x;
