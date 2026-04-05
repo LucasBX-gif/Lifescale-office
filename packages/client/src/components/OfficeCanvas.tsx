@@ -440,11 +440,11 @@ function drawRoomLabels(ctx: CanvasRenderingContext2D, offices: [OfficeAssignmen
   ctx.textAlign = "center";
   for (const z of ZONES) {
     let label = z.name.toUpperCase();
-    if (z.id === "private-office" && offices[0].ownerName) {
-      label = `${offices[0].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
+    if (z.id === "private-office" && offices[0].permanentOwnerName) {
+      label = `${offices[0].permanentOwnerName.split(" ")[0].toUpperCase()}'S OFFICE`;
     }
-    if (z.id === "private-office-2" && offices[1].ownerName) {
-      label = `${offices[1].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
+    if (z.id === "private-office-2" && offices[1].permanentOwnerName) {
+      label = `${offices[1].permanentOwnerName.split(" ")[0].toUpperCase()}'S OFFICE`;
     }
     // Semi-transparent dark pill background
     const tw = ctx.measureText(label).width;

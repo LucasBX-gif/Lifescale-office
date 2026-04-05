@@ -31,11 +31,10 @@ const ROOM_OPTIONS: RoomOptions = {
     videoEncoding: {
       maxBitrate: 8_000_000,   // 8 Mbps — near-pristine
       maxFramerate: 30,
-      // no priority override — audio must not be starved
     },
-    // no videoCodec override — let LiveKit negotiate best supported codec
-    dtx: true,
-    red: true,
+    videoCodec: "h264",  // hardware enc/dec on all devices = lowest encode latency
+    // dtx omitted — silence-detection adds onset latency
+    // red omitted — redundant packet buffering adds ~20-40 ms latency
   },
   adaptiveStream: false,  // never reduce quality based on UI element size
   dynacast: false,        // never drop quality based on subscriber count
