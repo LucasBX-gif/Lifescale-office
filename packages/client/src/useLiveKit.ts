@@ -168,8 +168,8 @@ export function useLiveKit() {
         // Locked-door isolation: a locked office seals audio in both directions.
         // Blocked if I'm in a locked office and peer isn't in the same one,
         // OR peer is in a locked office and I'm not in the same one.
-        const myOfficeLocked  = myOfficeIdx  >= 0 && officesLocked[myOfficeIdx];
-        const peerOfficeLocked = peerOfficeIdx >= 0 && officesLocked[peerOfficeIdx];
+        const myOfficeLocked  = myOfficeIdx  >= 0 && officesLocked[myOfficeIdx  as 0 | 1];
+        const peerOfficeLocked = peerOfficeIdx >= 0 && officesLocked[peerOfficeIdx as 0 | 1];
         const lockBlocking =
           (myOfficeLocked  && peerOfficeIdx !== myOfficeIdx) ||
           (peerOfficeLocked && myOfficeIdx  !== peerOfficeIdx);
