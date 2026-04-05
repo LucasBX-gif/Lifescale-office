@@ -16,140 +16,149 @@ const STATUS_COLORS: Record<UserStatus, string> = {
 };
 
 // ─── Theme palettes ────────────────────────────────────────────────────────────
+// Both themes use the warm earthy Gather.town aesthetic.
+// Dark = nighttime office  |  Light = daytime office
 function palette(isDark: boolean) {
   return isDark ? {
-    // Base
-    bg:            "#0a0a14",
-    tile1:         "#0c0c1a",
-    tile2:         "#0e0e1e",
-    grout:         "rgba(255,255,255,0.025)",
-    pathFill:      "rgba(255,255,255,0.04)",
-    // Room floors
-    wood1:         "rgba(100,65,30,0.55)",
-    wood2:         "rgba(115,75,38,0.5)",
-    woodGrain:     "rgba(60,35,10,0.25)",
-    warmCarpet:    "rgba(90,22,18,0.6)",
-    warmCarpetAlt: "rgba(80,18,14,0.6)",
-    warmCarpetLine:"rgba(160,50,35,0.06)",
-    coolCarpet:    "rgba(14,70,58,0.6)",
-    coolCarpetAlt: "rgba(12,62,50,0.6)",
-    coolCarpetLine:"rgba(30,140,110,0.06)",
-    // Walls
-    wallFill:      "#12121f",
-    wallBorder:    "rgba(255,255,255,0.1)",
-    // Lights
-    lightGlow:     "rgba(255,240,190,0.06)",
-    lightFixture:  "rgba(255,245,210,0.9)",
-    lightRing:     "rgba(255,240,180,0.25)",
-    // Zone labels
-    zoneLabel:     "rgba(255,255,255,0.1)",
-    // Avatar
-    avatarFill:    "#252538",
+    // ── Base floor (dark warm stone) ─────────────────────────────────────────
+    bg:            "#1e1810",
+    tile1:         "#221c12",
+    tile2:         "#261f14",
+    grout:         "rgba(255,220,150,0.05)",
+    pathFill:      "rgba(255,220,150,0.07)",
+    // ── Room floors ──────────────────────────────────────────────────────────
+    wood1:         "rgba(155,100,38,0.92)",
+    wood2:         "rgba(175,115,48,0.88)",
+    woodGrain:     "rgba(90,50,10,0.3)",
+    warmCarpet:    "rgba(130,35,25,0.92)",
+    warmCarpetAlt: "rgba(115,28,20,0.92)",
+    warmCarpetLine:"rgba(190,70,50,0.07)",
+    coolCarpet:    "rgba(20,90,68,0.9)",
+    coolCarpetAlt: "rgba(16,80,60,0.9)",
+    coolCarpetLine:"rgba(40,160,120,0.07)",
+    // ── Walls ────────────────────────────────────────────────────────────────
+    wallFill:      "#3a2a18",   // warm brown — clearly visible against dark floor
+    wallBorder:    "rgba(255,200,120,0.15)",
+    // ── Lights ───────────────────────────────────────────────────────────────
+    lightGlow:     "rgba(255,220,130,0.10)",
+    lightFixture:  "rgba(255,240,190,0.95)",
+    lightRing:     "rgba(255,225,140,0.35)",
+    // ── Labels ───────────────────────────────────────────────────────────────
+    zoneLabel:     "rgba(255,230,180,0.18)",
+    // ── Avatar ───────────────────────────────────────────────────────────────
+    avatarFill:    "#4a3820",
     avatarMeFill:  "#6c63ff",
-    label:         "rgba(255,255,255,0.85)",
-    labelMuted:    "rgba(255,255,255,0.5)",
-    indicator:     "rgba(10,10,22,0.85)",
-    indicatorTxt:  "#e8e8f4",
-    // Furniture
-    deskDark:      "rgba(60,42,22,0.9)",
-    deskMid:       "rgba(80,56,28,0.85)",
-    deskLight:     "rgba(110,78,38,0.7)",
-    deskEdge:      "rgba(140,100,50,0.5)",
-    chairFill:     "rgba(28,28,48,0.9)",
-    chairStroke:   "rgba(80,75,120,0.7)",
-    screenFill:    "rgba(15,22,55,0.95)",
-    screenGlow:    "rgba(60,110,255,0.5)",
-    screenGlowOut: "rgba(60,110,255,0.08)",
-    tableWar:      "rgba(55,35,18,0.9)",
-    tableWarEdge:  "rgba(120,80,40,0.6)",
-    chairWarFill:  "rgba(60,15,12,0.85)",
-    chairWarStroke:"rgba(160,55,40,0.7)",
-    sofaFill:      "rgba(18,62,50,0.9)",
-    sofaStroke:    "rgba(35,140,110,0.6)",
-    cushionFill:   "rgba(22,90,72,0.7)",
-    coffeeTable:   "rgba(70,50,25,0.85)",
-    tvFill:        "rgba(10,12,28,0.95)",
-    tvScreen:      "rgba(25,50,160,0.5)",
-    plantPot:      "rgba(80,48,20,0.8)",
-    plantLeaf:     "rgba(25,140,55,0.8)",
-    plantLeaf2:    "rgba(35,165,65,0.6)",
-    bookShelf:     "rgba(55,38,18,0.85)",
-    bookEdge:      "rgba(90,65,30,0.6)",
-    rugWarm:       "rgba(108,99,255,0.08)",
-    rugCool:       "rgba(30,210,140,0.08)",
-    shadow:        "rgba(0,0,0,0.55)",
-    doorFill:      "rgba(108,99,255,0.55)",
-    doorText:      "rgba(140,130,255,0.9)",
-    counterFill:   "rgba(50,50,80,0.7)",
-    counterTop:    "rgba(70,70,110,0.6)",
-    sinkFill:      "rgba(30,30,55,0.9)",
-    glassBlue:     "rgba(80,160,240,0.35)",
-    mugFill:       "rgba(220,180,80,0.7)",
-    whiteboard:    "rgba(230,230,255,0.1)",
-    whiteboardLine:"rgba(100,160,255,0.5)",
+    label:         "rgba(255,240,200,0.9)",
+    labelMuted:    "rgba(255,240,200,0.5)",
+    indicator:     "rgba(30,22,12,0.9)",
+    indicatorTxt:  "#f0e8d0",
+    // ── Furniture ────────────────────────────────────────────────────────────
+    deskDark:      "rgba(90,58,22,0.95)",
+    deskMid:       "rgba(115,76,28,0.9)",
+    deskLight:     "rgba(148,100,38,0.75)",
+    deskEdge:      "rgba(185,132,55,0.55)",
+    chairFill:     "rgba(38,28,18,0.95)",
+    chairStroke:   "rgba(110,85,45,0.75)",
+    screenFill:    "rgba(8,18,42,0.97)",
+    screenGlow:    "rgba(60,140,255,0.55)",
+    screenGlowOut: "rgba(60,140,255,0.09)",
+    tableWar:      "rgba(75,48,20,0.95)",
+    tableWarEdge:  "rgba(148,100,40,0.65)",
+    chairWarFill:  "rgba(80,20,14,0.9)",
+    chairWarStroke:"rgba(185,65,45,0.75)",
+    sofaFill:      "rgba(18,72,55,0.92)",
+    sofaStroke:    "rgba(38,155,115,0.65)",
+    cushionFill:   "rgba(24,100,78,0.75)",
+    coffeeTable:   "rgba(85,58,22,0.9)",
+    tvFill:        "rgba(8,10,22,0.97)",
+    tvScreen:      "rgba(20,55,175,0.55)",
+    plantPot:      "rgba(110,62,22,0.9)",
+    plantLeaf:     "rgba(28,165,58,0.95)",
+    plantLeaf2:    "rgba(45,195,72,0.72)",
+    bookShelf:     "rgba(68,45,18,0.9)",
+    bookEdge:      "rgba(108,75,28,0.65)",
+    rugWarm:       "rgba(200,130,55,0.06)",
+    rugCool:       "rgba(40,190,140,0.06)",
+    shadow:        "rgba(0,0,0,0.6)",
+    doorFill:      "rgba(155,115,48,0.75)",
+    doorText:      "rgba(220,185,100,0.95)",
+    counterFill:   "rgba(68,50,28,0.75)",
+    counterTop:    "rgba(88,68,35,0.65)",
+    sinkFill:      "rgba(40,55,75,0.9)",
+    glassBlue:     "rgba(80,165,245,0.38)",
+    mugFill:       "rgba(225,185,85,0.8)",
+    whiteboard:    "rgba(240,235,210,0.12)",
+    whiteboardLine:"rgba(120,180,255,0.55)",
   } : {
-    bg:            "#d4d4e8",
-    tile1:         "#d8d8ec",
-    tile2:         "#dcdcf2",
-    grout:         "rgba(0,0,0,0.045)",
-    pathFill:      "rgba(0,0,0,0.04)",
-    wood1:         "rgba(160,110,55,0.55)",
-    wood2:         "rgba(180,130,70,0.5)",
-    woodGrain:     "rgba(110,72,25,0.2)",
-    warmCarpet:    "rgba(160,50,40,0.35)",
-    warmCarpetAlt: "rgba(145,42,34,0.35)",
-    warmCarpetLine:"rgba(200,80,60,0.06)",
-    coolCarpet:    "rgba(25,120,95,0.35)",
-    coolCarpetAlt: "rgba(20,108,84,0.35)",
-    coolCarpetLine:"rgba(40,170,140,0.06)",
-    wallFill:      "#c8c8e0",
-    wallBorder:    "rgba(0,0,0,0.18)",
-    lightGlow:     "rgba(255,240,180,0.18)",
-    lightFixture:  "rgba(200,180,80,0.9)",
-    lightRing:     "rgba(220,200,100,0.35)",
-    zoneLabel:     "rgba(0,0,0,0.1)",
-    avatarFill:    "#8888bb",
+    // ── Base floor (warm sandstone — the Gather.town corridor look) ──────────
+    bg:            "#d0bc90",
+    tile1:         "#d4c095",
+    tile2:         "#d8c49a",
+    grout:         "rgba(0,0,0,0.09)",
+    pathFill:      "rgba(0,0,0,0.07)",
+    // ── Room floors ──────────────────────────────────────────────────────────
+    wood1:         "rgba(198,138,58,0.98)",
+    wood2:         "rgba(182,122,48,0.95)",
+    woodGrain:     "rgba(118,68,15,0.25)",
+    warmCarpet:    "rgba(178,58,42,0.95)",
+    warmCarpetAlt: "rgba(160,50,36,0.95)",
+    warmCarpetLine:"rgba(225,92,70,0.08)",
+    coolCarpet:    "rgba(32,128,98,0.92)",
+    coolCarpetAlt: "rgba(26,114,86,0.92)",
+    coolCarpetLine:"rgba(48,175,140,0.08)",
+    // ── Walls ────────────────────────────────────────────────────────────────
+    wallFill:      "#6b4e28",   // rich warm brown — strong contrast, very Gather.town
+    wallBorder:    "rgba(0,0,0,0.28)",
+    // ── Lights ───────────────────────────────────────────────────────────────
+    lightGlow:     "rgba(255,235,155,0.28)",
+    lightFixture:  "rgba(230,200,80,0.95)",
+    lightRing:     "rgba(245,215,105,0.5)",
+    // ── Labels ───────────────────────────────────────────────────────────────
+    zoneLabel:     "rgba(255,255,255,0.55)",
+    // ── Avatar ───────────────────────────────────────────────────────────────
+    avatarFill:    "#9e845a",
     avatarMeFill:  "#5b52ee",
-    label:         "rgba(14,14,40,0.9)",
-    labelMuted:    "rgba(14,14,40,0.55)",
-    indicator:     "rgba(200,200,230,0.9)",
-    indicatorTxt:  "#14143a",
-    deskDark:      "rgba(120,82,38,0.85)",
-    deskMid:       "rgba(150,105,50,0.8)",
-    deskLight:     "rgba(180,135,70,0.65)",
-    deskEdge:      "rgba(200,160,90,0.5)",
-    chairFill:     "rgba(50,50,90,0.75)",
-    chairStroke:   "rgba(100,95,160,0.7)",
-    screenFill:    "rgba(20,28,70,0.9)",
-    screenGlow:    "rgba(50,90,220,0.45)",
-    screenGlowOut: "rgba(50,90,220,0.07)",
-    tableWar:      "rgba(100,65,30,0.85)",
-    tableWarEdge:  "rgba(160,110,55,0.6)",
-    chairWarFill:  "rgba(130,38,28,0.7)",
-    chairWarStroke:"rgba(190,75,55,0.65)",
-    sofaFill:      "rgba(22,100,78,0.75)",
-    sofaStroke:    "rgba(30,160,120,0.6)",
-    cushionFill:   "rgba(28,120,92,0.6)",
-    coffeeTable:   "rgba(130,95,45,0.8)",
-    tvFill:        "rgba(15,18,40,0.9)",
-    tvScreen:      "rgba(35,60,180,0.45)",
-    plantPot:      "rgba(120,75,30,0.75)",
-    plantLeaf:     "rgba(30,160,60,0.75)",
-    plantLeaf2:    "rgba(45,185,75,0.55)",
-    bookShelf:     "rgba(100,70,30,0.8)",
-    bookEdge:      "rgba(140,100,45,0.55)",
-    rugWarm:       "rgba(108,99,255,0.07)",
-    rugCool:       "rgba(30,210,140,0.07)",
-    shadow:        "rgba(0,0,0,0.18)",
-    doorFill:      "rgba(91,82,238,0.5)",
-    doorText:      "rgba(91,82,238,0.9)",
-    counterFill:   "rgba(160,160,200,0.6)",
-    counterTop:    "rgba(180,180,220,0.55)",
-    sinkFill:      "rgba(140,140,185,0.7)",
-    glassBlue:     "rgba(70,140,220,0.3)",
-    mugFill:       "rgba(200,150,40,0.75)",
-    whiteboard:    "rgba(255,255,255,0.7)",
-    whiteboardLine:"rgba(50,80,200,0.45)",
+    label:         "rgba(30,18,8,0.92)",
+    labelMuted:    "rgba(30,18,8,0.55)",
+    indicator:     "rgba(238,228,205,0.95)",
+    indicatorTxt:  "#28180a",
+    // ── Furniture ────────────────────────────────────────────────────────────
+    deskDark:      "rgba(138,90,38,0.97)",
+    deskMid:       "rgba(165,112,48,0.92)",
+    deskLight:     "rgba(195,142,65,0.75)",
+    deskEdge:      "rgba(215,168,82,0.58)",
+    chairFill:     "rgba(55,40,22,0.85)",
+    chairStroke:   "rgba(118,95,52,0.75)",
+    screenFill:    "rgba(12,18,48,0.95)",
+    screenGlow:    "rgba(55,105,235,0.5)",
+    screenGlowOut: "rgba(55,105,235,0.08)",
+    tableWar:      "rgba(108,70,28,0.92)",
+    tableWarEdge:  "rgba(165,115,48,0.68)",
+    chairWarFill:  "rgba(142,42,28,0.82)",
+    chairWarStroke:"rgba(200,78,56,0.68)",
+    sofaFill:      "rgba(24,108,82,0.85)",
+    sofaStroke:    "rgba(35,168,125,0.65)",
+    cushionFill:   "rgba(30,128,96,0.68)",
+    coffeeTable:   "rgba(138,98,42,0.88)",
+    tvFill:        "rgba(12,14,32,0.95)",
+    tvScreen:      "rgba(32,62,195,0.5)",
+    plantPot:      "rgba(155,92,35,0.95)",
+    plantLeaf:     "rgba(38,188,65,0.98)",
+    plantLeaf2:    "rgba(58,215,82,0.78)",
+    bookShelf:     "rgba(108,72,28,0.88)",
+    bookEdge:      "rgba(148,102,42,0.62)",
+    rugWarm:       "rgba(215,155,65,0.08)",
+    rugCool:       "rgba(38,195,148,0.08)",
+    shadow:        "rgba(0,0,0,0.22)",
+    doorFill:      "rgba(138,102,42,0.85)",
+    doorText:      "rgba(68,48,18,0.95)",
+    counterFill:   "rgba(168,128,72,0.68)",
+    counterTop:    "rgba(188,148,88,0.62)",
+    sinkFill:      "rgba(145,165,195,0.75)",
+    glassBlue:     "rgba(72,148,228,0.35)",
+    mugFill:       "rgba(215,162,48,0.85)",
+    whiteboard:    "rgba(255,255,248,0.82)",
+    whiteboardLine:"rgba(48,78,215,0.48)",
   };
 }
 
@@ -214,19 +223,19 @@ function drawWoodFloor(ctx: CanvasRenderingContext2D, x: number, y: number, w: n
 }
 
 function drawCarpet(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, c1: string, c2: string, line: string) {
-  const step = 10;
-  for (let tx = x; tx < x + w; tx += step) {
-    for (let ty = y; ty < y + h; ty += step) {
-      ctx.fillStyle = (Math.floor((tx - x) / step) + Math.floor((ty - y) / step)) % 2 === 0 ? c1 : c2;
-      ctx.fillRect(tx, ty, step, step);
-    }
+  // Solid base
+  ctx.fillStyle = c1;
+  ctx.fillRect(x, y, w, h);
+  // Subtle horizontal stripe texture (alternating bands)
+  const stripeH = 14;
+  for (let ty = y; ty < y + h; ty += stripeH * 2) {
+    ctx.fillStyle = c2;
+    ctx.fillRect(x, ty + stripeH, w, Math.min(stripeH, y + h - (ty + stripeH)));
   }
+  // Very subtle line accents
   ctx.strokeStyle = line;
-  ctx.lineWidth = 0.4;
-  for (let tx = x; tx <= x + w; tx += step) {
-    ctx.beginPath(); ctx.moveTo(tx, y); ctx.lineTo(tx, y + h); ctx.stroke();
-  }
-  for (let ty = y; ty <= y + h; ty += step) {
+  ctx.lineWidth = 0.5;
+  for (let ty = y; ty <= y + h; ty += stripeH) {
     ctx.beginPath(); ctx.moveTo(x, ty); ctx.lineTo(x + w, ty); ctx.stroke();
   }
 }
@@ -260,7 +269,7 @@ function drawLights(ctx: CanvasRenderingContext2D, p: P) {
 
 // ─── Per-style office floor ───────────────────────────────────────────────────
 function drawOfficeFloor(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, style: number, p: P) {
-  const isDark = p.bg === "#0a0a14";
+  const isDark = p.bg === "#1e1810";
   switch (style) {
     case 1: { // Marble Suite — white/cream with grey veining + gold grout
       ctx.fillStyle = isDark ? "#16140e" : "#f5f2ea";
@@ -344,7 +353,7 @@ function officeStyleColors(style: number) {
     case 2: return { border: "rgba(0,200,255,0.8)",    rug: "rgba(0,180,255,0.07)"   };
     case 3: return { border: "rgba(140,190,160,0.8)",  rug: "rgba(160,215,185,0.07)" };
     case 4: return { border: "rgba(200,160,25,0.85)",  rug: "rgba(210,170,40,0.07)"  };
-    default: return { border: "rgba(140,130,255,0.85)", rug: "rgba(108,99,255,0.08)" };
+    default: return { border: "rgba(185,138,55,0.85)",  rug: "rgba(195,148,60,0.08)"  };
   }
 }
 
@@ -355,7 +364,7 @@ function drawZones(
   p: P,
   offices: [OfficeAssignment, OfficeAssignment]
 ) {
-  const WT = 7;
+  const WT = 10;
 
   for (const z of ZONES) {
     // Floor texture
