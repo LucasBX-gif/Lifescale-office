@@ -1828,7 +1828,10 @@ export function OfficeCanvas({
       // Space = stand up from chair
       if (e.key === " " && sittingRef.current) {
         e.preventDefault();
+        const { x: sx, y: sy } = sittingRef.current;
         sittingRef.current = null;
+        // Nudge player away from chair so auto-sit doesn't immediately retrigger
+        posRef.current = { x: sx, y: sy + SIT_RADIUS + 10 };
         return;
       }
       if (["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(k)) {
