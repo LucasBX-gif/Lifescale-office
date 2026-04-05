@@ -31,10 +31,9 @@ const ROOM_OPTIONS: RoomOptions = {
     videoEncoding: {
       maxBitrate: 8_000_000,   // 8 Mbps — near-pristine
       maxFramerate: 30,
-      priority: "high",
+      // no priority override — audio must not be starved
     },
-    videoCodec: "h264",        // hardware enc/dec on every device → lowest latency
-    stopMicTrackOnMute: false, // keep track alive — faster unmute response
+    // no videoCodec override — let LiveKit negotiate best supported codec
     dtx: true,
     red: true,
   },
