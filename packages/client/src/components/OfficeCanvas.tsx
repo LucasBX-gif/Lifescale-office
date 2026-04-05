@@ -183,112 +183,201 @@ function noShadow(ctx: CanvasRenderingContext2D) {
 
 // ─── Nature — grass tufts + pixel-art trees ───────────────────────────────────
 
-// ─── Nature — proper grass patches and trees ──────────────────────────────────
+// ─── Nature — grass zones and trees ───────────────────────────────────────────
 
-function drawTree(ctx: CanvasRenderingContext2D, cx: number, cy: number, isDark: boolean, scale = 1) {
-  const R = 30 * scale; // foliage radius
+function drawGrassZone(
+  ctx: CanvasRenderingContext2D,
+  pts: [number, number][],   // polygon outline
+  isDark: boolean
+) {
+  if (pts.length < 2) return;
 
-  // Ground shadow
-  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  // Fill the whole zone with base grass colour
+  ctx.fillStyle = isDark ? "#1A5C0C" : "#2E8C14";
   ctx.beginPath();
-  ctx.ellipse(cx + 5, cy + R * 0.35, R * 0.85, R * 0.3, 0, 0, Math.PI * 2);
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
   ctx.fill();
 
-  // Trunk
-  const tw = 8 * scale, th = 18 * scale;
-  ctx.fillStyle = isDark ? "#4A2810" : "#7A4820";
-  ctx.fillRect(cx - tw / 2, cy - th * 0.3, tw, th);
-  // Trunk highlight
-  ctx.fillStyle = isDark ? "#6A3C18" : "#A06430";
-  ctx.fillRect(cx - tw / 2, cy - th * 0.3, tw * 0.35, th);
-
-  // Foliage — three layered circles for depth
-  // Outer/shadow ring
-  ctx.fillStyle = isDark ? "#0E3808" : "#1A5C10";
+  // Clip all inner drawing to this zone
+  ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy - R * 0.55, R, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
+  ctx.clip();
 
-  // Main canopy
-  ctx.fillStyle = isDark ? "#1E6C14" : "#2E9C1C";
-  ctx.beginPath();
-  ctx.arc(cx, cy - R * 0.65, R * 0.85, 0, Math.PI * 2);
-  ctx.fill();
+  // Colour variation blobs — give the grass depth and texture
+  const blobs: [number, number, number, string][] = [];
+  // We derive blob positions deterministically from the first point
+  const bx0 = pts[0][0], by0 = pts[0][1];
+  let s = Math.imul(bx0 | 1, 1664525) + 1013904223 | 0;
+  const count = 22;
+  for (let i = 0; i < count; i++) {
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const nx = pts[0][0] + (s >>> 0) % 900;
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const ny = pts[0][1] + (s >>> 0) % 300;
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const nr = 40 + (s >>> 0) % 60;
+    const tier = i % 3;
+    const col = tier === 0
+      ? (isDark ? "#22780E" : "#3AAC1C")
+      : tier === 1
+        ? (isDark ? "#2A9018" : "#48CC26")
+        : (isDark ? "#165008" : "#247810");
+    blobs.push([nx, ny, nr, col]);
+  }
+  for (const [bx, by, br, bc] of blobs) {
+    ctx.fillStyle = bc;
+    ctx.beginPath();
+    ctx.ellipse(bx, by, br, br * 0.6, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
-  // Mid highlight
-  ctx.fillStyle = isDark ? "#2A9020" : "#42C028";
-  ctx.beginPath();
-  ctx.arc(cx - R * 0.2, cy - R * 0.8, R * 0.55, 0, Math.PI * 2);
-  ctx.fill();
+  // Grass blade clusters — short curved strokes across the zone
+  const bladeColor = isDark ? "#30A81E" : "#50D030";
+  ctx.strokeStyle = bladeColor;
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = "round";
+  // 48 clusters, positions from same seed
+  s = Math.imul((bx0 + 7) | 1, 22695477) + 1 | 0;
+  for (let i = 0; i < 48; i++) {
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const gx = pts[0][0] + (s >>> 0) % 900;
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const gy = pts[0][1] + (s >>> 0) % 300;
+    // Draw 4 blades per cluster
+    for (let b = 0; b < 4; b++) {
+      const angle = (b / 4) * Math.PI - 0.3;
+      const len = 8 + (i + b) % 6;
+      ctx.beginPath();
+      ctx.moveTo(gx + b * 5, gy);
+      ctx.quadraticCurveTo(
+        gx + b * 5 + Math.cos(angle - 0.4) * len * 0.5,
+        gy - len * 0.6,
+        gx + b * 5 + Math.cos(angle) * len,
+        gy - len
+      );
+      ctx.stroke();
+    }
+  }
 
-  // Top shine
-  ctx.fillStyle = isDark ? "#38B82A" : "#5CE038";
-  ctx.beginPath();
-  ctx.arc(cx - R * 0.25, cy - R * 0.95, R * 0.28, 0, Math.PI * 2);
-  ctx.fill();
+  // Flower dots — tiny colour accents
+  const flowerCols = ["#F8E820", "#F870A0", "#F8F8F8", "#70D8F8"];
+  s = Math.imul((by0 + 3) | 1, 69069) + 1 | 0;
+  for (let i = 0; i < 18; i++) {
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const fx = pts[0][0] + (s >>> 0) % 900;
+    s = Math.imul(s, 1664525) + 1013904223 | 0;
+    const fy = pts[0][1] + (s >>> 0) % 300;
+    ctx.fillStyle = flowerCols[i % flowerCols.length];
+    ctx.beginPath();
+    ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath();
+    ctx.arc(fx, fy, 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
 }
 
-function drawGrassPatch(ctx: CanvasRenderingContext2D, cx: number, cy: number, rx: number, ry: number, isDark: boolean) {
-  // Base patch — filled ellipse
-  ctx.fillStyle = isDark ? "#1C5010" : "#2E8018";
+function drawTree(ctx: CanvasRenderingContext2D, cx: number, cy: number, isDark: boolean, R = 42) {
+  // Long cast shadow on ground
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
   ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx + 14, cy + 12, R * 0.9, R * 0.35, 0.3, 0, Math.PI * 2);
   ctx.fill();
 
-  // Lighter inner glow
-  ctx.fillStyle = isDark ? "#267018" : "#3EA022";
+  // Trunk — thicker, taller, with bark shading
+  const tw = 12, th = 28;
+  ctx.fillStyle = isDark ? "#3C2008" : "#6A3C14";
   ctx.beginPath();
-  ctx.ellipse(cx - rx * 0.1, cy - ry * 0.1, rx * 0.65, ry * 0.6, 0, 0, Math.PI * 2);
+  ctx.roundRect(cx - tw / 2, cy - 4, tw, th, 3);
   ctx.fill();
+  ctx.fillStyle = isDark ? "#5A3410" : "#8A5420";  // left bark highlight
+  ctx.fillRect(cx - tw / 2, cy - 4, 4, th);
+  ctx.fillStyle = isDark ? "#281008" : "#4A2808";  // right bark shadow
+  ctx.fillRect(cx + tw / 2 - 3, cy - 4, 3, th);
 
-  // Bright highlight spot top-left
-  ctx.fillStyle = isDark ? "#30901E" : "#52C030";
+  // Foliage — 5 overlapping circles building up the canopy
+  const layers: [number, number, number, string][] = [
+    // [offX, offY, radius, color]
+    [  0,   0,    R,      isDark ? "#0C3808" : "#185C0E"],  // dark base / rim
+    [  0,  -R*0.15, R*0.88, isDark ? "#1A6C12" : "#2A9C18"],  // main body
+    [ -R*0.18, -R*0.3, R*0.65, isDark ? "#24901A" : "#38C024"],  // upper fill
+    [  R*0.12, -R*0.08, R*0.5,  isDark ? "#1E7A14" : "#30B01E"],  // right fill
+    [ -R*0.22, -R*0.45, R*0.38, isDark ? "#34B828" : "#52D838"],  // top highlight
+  ];
+  for (const [ox, oy, r, col] of layers) {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(cx + ox, cy - R * 0.5 + oy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Shiny top-left specular
+  ctx.fillStyle = isDark ? "rgba(80,220,50,0.35)" : "rgba(140,255,80,0.4)";
   ctx.beginPath();
-  ctx.ellipse(cx - rx * 0.25, cy - ry * 0.3, rx * 0.3, ry * 0.28, 0, 0, Math.PI * 2);
+  ctx.arc(cx - R * 0.28, cy - R * 0.85, R * 0.18, 0, Math.PI * 2);
   ctx.fill();
 }
 
 function drawNature(ctx: CanvasRenderingContext2D, p: P) {
   const isDark = p.bg === "#18140C";
 
-  // ── Grass patches — large organic blobs in open floor areas ──────────────
-  const grassPatches: [number, number, number, number][] = [
-    // [cx, cy, rx, ry]
-    // Top strip between offices
-    [355, 45,  55, 28], [500, 30,  70, 24], [650, 50,  50, 22], [820, 35,  60, 26],
-    // Left of War Room
-    [345, 310, 40, 30], [380, 450, 55, 28], [330, 520, 45, 22],
-    // Right of War Room
-    [855, 320, 45, 28], [830, 440, 55, 26], [858, 520, 40, 22],
-    // Bottom open area
-    [80,  640, 70, 35], [240, 690, 80, 32], [400, 650, 65, 30],
-    [550, 680, 75, 34], [700, 645, 60, 28], [840, 700, 65, 30],
-    // Far left strip
-    [28, 360, 30, 50], [32, 490, 28, 45],
-  ];
+  // ── Large grass zones — actual filled areas, not scattered dots ────────────
 
-  for (const [cx, cy, rx, ry] of grassPatches) {
-    drawGrassPatch(ctx, cx, cy, rx, ry, isDark);
-  }
+  // Zone 1: big bottom garden (left side, below all rooms)
+  drawGrassZone(ctx, [
+    [0, 560], [440, 560], [440, 800], [0, 800],
+  ], isDark);
 
-  // ── Trees — placed in and around the grass patches ────────────────────────
+  // Zone 2: bottom middle (between War Room bottom and Lounge)
+  drawGrassZone(ctx, [
+    [440, 560], [890, 560], [890, 800], [440, 800],
+  ], isDark);
+
+  // Zone 3: top strip between the two offices
+  drawGrassZone(ctx, [
+    [302, 0], [898, 0], [898, 88], [302, 88],
+  ], isDark);
+
+  // Zone 4: left strip alongside the corridor
+  drawGrassZone(ctx, [
+    [0, 282], [50, 282], [50, 558], [0, 558],
+  ], isDark);
+
+  // Zone 5: left side of War Room
+  drawGrassZone(ctx, [
+    [302, 200], [438, 200], [438, 558], [302, 558],
+  ], isDark);
+
+  // Zone 6: right side of War Room
+  drawGrassZone(ctx, [
+    [762, 200], [898, 200], [898, 558], [762, 558],
+  ], isDark);
+
+  // ── Trees — large, scattered across the zones ──────────────────────────────
   const trees: [number, number, number][] = [
-    // [cx, cy, scale]
-    // Top strip
-    [335, 38, 1.0], [510, 25, 0.9], [645, 42, 1.1], [825, 28, 0.95],
-    // Left of War Room
-    [342, 305, 1.0], [375, 445, 0.95], [328, 515, 0.85],
-    // Right of War Room
-    [858, 315, 1.0], [832, 435, 0.9], [860, 515, 0.85],
-    // Bottom open area
-    [75,  632, 1.1], [242, 682, 1.0], [402, 643, 0.95],
-    [552, 672, 1.05],[702, 638, 1.0], [842, 692, 0.9],
-    // Far left
-    [28,  355, 0.8], [30,  485, 0.75],
-  ];
+    // top strip
+    [340, 44, 38], [500, 28, 42], [660, 46, 36], [840, 32, 40],
+    // left of war room
+    [340, 230], [370, 380, 44], [325, 510, 38],
+    // right of war room
+    [850, 225, 40], [830, 385, 44], [860, 505, 38],
+    // bottom garden — spread out, varied sizes
+    [60,  650, 50], [185, 700, 44], [320, 645, 48],
+    [460, 685, 52], [590, 650, 46], [720, 700, 50], [850, 660, 44],
+    // far left strip
+    [25, 360, 32], [26, 490, 30],
+  ] as [number, number, number][];
 
-  for (const [cx, cy, scale] of trees) {
-    drawTree(ctx, cx, cy, isDark, scale);
+  for (const [tx, ty, r = 42] of trees) {
+    drawTree(ctx, tx, ty, isDark, r);
   }
 }
 
