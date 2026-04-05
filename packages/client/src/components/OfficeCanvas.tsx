@@ -198,40 +198,40 @@ function drawRug3D(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: num
 
   // Drop shadow
   ctx.fillStyle = "rgba(0,0,0,0.40)";
-  rr(ctx, x + 4, y + 6, w + depth, h + depth, 6); ctx.fill();
+  ctx.fillRect(x + 4, y + 6, w + depth, h + depth);
 
   // Bottom face (3-D thickness visible from above)
   ctx.fillStyle = side;
   ctx.beginPath();
-  ctx.moveTo(x + 5,           y + h);
-  ctx.lineTo(x + w - 5,       y + h);
-  ctx.lineTo(x + w - 5 + depth, y + h + depth);
-  ctx.lineTo(x + 5 + depth,   y + h + depth);
+  ctx.moveTo(x,           y + h);
+  ctx.lineTo(x + w,       y + h);
+  ctx.lineTo(x + w + depth, y + h + depth);
+  ctx.lineTo(x + depth,   y + h + depth);
   ctx.closePath();
   ctx.fill();
 
   // Right face
   ctx.fillStyle = side;
   ctx.beginPath();
-  ctx.moveTo(x + w,           y + 5);
-  ctx.lineTo(x + w,           y + h - 5);
-  ctx.lineTo(x + w + depth,   y + h - 5 + depth);
-  ctx.lineTo(x + w + depth,   y + 5 + depth);
+  ctx.moveTo(x + w,           y);
+  ctx.lineTo(x + w,           y + h);
+  ctx.lineTo(x + w + depth,   y + h + depth);
+  ctx.lineTo(x + w + depth,   y + depth);
   ctx.closePath();
   ctx.fill();
 
   // Main top surface
   ctx.fillStyle = face;
-  rr(ctx, x, y, w, h, 6); ctx.fill();
+  ctx.fillRect(x, y, w, h);
 
   // Outer decorative border
   ctx.strokeStyle = accent;
   ctx.lineWidth = 2.5;
-  rr(ctx, x + 7, y + 7, w - 14, h - 14, 3); ctx.stroke();
+  ctx.strokeRect(x + 7, y + 7, w - 14, h - 14);
 
   // Inner border
   ctx.lineWidth = 1;
-  rr(ctx, x + 12, y + 12, w - 24, h - 24, 2); ctx.stroke();
+  ctx.strokeRect(x + 12, y + 12, w - 24, h - 24);
 
   // Centre diamond medallion
   ctx.lineWidth = 1.5;
@@ -260,7 +260,7 @@ function drawRug3D(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: num
 
   // Subtle sheen — top-left highlight
   ctx.fillStyle = "rgba(255,255,255,0.08)";
-  rr(ctx, x + 3, y + 3, w * 0.5, h * 0.45, 5); ctx.fill();
+  ctx.fillRect(x + 3, y + 3, w * 0.5, h * 0.45);
 }
 
 // ─── Background — dark charcoal grid (Gather.town style) ──────────────────────
@@ -268,8 +268,9 @@ function drawBackground(ctx: CanvasRenderingContext2D, p: P) {
   // Solid charcoal fill
   ctx.fillStyle = p.bg;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-  // Faint grid lines
-  ctx.strokeStyle = p.grout;
+  // Near-invisible grid — just enough to feel like a tiled floor
+  const isDarkMode = p.bg === "#1a1a1a";
+  ctx.strokeStyle = isDarkMode ? "rgba(255,255,255,0.035)" : p.grout;
   ctx.lineWidth = 1;
   const G = 32;
   for (let tx = 0; tx <= CANVAS_W; tx += G) {
@@ -430,6 +431,34 @@ function drawOfficeFloor(ctx: CanvasRenderingContext2D, x: number, y: number, w:
 }
 
 
+// ─── Room name labels — drawn after furniture so they sit on top ──────────────
+function drawRoomLabels(ctx: CanvasRenderingContext2D, offices: [OfficeAssignment, OfficeAssignment]) {
+  const WT = 14;
+  ctx.save();
+  ctx.font = "bold 9px 'Courier New', monospace";
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  for (const z of ZONES) {
+    let label = z.name.toUpperCase();
+    if (z.id === "private-office" && offices[0].ownerName) {
+      label = `${offices[0].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
+    }
+    if (z.id === "private-office-2" && offices[1].ownerName) {
+      label = `${offices[1].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
+    }
+    // Semi-transparent dark pill background
+    const tw = ctx.measureText(label).width;
+    const lx = z.x + z.w / 2;
+    const ly = z.y + z.h - WT - 10;
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(lx - tw / 2 - 6, ly - 7, tw + 12, 14);
+    // Label text — small caps, muted light
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+
 // ─── Zones — walls & labels ───────────────────────────────────────────────────
 function drawZones(
   ctx: CanvasRenderingContext2D,
@@ -450,20 +479,6 @@ function drawZones(
     } else if (z.id === "lounge") {
       drawCarpet(ctx, z.x, z.y, z.w, z.h, p.coolCarpet, p.coolCarpetAlt, p.coolCarpetLine);
     }
-
-    // Room label — personalised for private offices
-    let label = z.name.toUpperCase();
-    if (z.id === "private-office" && offices[0].ownerName) {
-      label = `${offices[0].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
-    }
-    if (z.id === "private-office-2" && offices[1].ownerName) {
-      label = `${offices[1].ownerName.split(" ")[0].toUpperCase()}'S OFFICE`;
-    }
-    ctx.font = "bold 10px 'Courier New', monospace";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-    ctx.fillStyle = p.zoneLabel;
-    ctx.fillText(label, z.x + z.w / 2, z.y + z.h - 14);
 
     // Locked state
     const isLocked =
@@ -668,10 +683,14 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [numbe
   desk(484, 296, 236, 166);          // conference table
 
   for (const [cx2, cy2] of [
-    [504,270],[564,270],[624,270],[684,270],
-    [504,474],[564,474],[624,474],[684,474],
-    [462,340],[462,400],
-    [722,340],[722,400],
+    // Top — 4 chairs above table (table top y=296)
+    [514,278],[564,278],[614,278],[664,278],
+    // Bottom — 4 chairs below table (table bottom y=462)
+    [514,480],[564,480],[614,480],[664,480],
+    // Left — 3 chairs (table left x=484)
+    [468,326],[468,366],[468,406],
+    // Right — 3 chairs (table right x=720)
+    [738,326],[738,366],[738,406],
   ] as [number,number][]) chair(cx2, cy2);
 
   for (let i = 0; i < 3; i++) screen(504 + i * 70, 310, 36, 22);  // laptops
@@ -1308,6 +1327,48 @@ export function OfficeCanvas({
       }
     }
 
+    // ── Room wall collision — prevents avatar clipping through walls ──────────
+    {
+      const WTC = 14;
+      const dc = doorClosedRef.current;
+      type WRect = { x: number; y: number; w: number; h: number };
+      const wallSegs: WRect[] = [
+        // ─ Office 1: bottom wall, right wall (with door gap) ─────────────────
+        { x: 0,   y: 280, w: 314,          h: WTC },
+        { x: 300, y: 0,   w: WTC,          h: DOOR.y },
+        { x: 300, y: DOOR.y + DOOR.h, w: WTC, h: 280 - DOOR.y - DOOR.h },
+        ...(dc ? [{ x: 300, y: DOOR.y, w: WTC, h: DOOR.h } as WRect] : []),
+        // ─ Office 2: bottom wall, left wall (with door gap), right wall ──────
+        { x: 900, y: 280, w: 300,          h: WTC },
+        { x: 1186,y: 0,   w: WTC,          h: 280 + WTC },
+        { x: 900, y: 0,   w: WTC,          h: DOOR_2.y },
+        { x: 900, y: DOOR_2.y + DOOR_2.h, w: WTC, h: 280 - DOOR_2.y - DOOR_2.h },
+        ...(dc ? [{ x: 900, y: DOOR_2.y, w: WTC, h: DOOR_2.h } as WRect] : []),
+        // ─ War Room ───────────────────────────────────────────────────────────
+        { x: 440, y: 240, w: 320, h: WTC },
+        { x: 440, y: 240, w: WTC, h: 310 },
+        { x: 440, y: 550, w: 334, h: WTC },
+        { x: 760, y: 240, w: WTC, h: 324 },
+        // ─ Lounge ─────────────────────────────────────────────────────────────
+        { x: 900, y: 560, w: 300, h: WTC },
+        { x: 900, y: 560, w: WTC, h: 240 },
+        { x: 1186,y: 560, w: WTC, h: 240 },
+      ];
+      const R = AVATAR_R;
+      const hits = (seg: WRect, cx: number, cy: number) => {
+        const nx = Math.max(seg.x, Math.min(seg.x + seg.w, cx));
+        const ny = Math.max(seg.y, Math.min(seg.y + seg.h, cy));
+        return (cx - nx) ** 2 + (cy - ny) ** 2 < R * R;
+      };
+      for (const seg of wallSegs) {
+        if (hits(seg, x, y)) {
+          if (!hits(seg, ox, y))      x = ox;
+          else if (!hits(seg, x, oy)) y = oy;
+          else                        { x = ox; y = oy; }
+        }
+      }
+    }
+
     // Auto-sit: walk onto a chair → snap and lock
     if (!sittingRef.current) {
       for (const spot of SIT_SPOTS) {
@@ -1361,6 +1422,7 @@ export function OfficeCanvas({
     drawZones(ctx, doorClosedRef.current, p, offs);
     drawLights(ctx, p);
     drawFurniture(ctx, p, [offs[0].style ?? 0, offs[1].style ?? 0]);
+    drawRoomLabels(ctx, offs);
 
     const alpha = 1 - Math.exp(-dt * LERP_SPEED);
     const myId = myUserIdRef.current;
