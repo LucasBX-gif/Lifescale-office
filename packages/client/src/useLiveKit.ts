@@ -141,13 +141,14 @@ export function useLiveKit() {
       myPositionPx: { x: number; y: number },
       myZone: string,
       peers: PeerAudioInfo[],
-      privateOfficeDoorClosed: boolean
+      officesLocked: [boolean, boolean]
     ) => {
       const room = roomRef.current;
       if (!room) return;
 
-      const myInOffice =
-        myZone === "Private Office" || myZone === "Private Office 2";
+      // Which office index am I in? (-1 = not in a private office)
+      const myOfficeIdx =
+        myZone === "Private Office" ? 0 : myZone === "Private Office 2" ? 1 : -1;
 
       room.remoteParticipants.forEach((participant) => {
         const peer =
@@ -159,15 +160,24 @@ export function useLiveKit() {
           return;
         }
 
-        const peerInOffice =
-          peer.zone === "Private Office" || peer.zone === "Private Office 2";
+        const peerOfficeIdx =
+          peer.zone === "Private Office" ? 0 : peer.zone === "Private Office 2" ? 1 : -1;
+
         const bothInWarRoom = myZone === "War Room" && peer.zone === "War Room";
-        const doorBlocking = privateOfficeDoorClosed && myInOffice !== peerInOffice;
+
+        // Locked-door isolation: a locked office seals audio in both directions.
+        // Blocked if I'm in a locked office and peer isn't in the same one,
+        // OR peer is in a locked office and I'm not in the same one.
+        const myOfficeLocked  = myOfficeIdx  >= 0 && officesLocked[myOfficeIdx];
+        const peerOfficeLocked = peerOfficeIdx >= 0 && officesLocked[peerOfficeIdx];
+        const lockBlocking =
+          (myOfficeLocked  && peerOfficeIdx !== myOfficeIdx) ||
+          (peerOfficeLocked && myOfficeIdx  !== peerOfficeIdx);
 
         let target: number;
         if (bothInWarRoom) {
           target = 1;
-        } else if (doorBlocking) {
+        } else if (lockBlocking) {
           target = 0;
         } else {
           const dx = peer.positionPx.x - myPositionPx.x;

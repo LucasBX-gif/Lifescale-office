@@ -125,6 +125,12 @@ export function useOffice() {
     doorClosedRef.current = state.room?.privateOfficeDoorClosed ?? false;
   }, [state.room?.privateOfficeDoorClosed]);
 
+  const officesLockedRef = useRef<[boolean, boolean]>([false, false]);
+  useEffect(() => {
+    const offices = state.room?.offices;
+    if (offices) officesLockedRef.current = [offices[0].locked, offices[1].locked];
+  }, [state.room?.offices]);
+
   // ── Socket lifecycle ──────────────────────────────────────────────────────
   useEffect(() => {
     socket.connect();
@@ -270,7 +276,7 @@ export function useOffice() {
           const px = pctToPx(u.position);
           return { name: u.name, positionPx: px, zone: detectZone(px.x, px.y) };
         });
-      updateVolumes(myPx, myZone, peers, doorClosedRef.current);
+      updateVolumes(myPx, myZone, peers, officesLockedRef.current);
     }, 50);
     return () => clearInterval(id);
   }, [updateVolumes]);
