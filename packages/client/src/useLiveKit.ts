@@ -23,16 +23,23 @@ const ROOM_OPTIONS: RoomOptions = {
     channelCount: 1,
   },
   videoCaptureDefaults: {
-    resolution: VideoPresets.h1080.resolution, // capture at 1080p
+    resolution: VideoPresets.h1080.resolution, // capture source at 1080p
+    facingMode: "user",
   },
   publishDefaults: {
-    videoSimulcastLayers: [VideoPresets.h720, VideoPresets.h360], // adaptive quality
-    videoEncoding: VideoPresets.h720.encoding,  // max 720p @ ~2.5 Mbps
-    dtx: true,   // discontinuous transmission — saves bandwidth in silence
-    red: true,   // redundant audio encoding for packet loss resilience
+    videoSimulcastLayers: [],  // no simulcast — single full-quality stream always
+    videoEncoding: {
+      maxBitrate: 8_000_000,   // 8 Mbps — near-pristine
+      maxFramerate: 30,
+      priority: "high",
+    },
+    videoCodec: "h264",        // hardware enc/dec on every device → lowest latency
+    stopMicTrackOnMute: false, // keep track alive — faster unmute response
+    dtx: true,
+    red: true,
   },
-  adaptiveStream: true,
-  dynacast: true,
+  adaptiveStream: false,  // never reduce quality based on UI element size
+  dynacast: false,        // never drop quality based on subscriber count
 };
 
 export interface PeerAudioInfo {

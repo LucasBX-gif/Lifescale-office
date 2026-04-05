@@ -1317,7 +1317,10 @@ export function OfficeCanvas({
   isDark, speakingNames, respawnCount = 0,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const posRef = useRef({ x: CANVAS_W / 2, y: CANVAS_H / 2 });
+  // Default spawn: corridor midpoint between the two offices (x=600, y=140).
+  // This avoids spawning inside the War Room zone (y=240..550) which would
+  // immediately trigger the video call.
+  const posRef = useRef({ x: CANVAS_W / 2, y: 140 });
   const syncedRef = useRef(false);
   const keysRef = useRef(new Set<string>());
   const rafRef = useRef<number>(0);

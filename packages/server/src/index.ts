@@ -101,7 +101,7 @@ io.on("connection", (socket) => {
     const user: User = {
       id: uuidv4(),
       name,
-      position: { x: 50, y: 50 },
+      position: { x: 50, y: 17.5 }, // corridor midpoint between offices (x=600px, y=140px)
       room: roomId,
       isMuted: false,
       isDeafened: false,
