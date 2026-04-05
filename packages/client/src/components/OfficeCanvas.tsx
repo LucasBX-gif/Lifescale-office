@@ -1132,81 +1132,122 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [numbe
   drawRug3D(ctx, 1045, 195, 162, 100, officeStyles[1]);
 
 
-  // ── Bookshelf — right wall ────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 8);
-  ctx.fillStyle = p.bookShelf;
-  rr(ctx, 1158, 8, 34, 260, 2); ctx.fill();
+  // ── Whiteboard panel — right wall ────────────────────────────────────────────
+  shadow(ctx, p.shadow, 6);
+  ctx.fillStyle = "#F0EEE8";
+  rr(ctx, 1158, 8, 36, 160, 2); ctx.fill();
   noShadow(ctx);
-  ctx.strokeStyle = p.bookEdge; ctx.lineWidth = 1;
-  rr(ctx, 1158, 8, 34, 260, 2); ctx.stroke();
-  for (let i = 0; i < 5; i++) {
-    ctx.fillStyle = p.bookEdge;
-    ctx.fillRect(1158, 58 + i * 50, 34, 3);
+  ctx.strokeStyle = p.deskDark; ctx.lineWidth = 2;
+  rr(ctx, 1160, 10, 32, 156, 1); ctx.stroke();
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1;
+  rr(ctx, 1158, 8, 36, 160, 2); ctx.stroke();
+  // Diagrams drawn on board
+  ctx.strokeStyle = "#2840D8"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(1163, 24); ctx.lineTo(1187, 24); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1183, 20); ctx.lineTo(1187, 24); ctx.lineTo(1183, 28); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1163, 36); ctx.lineTo(1183, 36); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1163, 46); ctx.lineTo(1186, 46); ctx.stroke();
+  rr(ctx, 1163, 57, 14, 12, 1); ctx.stroke();
+  ctx.beginPath(); ctx.arc(1183, 63, 5, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = "#C0392B"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(1163, 82); ctx.lineTo(1189, 82); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1163, 90); ctx.lineTo(1181, 90); ctx.stroke();
+  // Sticky notes
+  ctx.fillStyle = "rgba(255,238,88,0.85)";  ctx.fillRect(1161, 108, 14, 12);
+  ctx.fillStyle = "rgba(128,203,196,0.85)"; ctx.fillRect(1179, 106, 14, 12);
+  ctx.fillStyle = "rgba(255,138,101,0.85)"; ctx.fillRect(1161, 124, 14, 12);
+  ctx.fillStyle = "rgba(206,147,216,0.85)"; ctx.fillRect(1179, 126, 14, 12);
+  // Marker tray
+  ctx.fillStyle = p.deskMid;
+  ctx.fillRect(1158, 168, 36, 5);
+  // Markers
+  for (let mi = 0; mi < 3; mi++) {
+    ctx.fillStyle = ["#2840D8","#C0392B","#27AE60"][mi];
+    ctx.fillRect(1162 + mi * 9, 169, 7, 3);
   }
-  const bookCols2 = ["#06b6d4","#ff8c42","#a855f7","#3dffa0","#ffbe32","#6c63ff","#e05555","#06b6d4","#ff8c42","#a855f7"];
-  for (let shelf = 0; shelf < 5; shelf++) {
-    let bx = 1160;
-    const by = 10 + shelf * 50;
-    for (let b = 0; b < 6 && bx < 1190; b++) {
-      const bw = 3 + (b * 7 + shelf * 3) % 3;
-      ctx.fillStyle = bookCols2[(shelf * 6 + b) % bookCols2.length];
-      ctx.fillRect(bx, by + 2, bw, 44);
-      bx += bw + 1;
+
+  // ── Modern straight desk (glass-top) ─────────────────────────────────────────
+  shadow(ctx, p.shadow, 10);
+  ctx.fillStyle = p.deskMid;
+  rr(ctx, 928, 138, 222, 56, 4); ctx.fill();  // desk body
+  noShadow(ctx);
+  // Glass top tint
+  ctx.fillStyle = "rgba(160,210,255,0.08)";
+  rr(ctx, 928, 138, 222, 56, 4); ctx.fill();
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1.5;
+  rr(ctx, 928, 138, 222, 56, 4); ctx.stroke();
+  // Surface highlight strip
+  ctx.fillStyle = p.deskLight;
+  rr(ctx, 931, 140, 216, 6, 2); ctx.fill();
+  // Metal legs (four corners, top-down)
+  ctx.fillStyle = "#909090";
+  for (const [lx, ly] of [[931,141],[1143,141],[931,189],[1143,189]] as [number,number][]) {
+    ctx.fillRect(lx, ly, 7, 4);
+  }
+
+  // ── Dual monitors ─────────────────────────────────────────────────────────────
+  // Left monitor
+  ctx.fillStyle = "#000000"; ctx.fillRect(958, 140, 42, 26);
+  ctx.fillStyle = p.screenFill; ctx.fillRect(959, 141, 40, 24);
+  ctx.fillStyle = p.screenGlow; ctx.fillRect(961, 143, 36, 20);
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(963, 145, 22, 3);
+  ctx.fillRect(963, 150, 16, 3);
+  ctx.fillRect(963, 155, 20, 3);
+  ctx.fillStyle = p.deskMid;
+  ctx.fillRect(976, 166, 5, 6); ctx.fillRect(971, 171, 14, 3);
+  // Right monitor
+  ctx.fillStyle = "#000000"; ctx.fillRect(1005, 140, 42, 26);
+  ctx.fillStyle = p.screenFill; ctx.fillRect(1006, 141, 40, 24);
+  ctx.fillStyle = p.screenGlow; ctx.fillRect(1008, 143, 36, 20);
+  // Different content — code editor look
+  ctx.fillStyle = "rgba(100,220,100,0.25)";
+  ctx.fillRect(1010, 145, 28, 3);
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillRect(1014, 150, 22, 3);
+  ctx.fillRect(1012, 155, 18, 3);
+  ctx.fillRect(1016, 160, 24, 3);
+  ctx.fillStyle = p.deskMid;
+  ctx.fillRect(1023, 166, 5, 6); ctx.fillRect(1018, 171, 14, 3);
+
+  // Compact wireless keyboard
+  ctx.fillStyle = p.deskLight;
+  rr(ctx, 1050, 162, 60, 16, 3); ctx.fill();
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 0.5;
+  for (let ki = 0; ki < 2; ki++) {
+    for (let kj = 0; kj < 9; kj++) {
+      rr(ctx, 1052 + kj * 6, 164 + ki * 6, 5, 5, 0.5); ctx.stroke();
     }
   }
-
-  // ── L-desk (mirrored — main desk runs left, return goes right side) ───────────
-  shadow(ctx, p.shadow, 10);
-  ctx.fillStyle = p.deskDark;
-  rr(ctx, 950, 145, 195, 58, 4); ctx.fill();   // main desk
-  rr(ctx, 1081, 185, 64, 75, 4); ctx.fill();   // return
-  noShadow(ctx);
+  // Trackpad
   ctx.fillStyle = p.deskLight;
-  rr(ctx, 953, 148, 189, 8, 2); ctx.fill();
-  rr(ctx, 1084, 188, 58, 8, 2); ctx.fill();
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1.5;
-  rr(ctx, 950, 145, 195, 58, 4); ctx.stroke();
-  rr(ctx, 1081, 185, 64, 75, 4); ctx.stroke();
-  for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = p.deskEdge;
-    rr(ctx, 1104, 200 + i * 18, 20, 5, 2); ctx.fill();
-  }
+  rr(ctx, 1115, 163, 22, 16, 2); ctx.fill();
+  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 0.5;
+  rr(ctx, 1115, 163, 22, 16, 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1115, 171); ctx.lineTo(1137, 171); ctx.stroke();
 
-  // ── Monitor (mirrored, same flat top-down style) ─────────────────────────────
-  ctx.fillStyle = "#000000";
-  ctx.fillRect(1047, 147, 46, 30);
-  ctx.fillStyle = p.screenFill;
-  ctx.fillRect(1048, 148, 44, 28);
-  ctx.fillStyle = p.screenGlow;
-  ctx.fillRect(1050, 150, 40, 24);
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.fillRect(1052, 152, 28, 4);
-  ctx.fillRect(1052, 158, 20, 3);
-  ctx.fillRect(1052, 163, 24, 3);
-  ctx.fillRect(1074, 158, 12, 8);
-  // Stand
-  ctx.fillStyle = p.deskMid;
-  ctx.fillRect(1067, 177, 6, 8);
-  ctx.fillRect(1061, 184, 18, 3);
-
-  // Keyboard + mouse (mirrored)
-  ctx.fillStyle = p.chairFill;
-  rr(ctx, 1004, 170, 44, 14, 2); ctx.fill();
-  rr(ctx, 988, 172, 12, 16, 4); ctx.fill();
-
-  // ── Chair (mirrored) ──────────────────────────────────────────────────────────
+  // ── Mesh ergonomic chair ──────────────────────────────────────────────────────
   shadow(ctx, p.shadow, 12);
-  ctx.fillStyle = p.chairFill;
+  ctx.fillStyle = "#546E7A";
   rr(ctx, 1086, 218, 44, 36, 6); ctx.fill();
-  rr(ctx, 1082, 240, 52, 22, 5); ctx.fill();
   noShadow(ctx);
-  ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 1.5;
+  // Mesh grid lines
+  ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = 0.6;
+  for (let mi = 0; mi < 4; mi++) {
+    ctx.beginPath(); ctx.moveTo(1090, 222 + mi * 8); ctx.lineTo(1126, 222 + mi * 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(1090 + mi * 10, 220); ctx.lineTo(1090 + mi * 10, 252); ctx.stroke();
+  }
+  ctx.fillStyle = "#455A64";
+  rr(ctx, 1082, 240, 52, 22, 5); ctx.fill();
+  ctx.strokeStyle = "#37474F"; ctx.lineWidth = 1.5;
   rr(ctx, 1086, 218, 44, 36, 6); ctx.stroke();
   rr(ctx, 1082, 240, 52, 22, 5); ctx.stroke();
-  ctx.fillStyle = p.chairFill;
-  ctx.fillRect(1080, 236, 6, 20);
-  ctx.fillRect(1114, 236, 6, 20);
-  ctx.strokeStyle = p.chairStroke; ctx.lineWidth = 2;
+  // Slim armrests
+  ctx.fillStyle = "#455A64";
+  ctx.fillRect(1080, 238, 5, 18);
+  ctx.fillRect(1115, 238, 5, 18);
+  // Base
+  ctx.strokeStyle = "#37474F"; ctx.lineWidth = 2;
   for (let a = 0; a < 5; a++) {
     const ang = (a / 5) * Math.PI * 2;
     ctx.beginPath();
@@ -1215,33 +1256,52 @@ function drawFurniture(ctx: CanvasRenderingContext2D, p: P, officeStyles: [numbe
     ctx.stroke();
   }
 
-  // ── Side table + lamp ─────────────────────────────────────────────────────────
-  shadow(ctx, p.shadow, 6);
-  ctx.fillStyle = p.deskMid;
-  rr(ctx, 935, 235, 40, 35, 3); ctx.fill();
-  noShadow(ctx);
-  ctx.strokeStyle = p.deskEdge; ctx.lineWidth = 1;
-  rr(ctx, 935, 235, 40, 35, 3); ctx.stroke();
-  ctx.fillStyle = p.deskDark;
-  ctx.fillRect(953, 218, 4, 17);
-  ctx.fillStyle = p.mugFill;
-  rr(ctx, 945, 208, 22, 14, 3); ctx.fill();
-  ctx.fillStyle = p.mugFill;
-  rr(ctx, 948, 248, 12, 16, 2); ctx.fill();
-
-  // ── Corner plant (mirrored) ───────────────────────────────────────────────────
+  // ── Bean bag (bottom-left corner) ────────────────────────────────────────────
   shadow(ctx, p.shadow, 8);
-  ctx.fillStyle = p.plantPot;
-  rr(ctx, 918, 240, 28, 28, 3); ctx.fill();
+  ctx.fillStyle = "#E64A19";
+  ctx.beginPath(); ctx.ellipse(928, 252, 27, 20, 0, 0, Math.PI * 2); ctx.fill();
   noShadow(ctx);
-  ctx.fillStyle = p.plantLeaf;
-  ctx.beginPath(); ctx.ellipse(930, 225, 20, 10, 0.3, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(922, 218, 16, 8, -0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(940, 222, 12, 7, -0.8, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = p.plantLeaf2;
-  ctx.beginPath(); ctx.ellipse(928, 230, 10, 5, 0.2, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.14)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(928, 252, 19, 13, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.beginPath(); ctx.ellipse(920, 244, 11, 7, -0.4, 0, Math.PI * 2); ctx.fill();
 
-  // ── Window (top wall, mirrored) ───────────────────────────────────────────────
+  // ── Standing lamp ─────────────────────────────────────────────────────────────
+  ctx.fillStyle = p.deskDark;
+  ctx.beginPath(); ctx.arc(910, 246, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillRect(908, 196, 4, 50);
+  ctx.fillStyle = p.mugFill;
+  ctx.beginPath();
+  ctx.moveTo(899, 196); ctx.lineTo(921, 196); ctx.lineTo(917, 209); ctx.lineTo(903, 209);
+  ctx.closePath(); ctx.fill();
+  const lampG2 = ctx.createRadialGradient(910, 206, 0, 910, 206, 48);
+  lampG2.addColorStop(0, "rgba(255,240,180,0.10)");
+  lampG2.addColorStop(1, "transparent");
+  ctx.fillStyle = lampG2; ctx.fillRect(862, 160, 96, 96);
+
+  // ── Cactus (bottom-right corner) ─────────────────────────────────────────────
+  shadow(ctx, p.shadow, 6);
+  ctx.fillStyle = p.plantPot;
+  rr(ctx, 1148, 244, 28, 28, 3); ctx.fill();
+  noShadow(ctx);
+  ctx.fillStyle = "rgba(30,20,10,0.6)";
+  rr(ctx, 1150, 244, 24, 8, 2); ctx.fill();
+  // Main column
+  ctx.fillStyle = "#3D8B37";
+  rr(ctx, 1157, 213, 10, 34, 4); ctx.fill();
+  // Left arm
+  rr(ctx, 1145, 224, 14, 6, 3); ctx.fill();
+  rr(ctx, 1143, 214, 6, 13, 3); ctx.fill();
+  // Right arm
+  rr(ctx, 1167, 228, 14, 6, 3); ctx.fill();
+  rr(ctx, 1177, 218, 6, 13, 3); ctx.fill();
+  // Spines
+  ctx.fillStyle = "#F5F5F5";
+  for (const [sx, sy] of [[1159,216],[1163,223],[1159,231],[1164,239],[1144,218],[1148,222],[1179,221],[1181,227]] as [number,number][]) {
+    ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // ── Window (top wall) ─────────────────────────────────────────────────────────
   ctx.fillStyle = p.glassBlue;
   rr(ctx, 984, 7, 130, 22, 3); ctx.fill();
   ctx.strokeStyle = p.wallBorder; ctx.lineWidth = 1;
