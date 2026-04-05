@@ -69,6 +69,20 @@ export const DOOR_2 = {
   h: 60,
 } as const;
 
+// Big double door — War Room TOP wall (y = 240), centered in x = 440..760
+export const WAR_ROOM_DOOR = {
+  x: 560,   // gap left edge
+  y: 240,   // wall top y
+  w: 80,    // gap width
+} as const;
+
+// Big double door — Lounge TOP wall (y = 560), centered in x = 900..1200
+export const LOUNGE_DOOR = {
+  x: 1010,  // gap left edge
+  y: 560,   // wall top y
+  w: 80,    // gap width
+} as const;
+
 /** Returns the zone name for pixel-space coordinates, or "Open Floor". */
 export function detectZone(px: number, py: number): string {
   for (const z of ZONES) {

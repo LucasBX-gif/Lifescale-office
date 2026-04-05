@@ -1,7 +1,7 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { Room, Position2D, UserStatus, User, OfficeAssignment } from "@lifescale/shared";
 import {
-  CANVAS_W, CANVAS_H, ZONES, DOOR, DOOR_2,
+  CANVAS_W, CANVAS_H, ZONES, DOOR, DOOR_2, WAR_ROOM_DOOR, LOUNGE_DOOR,
   PRIVATE_OFFICE_ZONE, PRIVATE_OFFICE_2_ZONE, detectZone, pctToPx, pxToPct,
 } from "../zones";
 
@@ -463,6 +463,8 @@ function drawRoomLabels(ctx: CanvasRenderingContext2D, offices: [OfficeAssignmen
 function drawZones(
   ctx: CanvasRenderingContext2D,
   doorClosed: boolean,
+  warRoomDoorClosed: boolean,
+  loungeDoorClosed: boolean,
   p: P,
   offices: [OfficeAssignment, OfficeAssignment]
 ) {
@@ -535,6 +537,24 @@ function drawZones(
       wV(wallX, y, WT, DOOR_2.y - y, true);
       wV(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h), true);
       drawDoor(ctx, isLocked || doorClosed, p, true);
+    } else if (z.id === "war-room") {
+      // Top wall split around big door gap
+      const wd = WAR_ROOM_DOOR;
+      wH(z.x, z.y, wd.x - z.x, WT, true);                          // left of door
+      wH(wd.x + wd.w, z.y, z.x + z.w - (wd.x + wd.w), WT, true);  // right of door
+      wH(z.x, z.y + z.h, z.w, WT, false);
+      wV(z.x, z.y, WT, z.h, true);
+      wV(z.x + z.w, z.y, WT, z.h + WT, false);
+      drawBigDoor(ctx, wd.x, wd.y, wd.w, warRoomDoorClosed, p);
+    } else if (z.id === "lounge") {
+      // Top wall split around big door gap
+      const ld = LOUNGE_DOOR;
+      wH(z.x, z.y, ld.x - z.x, WT, true);
+      wH(ld.x + ld.w, z.y, z.x + z.w - (ld.x + ld.w), WT, true);
+      wH(z.x, z.y + z.h, z.w, WT, false);
+      wV(z.x, z.y, WT, z.h, true);
+      wV(z.x + z.w, z.y, WT, z.h + WT, false);
+      drawBigDoor(ctx, ld.x, ld.y, ld.w, loungeDoorClosed, p);
     } else {
       wH(z.x, z.y, z.w, WT, true);
       wH(z.x, z.y + z.h, z.w, WT, false);
@@ -548,6 +568,89 @@ function drawZones(
     ctx.fillRect(z.x + WT, z.y + WT, 1, z.h - WT);
     ctx.fillRect(z.x + z.w + WT - 1, z.y + WT, 1, z.h - WT);
     ctx.fillRect(z.x + WT, z.y + z.h + WT - 1, z.w - WT, 1);
+  }
+}
+
+// ─── Big double door — horizontal wall (War Room / Lounge top walls) ──────────
+function drawBigDoor(
+  ctx: CanvasRenderingContext2D,
+  x: number,       // gap left edge
+  y: number,       // wall top y
+  w: number,       // gap width (80 px)
+  closed: boolean,
+  p: P
+) {
+  const WT = 14;
+  const half = w / 2;
+
+  // Dark door-frame lines at gap edges (makes the opening feel solid)
+  ctx.fillStyle = "#000";
+  ctx.fillRect(x - 2, y, 2, WT);
+  ctx.fillRect(x + w, y, 2, WT);
+
+  if (closed) {
+    // ── Left door panel ───────────────────────────────────────────────────────
+    ctx.fillStyle = p.doorFill;
+    ctx.fillRect(x, y, half, WT);
+    ctx.fillStyle = p.wallHighlight;
+    ctx.fillRect(x, y, half, 2);
+    // Panel inset (recessed rectangle for depth)
+    ctx.strokeStyle = p.wallShadow; ctx.lineWidth = 1;
+    ctx.strokeRect(x + 5, y + 3, half - 10, WT - 6);
+    // Gold handle (near centre seam)
+    ctx.fillStyle = "#F8C820";
+    ctx.fillRect(x + half - 9, y + WT / 2 - 2, 6, 4);
+    ctx.fillStyle = "#C09010";
+    ctx.fillRect(x + half - 9, y + WT / 2 + 2, 6, 1); // handle shadow
+
+    // ── Right door panel ──────────────────────────────────────────────────────
+    ctx.fillStyle = p.doorFill;
+    ctx.fillRect(x + half, y, half, WT);
+    ctx.fillStyle = p.wallHighlight;
+    ctx.fillRect(x + half, y, half, 2);
+    ctx.strokeStyle = p.wallShadow; ctx.lineWidth = 1;
+    ctx.strokeRect(x + half + 5, y + 3, half - 10, WT - 6);
+    ctx.fillStyle = "#F8C820";
+    ctx.fillRect(x + half + 3, y + WT / 2 - 2, 6, 4);
+    ctx.fillStyle = "#C09010";
+    ctx.fillRect(x + half + 3, y + WT / 2 + 2, 6, 1);
+
+    // Centre seam
+    ctx.fillStyle = "#111";
+    ctx.fillRect(x + half - 1, y, 2, WT);
+
+    // "OPEN" hint below the door
+    ctx.font = "bold 9px 'Courier New', monospace";
+    ctx.fillStyle = p.doorText;
+    ctx.textBaseline = "top";
+    ctx.textAlign = "center";
+    ctx.fillText("OPEN", x + w / 2, y + WT + 4);
+  } else {
+    // ── Open: black void + two panels swung into room ─────────────────────────
+    ctx.fillStyle = "#000";
+    ctx.fillRect(x, y, w, WT);
+
+    // Left panel swung 90° into room (narrow vertical strip at left side)
+    ctx.fillStyle = p.doorFill;
+    ctx.fillRect(x, y, 6, 34);
+    ctx.fillStyle = p.wallHighlight;
+    ctx.fillRect(x, y, 6, 2);
+    ctx.strokeStyle = p.wallShadow; ctx.lineWidth = 0.5;
+    ctx.strokeRect(x + 1, y + 2, 4, 30);
+
+    // Right panel swung into room
+    ctx.fillStyle = p.doorFill;
+    ctx.fillRect(x + w - 6, y, 6, 34);
+    ctx.fillStyle = p.wallHighlight;
+    ctx.fillRect(x + w - 6, y, 6, 2);
+    ctx.strokeRect(x + w - 5, y + 2, 4, 30);
+
+    // "CLOSE" hint
+    ctx.font = "bold 9px 'Courier New', monospace";
+    ctx.fillStyle = p.doorText;
+    ctx.textBaseline = "top";
+    ctx.textAlign = "center";
+    ctx.fillText("CLOSE", x + w / 2, y + WT + 4);
   }
 }
 
@@ -1241,6 +1344,14 @@ export function OfficeCanvas({
   const doorClosedRef = useRef(privateOfficeDoorClosed);
   useEffect(() => { doorClosedRef.current = privateOfficeDoorClosed; }, [privateOfficeDoorClosed]);
 
+  // War Room and Lounge doors — local state (no server sync needed for shared spaces)
+  const [warRoomDoorClosed, setWarRoomDoorClosed] = useState(false);
+  const [loungeDoorClosed, setLoungeDoorClosed] = useState(false);
+  const warRoomDoorClosedRef = useRef(warRoomDoorClosed);
+  const loungeDoorClosedRef = useRef(loungeDoorClosed);
+  useEffect(() => { warRoomDoorClosedRef.current = warRoomDoorClosed; }, [warRoomDoorClosed]);
+  useEffect(() => { loungeDoorClosedRef.current = loungeDoorClosed; }, [loungeDoorClosed]);
+
   const isDarkRef = useRef(isDark);
   useEffect(() => { isDarkRef.current = isDark; }, [isDark]);
 
@@ -1345,12 +1456,24 @@ export function OfficeCanvas({
         { x: 900, y: DOOR_2.y + DOOR_2.h, w: WTC, h: 280 - DOOR_2.y - DOOR_2.h },
         ...(dc ? [{ x: 900, y: DOOR_2.y, w: WTC, h: DOOR_2.h } as WRect] : []),
         // ─ War Room ───────────────────────────────────────────────────────────
-        { x: 440, y: 240, w: 320, h: WTC },
+        // Top wall: split around big door gap (or solid when closed)
+        ...(warRoomDoorClosedRef.current
+          ? [{ x: 440, y: 240, w: 320, h: WTC } as WRect]
+          : [
+              { x: 440, y: 240, w: WAR_ROOM_DOOR.x - 440, h: WTC } as WRect,
+              { x: WAR_ROOM_DOOR.x + WAR_ROOM_DOOR.w, y: 240, w: 760 - (WAR_ROOM_DOOR.x + WAR_ROOM_DOOR.w), h: WTC } as WRect,
+            ]),
         { x: 440, y: 240, w: WTC, h: 310 },
         { x: 440, y: 550, w: 334, h: WTC },
         { x: 760, y: 240, w: WTC, h: 324 },
         // ─ Lounge ─────────────────────────────────────────────────────────────
-        { x: 900, y: 560, w: 300, h: WTC },
+        // Top wall: split around big door gap (or solid when closed)
+        ...(loungeDoorClosedRef.current
+          ? [{ x: 900, y: 560, w: 300, h: WTC } as WRect]
+          : [
+              { x: 900, y: 560, w: LOUNGE_DOOR.x - 900, h: WTC } as WRect,
+              { x: LOUNGE_DOOR.x + LOUNGE_DOOR.w, y: 560, w: 1200 - (LOUNGE_DOOR.x + LOUNGE_DOOR.w), h: WTC } as WRect,
+            ]),
         { x: 900, y: 560, w: WTC, h: 240 },
         { x: 1186,y: 560, w: WTC, h: 240 },
       ];
@@ -1419,7 +1542,7 @@ export function OfficeCanvas({
     const p = paletteRef.current;
     const offs = officesRef.current;
     drawBackground(ctx, p);
-    drawZones(ctx, doorClosedRef.current, p, offs);
+    drawZones(ctx, doorClosedRef.current, warRoomDoorClosedRef.current, loungeDoorClosedRef.current, p, offs);
     drawLights(ctx, p);
     drawFurniture(ctx, p, [offs[0].style ?? 0, offs[1].style ?? 0]);
     drawRoomLabels(ctx, offs);
@@ -1569,7 +1692,17 @@ export function OfficeCanvas({
     }
     // Door toggle (office 2)
     if (cx >= DOOR_2.x && cx <= DOOR_2.x + DOOR_2.w && cy >= DOOR_2.y && cy <= DOOR_2.y + DOOR_2.h) {
-      onDoorToggleRef.current();
+      onDoorToggleRef.current(); return;
+    }
+    // Big door toggle — War Room
+    if (cx >= WAR_ROOM_DOOR.x - 8 && cx <= WAR_ROOM_DOOR.x + WAR_ROOM_DOOR.w + 8 &&
+        cy >= WAR_ROOM_DOOR.y - 8 && cy <= WAR_ROOM_DOOR.y + 30) {
+      setWarRoomDoorClosed(v => !v); return;
+    }
+    // Big door toggle — Lounge
+    if (cx >= LOUNGE_DOOR.x - 8 && cx <= LOUNGE_DOOR.x + LOUNGE_DOOR.w + 8 &&
+        cy >= LOUNGE_DOOR.y - 8 && cy <= LOUNGE_DOOR.y + 30) {
+      setLoungeDoorClosed(v => !v);
     }
   }
 
