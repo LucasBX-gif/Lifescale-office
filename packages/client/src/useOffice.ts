@@ -125,20 +125,47 @@ export function useOffice() {
     doorClosedRef.current = state.room?.privateOfficeDoorClosed ?? false;
   }, [state.room?.privateOfficeDoorClosed]);
 
+  // Stored so the socket "connect" handler can auto-rejoin on reconnect
+  const joinParamsRef = useRef<JoinRoomPayload | null>(null);
+
   const officesLockedRef = useRef<[boolean, boolean]>([false, false]);
   useEffect(() => {
     const offices = state.room?.offices;
     if (offices) officesLockedRef.current = [offices[0].locked, offices[1].locked];
   }, [state.room?.offices]);
 
+  // Keepalive ping — prevents free-tier server from sleeping
+  useEffect(() => {
+    const id = setInterval(() => {
+      fetch((import.meta.env.VITE_SERVER_URL || "http://localhost:3001") + "/health")
+        .catch(() => {});
+    }, 4 * 60 * 1000); // every 4 minutes
+    return () => clearInterval(id);
+  }, []);
+
   // ── Socket lifecycle ──────────────────────────────────────────────────────
   useEffect(() => {
     socket.connect();
 
-    socket.on("connect", () => dispatch({ type: "CONNECTED" }));
+    let disconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+    socket.on("connect", () => {
+      // Cancel any pending disconnect flash
+      if (disconnectTimer) { clearTimeout(disconnectTimer); disconnectTimer = null; }
+      dispatch({ type: "CONNECTED" });
+      // Auto-rejoin on reconnect without touching LiveKit (audio stays live)
+      if (joinParamsRef.current) {
+        socket.emit(EVENTS.JOIN_ROOM, joinParamsRef.current);
+      }
+    });
+
     socket.on("disconnect", () => {
-      dispatch({ type: "DISCONNECTED" });
-      lkDisconnect();
+      // Delay before showing "Connecting…" so brief blips are invisible
+      disconnectTimer = setTimeout(() => {
+        dispatch({ type: "DISCONNECTED" });
+        disconnectTimer = null;
+      }, 4000);
+      // Don't disconnect LiveKit — let it maintain its own connection
     });
 
     socket.on(EVENTS.ROOM_STATE, (room: Room) => {
@@ -189,6 +216,7 @@ export function useOffice() {
     });
 
     return () => {
+      if (disconnectTimer) clearTimeout(disconnectTimer);
       socket.removeAllListeners();
       socket.disconnect();
       lkDisconnect();
@@ -199,6 +227,7 @@ export function useOffice() {
   const joinRoom = useCallback(
     async ({ name, roomId, roomName }: JoinRoomPayload) => {
       pendingNameRef.current = name;
+      joinParamsRef.current = { name, roomId, roomName };
       socket.emit(EVENTS.JOIN_ROOM, { name, roomId, roomName } satisfies JoinRoomPayload);
       const res = await fetch(
         `${SERVER_URL}/token?roomId=${encodeURIComponent(roomId)}&name=${encodeURIComponent(name)}`

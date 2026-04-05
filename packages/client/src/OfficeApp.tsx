@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOffice } from "./useOffice";
 import { OfficeCanvas } from "./components/OfficeCanvas";
 import { Controls } from "./components/Controls";
@@ -24,8 +24,10 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
     canPlaybackAudio, resumeAudio,
   } = useOffice();
 
+  const hasJoinedRef = useRef(false);
   useEffect(() => {
-    if (connected) {
+    if (connected && !hasJoinedRef.current) {
+      hasJoinedRef.current = true;
       joinRoom({ name: userName, roomId: workspaceId, roomName: workspaceName });
     }
   }, [connected]);

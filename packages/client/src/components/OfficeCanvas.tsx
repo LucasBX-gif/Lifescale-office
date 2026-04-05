@@ -23,6 +23,7 @@ function palette(isDark: boolean) {
     tile1:         "#0c0c1a",
     tile2:         "#0e0e1e",
     grout:         "rgba(255,255,255,0.025)",
+    pathFill:      "rgba(255,255,255,0.04)",
     // Room floors
     wood1:         "rgba(100,65,30,0.55)",
     wood2:         "rgba(115,75,38,0.5)",
@@ -91,6 +92,7 @@ function palette(isDark: boolean) {
     tile1:         "#d8d8ec",
     tile2:         "#dcdcf2",
     grout:         "rgba(0,0,0,0.045)",
+    pathFill:      "rgba(0,0,0,0.04)",
     wood1:         "rgba(160,110,55,0.55)",
     wood2:         "rgba(180,130,70,0.5)",
     woodGrain:     "rgba(110,72,25,0.2)",
@@ -166,20 +168,23 @@ function noShadow(ctx: CanvasRenderingContext2D) {
   ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
 }
 
-// ─── Background — polished tile floor ─────────────────────────────────────────
+// ─── Background — large-format tile floor with corridor paths ─────────────────
 function drawBackground(ctx: CanvasRenderingContext2D, p: P) {
+  // Uniform floor — no checkerboard
   ctx.fillStyle = p.bg;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  const T = 80;
-  for (let tx = 0; tx < CANVAS_W; tx += T) {
-    for (let ty = 0; ty < CANVAS_H; ty += T) {
-      if ((Math.floor(tx / T) + Math.floor(ty / T)) % 2 === 0) {
-        ctx.fillStyle = p.tile2;
-        ctx.fillRect(tx, ty, T, T);
-      }
-    }
-  }
+  // Corridor paths — slightly lighter/darker strips connecting every room
+  ctx.fillStyle = p.pathFill;
+  // Top corridor: office 1 door ↔ office 2 door  (y: 90–180, x: 300–900)
+  ctx.fillRect(300, 90, 600, 90);
+  // Spine from top corridor down into War Room entrance (x: 545–655, y: 180–245)
+  ctx.fillRect(545, 180, 110, 65);
+  // War Room → Lounge passage (x: 755–910, y: 488–570)
+  ctx.fillRect(755, 488, 155, 82);
+
+  // Large-format grout grid (120 px tiles, same colour everywhere)
+  const T = 120;
   ctx.strokeStyle = p.grout;
   ctx.lineWidth = 1;
   for (let tx = 0; tx <= CANVAS_W; tx += T) {
