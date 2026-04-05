@@ -23,16 +23,16 @@ const ROOM_OPTIONS: RoomOptions = {
     channelCount: 1,
   },
   videoCaptureDefaults: {
-    resolution: VideoPresets.h1080.resolution, // capture source at 1080p
+    resolution: VideoPresets.h720.resolution,  // 720p — more stable encode than 1080p
     facingMode: "user",
   },
   publishDefaults: {
     videoSimulcastLayers: [],  // no simulcast — single full-quality stream always
     videoEncoding: {
-      maxBitrate: 8_000_000,   // 8 Mbps — near-pristine
+      maxBitrate: 2_500_000,   // 2.5 Mbps — achievable on typical connections
       maxFramerate: 30,
     },
-    videoCodec: "h264",  // hardware enc/dec on all devices = lowest encode latency
+    // no videoCodec override — VP8/VP9 browser software encoder beats H264 hardware for quality
     // dtx omitted — silence-detection adds onset latency
     // red omitted — redundant packet buffering adds ~20-40 ms latency
   },
