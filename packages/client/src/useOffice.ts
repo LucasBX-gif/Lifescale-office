@@ -260,6 +260,8 @@ export function useOffice() {
       if (!room || !currentUserId) return;
       const me = room.users.find((u) => u.id === currentUserId);
       if (!me) return;
+      // Don't override the zeroed volumes while deafened
+      if (me.isDeafened) return;
       const myPx = pctToPx(me.position);
       const myZone = detectZone(myPx.x, myPx.y);
       const peers = room.users

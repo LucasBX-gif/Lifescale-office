@@ -378,14 +378,10 @@ function drawZones(
     ctx.fillStyle = p.zoneLabel;
     ctx.fillText(label, z.x + z.w / 2, z.y + z.h - 16);
 
-    // Locked red tint overlay
+    // Locked state
     const isLocked =
       (z.id === "private-office" && offices[0].locked) ||
       (z.id === "private-office-2" && offices[1].locked);
-    if (isLocked) {
-      ctx.fillStyle = "rgba(255,40,40,0.07)";
-      ctx.fillRect(z.x, z.y, z.w, z.h);
-    }
 
     // Thick walls
     ctx.fillStyle = p.wallFill;
@@ -395,14 +391,10 @@ function drawZones(
       ctx.fillRect(x, y, w + WT, WT);
       ctx.fillRect(x, y, WT, h);
       ctx.fillRect(x, y + h, w + WT, WT);
-      // Right wall with door gap (or solid if locked)
-      if (isLocked) {
-        ctx.fillRect(wallX, y, WT, h);
-      } else {
-        ctx.fillRect(wallX, y, WT, DOOR.y - y);
-        ctx.fillRect(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h));
-        drawDoor(ctx, doorClosed, p, false);
-      }
+      // Right wall with door gap — always show door (closed when locked)
+      ctx.fillRect(wallX, y, WT, DOOR.y - y);
+      ctx.fillRect(wallX, DOOR.y + DOOR.h, WT, y + h - (DOOR.y + DOOR.h));
+      drawDoor(ctx, isLocked || doorClosed, p, false);
     } else if (z.id === "private-office-2") {
       const { x, y, w, h } = PRIVATE_OFFICE_2_ZONE;
       const wallX = x; // door is on LEFT wall
@@ -410,14 +402,10 @@ function drawZones(
       ctx.fillRect(x, y, WT, h);                 // left placeholder (canvas edge at x=900)
       ctx.fillRect(x + w, y, WT, h + WT);        // right (canvas edge)
       ctx.fillRect(x, y + h, w + WT, WT);        // bottom
-      // Left wall with door gap (or solid if locked)
-      if (isLocked) {
-        ctx.fillRect(wallX, y, WT, h);
-      } else {
-        ctx.fillRect(wallX, y, WT, DOOR_2.y - y);
-        ctx.fillRect(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h));
-        drawDoor(ctx, doorClosed, p, true);
-      }
+      // Left wall with door gap — always show door (closed when locked)
+      ctx.fillRect(wallX, y, WT, DOOR_2.y - y);
+      ctx.fillRect(wallX, DOOR_2.y + DOOR_2.h, WT, y + h - (DOOR_2.y + DOOR_2.h));
+      drawDoor(ctx, isLocked || doorClosed, p, true);
     } else {
       ctx.fillRect(z.x, z.y, z.w, WT);
       ctx.fillRect(z.x, z.y + z.h, z.w, WT);
