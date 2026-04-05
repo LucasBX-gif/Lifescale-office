@@ -384,7 +384,7 @@ function drawZones(
   p: P,
   offices: [OfficeAssignment, OfficeAssignment]
 ) {
-  const WT = 10;
+  const WT = 14; // thicker walls = more visible 3D depth
 
   for (const z of ZONES) {
     // Floor texture
@@ -417,21 +417,41 @@ function drawZones(
       (z.id === "private-office" && offices[0].locked) ||
       (z.id === "private-office-2" && offices[1].locked);
 
-    // ── Wall helpers with Gather.town-style depth ──────────────────────────
-    const HI = 3; // highlight strip thickness
-    // Horizontal wall (top/bottom) — highlight on bottom face (room-facing)
+    // ── Wall helpers — 3-face depth like Gather.town ──────────────────────
+    const FF = 10; // front-face extension (the visible "height" of the wall)
+    const TF = Math.ceil(WT * 0.4); // top-face strip (lit from above)
+
+    // Horizontal wall.  roomBelow=true → top-of-room wall; shows front face below.
     const wH = (wx: number, wy: number, ww: number, wh2: number, roomBelow: boolean) => {
-      ctx.fillStyle = p.wallShadow;  ctx.fillRect(wx, wy, ww, wh2);
-      ctx.fillStyle = p.wallFill;    ctx.fillRect(wx, wy, ww, wh2 - HI);
-      ctx.fillStyle = p.wallHighlight;
-      ctx.fillRect(wx, roomBelow ? wy + wh2 - HI : wy, ww, HI);
+      if (roomBelow) {
+        // Top surface (lit from above) — lighter
+        ctx.fillStyle = p.wallHighlight; ctx.fillRect(wx, wy, ww, TF);
+        // Main wall body
+        ctx.fillStyle = p.wallFill;      ctx.fillRect(wx, wy + TF, ww, wh2 - TF);
+        // Front face — extends INTO room below wall (shows wall height)
+        ctx.fillStyle = p.wallShadow;    ctx.fillRect(wx, wy + wh2, ww, FF);
+        const fg = ctx.createLinearGradient(0, wy + wh2, 0, wy + wh2 + FF);
+        fg.addColorStop(0, "rgba(0,0,0,0.18)"); fg.addColorStop(1, "rgba(0,0,0,0.6)");
+        ctx.fillStyle = fg; ctx.fillRect(wx, wy + wh2, ww, FF);
+      } else {
+        // Bottom wall — only top-face visible (room is above, no front face)
+        ctx.fillStyle = p.wallFill;      ctx.fillRect(wx, wy, ww, wh2);
+        ctx.fillStyle = p.wallHighlight; ctx.fillRect(wx, wy, ww, TF);
+      }
     };
-    // Vertical wall (left/right) — highlight on right face (room-facing)
+
+    // Vertical wall.  roomRight=true → left-of-room wall; shows thin right front face.
     const wV = (wx: number, wy: number, ww: number, wh2: number, roomRight: boolean) => {
-      ctx.fillStyle = p.wallShadow;  ctx.fillRect(wx, wy, ww, wh2);
-      ctx.fillStyle = p.wallFill;    ctx.fillRect(wx + HI, wy, ww - HI, wh2);
-      ctx.fillStyle = p.wallHighlight;
-      ctx.fillRect(roomRight ? wx + ww - HI : wx, wy, HI, wh2);
+      ctx.fillStyle = p.wallFill;      ctx.fillRect(wx, wy, ww, wh2);
+      ctx.fillStyle = p.wallHighlight; ctx.fillRect(wx, wy, TF, wh2);
+      if (roomRight) {
+        // Thin right-face shadow (wall's visible side edge facing into room)
+        const RF = 5;
+        ctx.fillStyle = p.wallShadow; ctx.fillRect(wx + ww, wy, RF, wh2);
+        const rg = ctx.createLinearGradient(wx + ww, 0, wx + ww + RF, 0);
+        rg.addColorStop(0, "rgba(0,0,0,0.45)"); rg.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = rg; ctx.fillRect(wx + ww, wy, RF, wh2);
+      }
     };
 
     if (z.id === "private-office") {
@@ -1295,70 +1315,110 @@ function drawAvatar(
 ) {
   const statusColor = STATUS_COLORS[user.status];
 
-  // Speaking pulse ring — smoothly fades in/out with speakingLevel
+  // Deterministic per-user colours from name
+  const hash = user.name.split("").reduce((a, c) => (Math.imul(a, 31) + c.charCodeAt(0)) | 0, 17);
+  const OUTFITS = ["#e91e8c","#43a047","#1976d2","#f57c00","#7b1fa2","#0097a7","#c62828","#2e7d32","#e65100","#006064"];
+  const HAIRS   = ["#3e2723","#212121","#795548","#b71c1c","#37474f","#4a148c","#e65100","#1a237e"];
+  const SKINS   = ["#ffcc80","#ffb74d","#a1887f","#8d6e63","#ffe0b2","#bcaaa4"];
+  const outfitColor = isMe ? "#6c63ff" : OUTFITS[Math.abs(hash)         % OUTFITS.length];
+  const hairColor   =                    HAIRS  [Math.abs(hash >> 3)     % HAIRS.length];
+  const skinColor   =                    SKINS  [Math.abs(hash >> 6)     % SKINS.length];
+  const pantsColor  = isMe ? "#4a3fcc" : OUTFITS[Math.abs(hash >> 9)     % OUTFITS.length];
+
+  // ── Speaking ring ─────────────────────────────────────────────────────────
   if (speakingLevel > 0.01) {
     const pulse = speakingLevel * (0.55 + 0.45 * Math.sin(now / 180));
-    const ringR = AVATAR_R + 6 + 4 * Math.sin(now / 220) * speakingLevel;
-    ctx.beginPath();
-    ctx.arc(x, y, ringR, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(61, 255, 160, ${pulse})`;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(x, y, ringR + 6, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(61, 255, 160, ${pulse * 0.35})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    const ringR = 30 + 4 * Math.sin(now / 220) * speakingLevel;
+    ctx.beginPath(); ctx.arc(x, y - 4, ringR, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(61,255,160,${pulse})`; ctx.lineWidth = 3; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y - 4, ringR + 6, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(61,255,160,${pulse * 0.3})`; ctx.lineWidth = 2; ctx.stroke();
   }
 
-  shadow(ctx, p.shadow, isMe ? 14 : 8);
+  // ── Ground shadow ─────────────────────────────────────────────────────────
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath(); ctx.ellipse(x, y + 14, 14, 5, 0, 0, Math.PI * 2); ctx.fill();
 
-  // Outer glow ring
-  ctx.beginPath();
-  ctx.arc(x, y, AVATAR_R + 3, 0, Math.PI * 2);
-  ctx.strokeStyle = isMe ? "rgba(255,255,255,0.5)" : `${statusColor}66`;
-  ctx.lineWidth = isMe ? 2.5 : 1.5;
-  ctx.stroke();
+  // ── Shoes ─────────────────────────────────────────────────────────────────
+  ctx.fillStyle = "#222";
+  rr(ctx, x - 9, y + 8,  8, 7, 2); ctx.fill();
+  rr(ctx, x + 1, y + 8,  8, 7, 2); ctx.fill();
 
+  // ── Legs / trousers ───────────────────────────────────────────────────────
+  ctx.fillStyle = pantsColor;
+  ctx.fillRect(x - 8, y + 1, 7, 9);
+  ctx.fillRect(x + 1, y + 1, 7, 9);
+  ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 1;
+  ctx.strokeRect(x - 8, y + 1, 7, 9);
+  ctx.strokeRect(x + 1, y + 1, 7, 9);
+
+  // ── Body / shirt ──────────────────────────────────────────────────────────
+  shadow(ctx, p.shadow, 7);
+  ctx.fillStyle = outfitColor;
+  rr(ctx, x - 10, y - 9, 20, 13, 3); ctx.fill();
   noShadow(ctx);
+  ctx.strokeStyle = "rgba(0,0,0,0.45)"; ctx.lineWidth = 1.5;
+  rr(ctx, x - 10, y - 9, 20, 13, 3); ctx.stroke();
+  // Collar V
+  ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x - 3, y - 9); ctx.lineTo(x, y - 4); ctx.lineTo(x + 3, y - 9); ctx.stroke();
 
-  // Avatar circle
-  ctx.beginPath();
-  ctx.arc(x, y, AVATAR_R, 0, Math.PI * 2);
-  ctx.fillStyle = isMe ? p.avatarMeFill : p.avatarFill;
-  ctx.fill();
+  // ── Head ──────────────────────────────────────────────────────────────────
+  shadow(ctx, p.shadow, 10);
+  ctx.fillStyle = skinColor;
+  ctx.beginPath(); ctx.arc(x, y - 18, 11, 0, Math.PI * 2); ctx.fill();
+  noShadow(ctx);
+  ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(x, y - 18, 11, 0, Math.PI * 2); ctx.stroke();
 
-  // Initials
-  const ini = user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = `bold ${Math.round(AVATAR_R * 0.72)}px Inter, system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(ini, x, y + 1);
+  // ── Hair ──────────────────────────────────────────────────────────────────
+  ctx.fillStyle = hairColor;
+  // Top cap
+  ctx.beginPath(); ctx.ellipse(x, y - 25, 11, 6, 0, Math.PI, Math.PI * 2); ctx.fill();
+  // Side tufts
+  ctx.beginPath(); ctx.arc(x - 10, y - 20, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 10, y - 20, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(x, y - 20, 11, 5, 0, Math.PI, Math.PI * 2); ctx.stroke();
 
-  // Name label
-  ctx.font = "11px Inter, system-ui, sans-serif";
-  ctx.fillStyle = isMe ? p.label : p.labelMuted;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  ctx.fillText(user.name, x, y + AVATAR_R + 6);
+  // ── Eyes ──────────────────────────────────────────────────────────────────
+  // Whites
+  ctx.fillStyle = "#fff";
+  ctx.beginPath(); ctx.ellipse(x - 4, y - 18, 3.5, 3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x + 4, y - 18, 3.5, 3, 0, 0, Math.PI * 2); ctx.fill();
+  // Pupils
+  ctx.fillStyle = "#1a1a1a";
+  ctx.beginPath(); ctx.arc(x - 3.5, y - 17.5, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 4.5, y - 17.5, 2, 0, Math.PI * 2); ctx.fill();
+  // Shine
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.beginPath(); ctx.arc(x - 3,   y - 18.5, 0.8, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 5,   y - 18.5, 0.8, 0, Math.PI * 2); ctx.fill();
 
-  // Mute badge
+  // ── Name bubble ───────────────────────────────────────────────────────────
+  const firstName = user.name.split(" ")[0];
+  ctx.font = "bold 10px 'Courier New', monospace";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  const nw = ctx.measureText(firstName).width + 14;
+  const ny = y - 42;
+  ctx.fillStyle = isMe ? "rgba(108,99,255,0.94)" : "rgba(20,12,4,0.78)";
+  rr(ctx, x - nw / 2, ny - 8, nw, 16, 5); ctx.fill();
+  ctx.strokeStyle = isMe ? "rgba(160,150,255,0.6)" : "rgba(255,255,255,0.15)";
+  ctx.lineWidth = 1;
+  rr(ctx, x - nw / 2, ny - 8, nw, 16, 5); ctx.stroke();
+  ctx.fillStyle = "#fff";
+  ctx.fillText(firstName, x, ny);
+
+  // ── Mute badge ────────────────────────────────────────────────────────────
   if (user.isMuted) {
-    ctx.font = "11px sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText("🔇", x + AVATAR_R - 3, y - AVATAR_R + 2);
+    ctx.font = "11px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("🔇", x + 16, y - 26);
   }
 
-  // Status dot
-  ctx.beginPath();
-  ctx.arc(x + AVATAR_R - 5, y + AVATAR_R - 5, 5.5, 0, Math.PI * 2);
-  ctx.fillStyle = statusColor;
-  ctx.fill();
-  ctx.strokeStyle = p.bg;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  // ── Status dot ────────────────────────────────────────────────────────────
+  ctx.beginPath(); ctx.arc(x + 10, y - 9, 5, 0, Math.PI * 2);
+  ctx.fillStyle = statusColor; ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = 1.5; ctx.stroke();
 }
 
 // ─── Zone indicator ───────────────────────────────────────────────────────────
@@ -1551,6 +1611,7 @@ export function OfficeCanvas({
     const sx = canvas.width / CANVAS_W;
     const sy = canvas.height / CANVAS_H;
     ctx.save();
+    ctx.imageSmoothingEnabled = false; // crisp pixel art — no anti-aliasing on scaled content
     ctx.scale(sx, sy);
 
     const p = paletteRef.current;
