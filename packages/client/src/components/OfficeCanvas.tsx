@@ -1528,20 +1528,21 @@ export function OfficeCanvas({
     // ── Room wall collision — prevents avatar clipping through walls ──────────
     {
       const WTC = 14;
+      const R = AVATAR_R;
       const dc = doorClosedRef.current;
       type WRect = { x: number; y: number; w: number; h: number };
       const wallSegs: WRect[] = [
         // ─ Office 1: bottom wall, right wall (with door gap) ─────────────────
+        // Wall segments shrink inward by R at the gap edges so the avatar can
+        // use the full visual opening without clipping on the corner.
         { x: 0,   y: 280, w: 314,          h: WTC },
-        { x: 300, y: 0,   w: WTC,          h: DOOR.y },
-        { x: 300, y: DOOR.y + DOOR.h, w: WTC, h: 280 - DOOR.y - DOOR.h },
-        ...(dc ? [{ x: 300, y: DOOR.y, w: WTC, h: DOOR.h } as WRect] : []),
+        { x: 300, y: 0,   w: WTC,          h: dc ? DOOR.y : Math.max(0, DOOR.y - R) },
+        { x: 300, y: dc ? DOOR.y + DOOR.h : DOOR.y + DOOR.h + R, w: WTC, h: dc ? 280 - DOOR.y - DOOR.h : 280 - DOOR.y - DOOR.h - R },
         // ─ Office 2: bottom wall, left wall (with door gap), right wall ──────
         { x: 900, y: 280, w: 300,          h: WTC },
         { x: 1186,y: 0,   w: WTC,          h: 280 + WTC },
-        { x: 900, y: 0,   w: WTC,          h: DOOR_2.y },
-        { x: 900, y: DOOR_2.y + DOOR_2.h, w: WTC, h: 280 - DOOR_2.y - DOOR_2.h },
-        ...(dc ? [{ x: 900, y: DOOR_2.y, w: WTC, h: DOOR_2.h } as WRect] : []),
+        { x: 900, y: 0,   w: WTC,          h: dc ? DOOR_2.y : Math.max(0, DOOR_2.y - R) },
+        { x: 900, y: dc ? DOOR_2.y + DOOR_2.h : DOOR_2.y + DOOR_2.h + R, w: WTC, h: dc ? 280 - DOOR_2.y - DOOR_2.h : 280 - DOOR_2.y - DOOR_2.h - R },
         // ─ War Room ───────────────────────────────────────────────────────────
         // Top wall: split around big door gap (or solid when closed)
         ...(warRoomDoorClosedRef.current
@@ -1564,7 +1565,6 @@ export function OfficeCanvas({
         { x: 900, y: 560, w: WTC, h: 240 },
         { x: 1186,y: 560, w: WTC, h: 240 },
       ];
-      const R = AVATAR_R;
       const hits = (seg: WRect, cx: number, cy: number) => {
         const nx = Math.max(seg.x, Math.min(seg.x + seg.w, cx));
         const ny = Math.max(seg.y, Math.min(seg.y + seg.h, cy));
