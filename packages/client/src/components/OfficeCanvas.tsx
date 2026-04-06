@@ -654,53 +654,129 @@ function drawBigDoor(
   }
 }
 
-// ─── Door — pixel art flat door ────────────────────────────────────────────────
+// ─── Door — proper framed door in wall ─────────────────────────────────────────
 function drawDoor(ctx: CanvasRenderingContext2D, closed: boolean, p: P, isOffice2: boolean) {
   const door = isOffice2 ? DOOR_2 : DOOR;
   const { y, h } = door;
-  const wallX = isOffice2
-    ? PRIVATE_OFFICE_2_ZONE.x
-    : PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w;
+  const WT = 14; // matches wall thickness
 
-  const DW = 10; // door panel width
+  // wallX = left edge of the wall block containing the door
+  // Office 1: right wall at x=300 (corridor is to the RIGHT, x>314)
+  // Office 2: left wall at x=900 (corridor is to the LEFT, x<900)
+  const wallX = isOffice2
+    ? PRIVATE_OFFICE_2_ZONE.x       // 900
+    : PRIVATE_OFFICE_ZONE.x + PRIVATE_OFFICE_ZONE.w; // 300
+
+  // ── Door frame jambs (darker wood, recessed into wall gap) ─────────────────
+  const JAMB = 2;
+  ctx.fillStyle = "#111";
+  ctx.fillRect(wallX,            y,         WT,    JAMB); // top jamb
+  ctx.fillRect(wallX,            y + h - JAMB, WT, JAMB); // bottom jamb
+  ctx.fillRect(wallX,            y,         JAMB,  h);    // office-side jamb
+  ctx.fillRect(wallX + WT - JAMB, y,        JAMB,  h);   // corridor-side jamb
 
   if (closed) {
-    // Closed door panel — dark wood with frame
-    const dx = isOffice2 ? wallX : wallX - DW;
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(dx - 1, y - 1, DW + 2, h + 2);
-    ctx.fillStyle = p.doorFill;
-    ctx.fillRect(dx, y, DW, h);
-    // Door highlight (top strip)
-    ctx.fillStyle = p.wallHighlight;
-    ctx.fillRect(dx, y, DW, 2);
-    // Lock icon — bright yellow square
-    ctx.fillStyle = "#F8C820";
-    ctx.fillRect(dx + 2, y + h / 2 - 3, 6, 6);
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(dx + 3, y + h / 2 - 2, 4, 4);
-    ctx.fillStyle = "#F8C820";
-    ctx.fillRect(dx + 4, y + h / 2 - 4, 2, 3);
-  } else {
-    // Open door — bright gap in wall + angled door panel
-    const gx = isOffice2 ? wallX : wallX - DW;
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(gx, y, DW, h);
-    // Door ajar (4-px strip at angle)
-    ctx.fillStyle = p.doorFill;
-    ctx.fillRect(isOffice2 ? wallX + DW : wallX - DW - 4, y, 4, h);
-  }
+    // ── Closed: wood panel fills the gap between the jambs ────────────────────
+    const px = wallX + JAMB;
+    const py = y + JAMB;
+    const pw = WT - JAMB * 2;
+    const ph = h - JAMB * 2;
 
-  // "Open/Close" hint text
-  ctx.font = "bold 9px 'Courier New', monospace";
-  ctx.fillStyle = p.doorText;
-  ctx.textBaseline = "middle";
-  if (isOffice2) {
-    ctx.textAlign = "right";
-    ctx.fillText(closed ? "OPEN" : "CLOSE", wallX - 2, y + h / 2);
+    // Main door body
+    ctx.fillStyle = p.doorFill;
+    ctx.fillRect(px, py, pw, ph);
+
+    // Left highlight edge (lit side)
+    ctx.fillStyle = p.wallHighlight;
+    ctx.fillRect(px, py, 2, ph);
+
+    // Right shadow edge
+    ctx.fillStyle = p.wallShadow;
+    ctx.fillRect(px + pw - 2, py, 2, ph);
+
+    // Horizontal panel rails (recessed grooves at 1/3 and 2/3)
+    const r1y = py + Math.floor(ph / 3);
+    const r2y = py + Math.floor((ph * 2) / 3);
+    ctx.fillStyle = p.wallShadow;
+    ctx.fillRect(px + 1, r1y,     pw - 2, 1);
+    ctx.fillRect(px + 1, r2y,     pw - 2, 1);
+    ctx.fillStyle = p.wallHighlight;
+    ctx.fillRect(px + 1, r1y + 1, pw - 2, 1);
+    ctx.fillRect(px + 1, r2y + 1, pw - 2, 1);
+
+    // Doorknob — gold circle on the corridor-facing edge
+    const knobX = isOffice2
+      ? wallX + JAMB + 2           // office 2: corridor to the left, knob near left
+      : wallX + WT - JAMB - 2;    // office 1: corridor to the right, knob near right
+    const knobY = y + h / 2;
+
+    ctx.fillStyle = "#C09010"; // shadow
+    ctx.beginPath(); ctx.arc(knobX + 0.5, knobY + 0.5, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#F8C820"; // face
+    ctx.beginPath(); ctx.arc(knobX, knobY, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#FFEC80"; // shine
+    ctx.beginPath(); ctx.arc(knobX - 0.5, knobY - 0.5, 1, 0, Math.PI * 2); ctx.fill();
   } else {
-    ctx.textAlign = "left";
-    ctx.fillText(closed ? "OPEN" : "CLOSE", wallX + DW + 2, y + h / 2);
+    // ── Open: dark void in gap, panel swung 90° flat into corridor ────────────
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(wallX + JAMB, y + JAMB, WT - JAMB * 2, h - JAMB * 2);
+
+    // Panel dimensions when swung open:
+    //   length = door height (h)  ·  thickness = door width minus jambs (WT - JAMB*2)
+    const panelLen   = h;
+    const panelThick = WT - JAMB * 2;
+
+    if (isOffice2) {
+      // Corridor to the LEFT — panel swings left from the wall
+      const px = wallX - panelLen;
+      const py = y + JAMB;
+
+      ctx.fillStyle = p.doorFill;
+      ctx.fillRect(px, py, panelLen, panelThick);
+      ctx.fillStyle = p.wallHighlight;
+      ctx.fillRect(px, py, panelLen, 1);                           // top edge highlight
+      ctx.fillStyle = p.wallShadow;
+      ctx.fillRect(px, py + panelThick - 1, panelLen, 1);         // bottom edge shadow
+      // Vertical groove on panel face
+      ctx.fillStyle = p.wallShadow;
+      ctx.fillRect(px + 8, py + 1, 1, panelThick - 2);
+      ctx.fillRect(px + panelLen - 9, py + 1, 1, panelThick - 2);
+      // Hinge strip (right end, at wall)
+      ctx.fillStyle = "#111";
+      ctx.fillRect(wallX - JAMB, py, JAMB, panelThick);
+      // Knob on free end
+      const kx = px + 5;
+      const ky = py + panelThick / 2;
+      ctx.fillStyle = "#C09010";
+      ctx.beginPath(); ctx.arc(kx + 0.5, ky + 0.5, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#F8C820";
+      ctx.beginPath(); ctx.arc(kx, ky, 2, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // Corridor to the RIGHT — panel swings right from the wall
+      const px = wallX + WT;
+      const py = y + JAMB;
+
+      ctx.fillStyle = p.doorFill;
+      ctx.fillRect(px, py, panelLen, panelThick);
+      ctx.fillStyle = p.wallHighlight;
+      ctx.fillRect(px, py, panelLen, 1);                           // top edge highlight
+      ctx.fillStyle = p.wallShadow;
+      ctx.fillRect(px, py + panelThick - 1, panelLen, 1);         // bottom edge shadow
+      // Vertical grooves on panel face
+      ctx.fillStyle = p.wallShadow;
+      ctx.fillRect(px + 8, py + 1, 1, panelThick - 2);
+      ctx.fillRect(px + panelLen - 9, py + 1, 1, panelThick - 2);
+      // Hinge strip (left end, at wall)
+      ctx.fillStyle = "#111";
+      ctx.fillRect(px, py, JAMB, panelThick);
+      // Knob on free end
+      const kx = px + panelLen - 5;
+      const ky = py + panelThick / 2;
+      ctx.fillStyle = "#C09010";
+      ctx.beginPath(); ctx.arc(kx + 0.5, ky + 0.5, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#F8C820";
+      ctx.beginPath(); ctx.arc(kx, ky, 2, 0, Math.PI * 2); ctx.fill();
+    }
   }
 }
 

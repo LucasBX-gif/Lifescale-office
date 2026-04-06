@@ -7,6 +7,7 @@ import { OfficeApp } from "./OfficeApp";
 interface Workspace {
   id: string;
   name: string;
+  ownerId: string;
 }
 
 export default function App() {
@@ -47,6 +48,7 @@ export default function App() {
       workspaceId={workspace.id}
       workspaceName={workspace.name}
       userName={displayName}
+      isOwner={workspace.ownerId === user.id}
       onLeave={() => setWorkspace(null)}
       theme={theme}
       onToggleTheme={toggleTheme}

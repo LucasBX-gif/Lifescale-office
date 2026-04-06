@@ -22,12 +22,13 @@ import {
   OfficeUpdatedPayload,
 } from "@lifescale/shared";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "https://lifescale-office.fly.dev";
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
 interface OfficeState {
   connected: boolean;
+  kicked: boolean;
   currentUserId: string | null;
   room: Room | null;
 }
@@ -35,6 +36,7 @@ interface OfficeState {
 type Action =
   | { type: "CONNECTED" }
   | { type: "DISCONNECTED" }
+  | { type: "KICKED" }
   | { type: "ROOM_STATE"; room: Room; userId: string }
   | { type: "USER_JOINED"; user: User }
   | { type: "USER_LEFT"; userId: string }
@@ -49,6 +51,8 @@ function reducer(state: OfficeState, action: Action): OfficeState {
       return { ...state, connected: true };
     case "DISCONNECTED":
       return { ...state, connected: false, room: null, currentUserId: null };
+    case "KICKED":
+      return { ...state, connected: false, kicked: true, room: null, currentUserId: null };
     case "ROOM_STATE":
       return { ...state, room: action.room, currentUserId: action.userId };
     case "USER_JOINED":
@@ -98,7 +102,7 @@ function reducer(state: OfficeState, action: Action): OfficeState {
   }
 }
 
-const initialState: OfficeState = { connected: false, currentUserId: null, room: null };
+const initialState: OfficeState = { connected: false, kicked: false, currentUserId: null, room: null };
 
 // ─── Knock notification ───────────────────────────────────────────────────────
 
@@ -141,7 +145,7 @@ export function useOffice() {
   // Keepalive ping — prevents free-tier server from sleeping
   useEffect(() => {
     const id = setInterval(() => {
-      fetch((import.meta.env.VITE_SERVER_URL || "http://localhost:3001") + "/health")
+      fetch((import.meta.env.VITE_SERVER_URL || "https://lifescale-office.fly.dev") + "/health")
         .catch(() => {});
     }, 4 * 60 * 1000); // every 4 minutes
     return () => clearInterval(id);
@@ -152,6 +156,15 @@ export function useOffice() {
     socket.connect();
 
     let disconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let kicked = false;
+
+    socket.on("kicked", () => {
+      kicked = true;
+      joinParamsRef.current = null; // prevent auto-rejoin
+      dispatch({ type: "KICKED" });
+      socket.disconnect();
+      lkDisconnect();
+    });
 
     socket.on("connect", () => {
       // Cancel any pending disconnect flash
@@ -164,6 +177,7 @@ export function useOffice() {
     });
 
     socket.on("disconnect", () => {
+      if (kicked) return; // kicked tab: stay disconnected, don't flash "Connecting…"
       // Delay before showing "Connecting…" so brief blips are invisible
       disconnectTimer = setTimeout(() => {
         dispatch({ type: "DISCONNECTED" });
@@ -229,10 +243,10 @@ export function useOffice() {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const joinRoom = useCallback(
-    async ({ name, roomId, roomName }: JoinRoomPayload) => {
+    async ({ name, roomId, roomName, isOwner }: JoinRoomPayload) => {
       pendingNameRef.current = name;
-      joinParamsRef.current = { name, roomId, roomName };
-      socket.emit(EVENTS.JOIN_ROOM, { name, roomId, roomName } satisfies JoinRoomPayload);
+      joinParamsRef.current = { name, roomId, roomName, isOwner };
+      socket.emit(EVENTS.JOIN_ROOM, { name, roomId, roomName, isOwner } satisfies JoinRoomPayload);
       const res = await fetch(
         `${SERVER_URL}/token?roomId=${encodeURIComponent(roomId)}&name=${encodeURIComponent(name)}`
       );
@@ -328,6 +342,7 @@ export function useOffice() {
 
   return {
     connected: state.connected,
+    kicked: state.kicked,
     room: state.room,
     myUser,
     myOfficeIndex,

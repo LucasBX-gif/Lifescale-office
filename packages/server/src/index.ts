@@ -95,13 +95,24 @@ app.get("/token", async (req, res) => {
 io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
-  socket.on(EVENTS.JOIN_ROOM, ({ roomId, name, roomName }: JoinRoomPayload) => {
+  socket.on(EVENTS.JOIN_ROOM, ({ roomId, name, roomName, isOwner }: JoinRoomPayload) => {
     const room = getOrCreateRoom(roomId, roomName);
+
+    // Evict any existing session with the same name so duplicate tabs don't create ghost users
+    const duplicate = room.users.find((u) => u.name === name);
+    if (duplicate) {
+      const dupSocketId = userSocketMap.get(duplicate.id);
+      if (dupSocketId) {
+        handleLeave(dupSocketId);
+        io.to(dupSocketId).emit("kicked");
+        io.sockets.sockets.get(dupSocketId)?.disconnect(true);
+      }
+    }
 
     const user: User = {
       id: uuidv4(),
       name,
-      position: { x: 50, y: 17.5 }, // corridor midpoint between offices (x=600px, y=140px)
+      position: { x: 50, y: 17.5 },
       room: roomId,
       isMuted: false,
       isDeafened: false,
@@ -112,11 +123,30 @@ io.on("connection", (socket) => {
     socketUserMap.set(socket.id, user);
     room.users.push(user);
 
-    // Restore permanent office for returning owner; only the room creator (first ever joiner)
-    // gets office 0 permanently — subsequent joiners get no office.
+    // Office assignment:
+    // 1. Returning user — restore their permanently reserved office
+    // 2. Workspace owner (isOwner) — always gets office 0 (left), displacing any squatter
+    // 3. Everyone else — gets office 1 if unclaimed, otherwise no office
     const existingIdx = room.offices.findIndex((o) => o.permanentOwnerName === name);
-    const claimIdx = existingIdx !== -1 ? existingIdx
-      : (room.offices[0].permanentOwnerName ? -1 : 0);
+    let claimIdx: number;
+
+    if (existingIdx !== -1) {
+      claimIdx = existingIdx;
+    } else if (isOwner) {
+      // Owner always gets the left office. If someone else squatted it, clear them out.
+      if (room.offices[0].permanentOwnerName && room.offices[0].permanentOwnerName !== name) {
+        room.offices[0].permanentOwnerName = "";
+        room.offices[0].ownerId = "";
+        room.offices[0].ownerName = "";
+        io.to(roomId).emit(EVENTS.OFFICE_UPDATED, { officeIndex: 0, office: room.offices[0] });
+      }
+      claimIdx = 0;
+    } else if (!room.offices[1].permanentOwnerName) {
+      claimIdx = 1;
+    } else {
+      claimIdx = -1;
+    }
+
     if (claimIdx !== -1) {
       const office = room.offices[claimIdx];
       office.ownerId = user.id;

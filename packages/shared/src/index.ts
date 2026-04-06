@@ -68,7 +68,7 @@ export const EVENTS = {
 export type EventName = (typeof EVENTS)[keyof typeof EVENTS];
 
 // Payload types
-export interface JoinRoomPayload        { roomId: string; name: string; roomName?: string; }
+export interface JoinRoomPayload        { roomId: string; name: string; roomName?: string; isOwner?: boolean; }
 export interface MovePayload            { position: Position2D; }
 export interface SetStatusPayload       { status: UserStatus; }
 export interface KnockPayload           { targetUserIds: string[]; }

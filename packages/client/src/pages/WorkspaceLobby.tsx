@@ -6,11 +6,12 @@ interface Workspace {
   id: string;
   name: string;
   invite_code: string;
+  owner_id: string;
 }
 
 interface Props {
   user: User;
-  onEnter: (workspace: { id: string; name: string }) => void;
+  onEnter: (workspace: { id: string; name: string; ownerId: string }) => void;
   theme: "dark" | "light";
   onToggleTheme: () => void;
 }
@@ -65,7 +66,7 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
   async function loadWorkspaces() {
     const { data } = await supabase
       .from("workspace_members")
-      .select("workspaces(id, name, invite_code)")
+      .select("workspaces(id, name, invite_code, owner_id)")
       .eq("user_id", user.id);
 
     if (data) {
@@ -80,7 +81,7 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
     setJoiningInvite(true);
     const { data: ws, error } = await supabase
       .from("workspaces")
-      .select("id, name, invite_code")
+      .select("id, name, invite_code, owner_id")
       .eq("invite_code", code)
       .single();
 
@@ -96,7 +97,7 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
       .upsert({ workspace_id: ws.id, user_id: user.id }, { onConflict: "workspace_id,user_id" });
 
     window.history.replaceState({}, "", window.location.pathname);
-    onEnter({ id: ws.id, name: ws.name });
+    onEnter({ id: ws.id, name: ws.name, ownerId: ws.owner_id });
   }
 
   useEffect(() => {
@@ -123,7 +124,7 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
       .from("workspace_members")
       .insert({ workspace_id: ws.id, user_id: user.id });
 
-    onEnter({ id: ws.id, name: ws.name });
+    onEnter({ id: ws.id, name: ws.name, ownerId: ws.owner_id ?? user.id });
   }
 
   async function copyInviteLink(ws: Workspace, e: React.MouseEvent) {
@@ -205,7 +206,7 @@ export function WorkspaceLobby({ user, onEnter, theme, onToggleTheme }: Props) {
               <div
                 key={ws.id}
                 className="ws-card"
-                onClick={() => onEnter({ id: ws.id, name: ws.name })}
+                onClick={() => onEnter({ id: ws.id, name: ws.name, ownerId: ws.owner_id })}
               >
                 <div
                   className="ws-card-icon"

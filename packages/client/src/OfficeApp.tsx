@@ -9,16 +9,17 @@ interface Props {
   workspaceId: string;
   workspaceName: string;
   userName: string;
+  isOwner: boolean;
   onLeave: () => void;
   theme: "dark" | "light";
   onToggleTheme: () => void;
 }
 
-export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme, onToggleTheme }: Props) {
+export function OfficeApp({ workspaceId, workspaceName, userName, isOwner, onLeave, theme, onToggleTheme }: Props) {
   const [currentZone, setCurrentZone] = useState("Open Floor");
 
   const {
-    connected, room, myUser, myOfficeIndex,
+    connected, kicked, room, myUser, myOfficeIndex,
     joinRoom, move, toggleMute, toggleDeafen, setStatus,
     privateOfficeDoorClosed, togglePrivateOfficeDoor,
     lockOffice, setOfficeStyle, knock, knockQueue, respondToKnock, speakingNames,
@@ -53,9 +54,17 @@ export function OfficeApp({ workspaceId, workspaceName, userName, onLeave, theme
   useEffect(() => {
     if (connected && !hasJoinedRef.current) {
       hasJoinedRef.current = true;
-      joinRoom({ name: userName, roomId: workspaceId, roomName: workspaceName });
+      joinRoom({ name: userName, roomId: workspaceId, roomName: workspaceName, isOwner });
     }
   }, [connected]);
+
+  if (kicked) {
+    return (
+      <div className="status-screen">
+        <p>You joined from another tab — this session has been closed.</p>
+      </div>
+    );
+  }
 
   if (!connected || !room) {
     return <div className="status-screen"><p>Connecting to office…</p></div>;
