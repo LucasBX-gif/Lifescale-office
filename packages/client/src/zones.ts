@@ -56,17 +56,17 @@ export const ZONES: ZoneDef[] = [
 // Door for Office 1 — on the RIGHT wall (x = 300)
 export const DOOR = {
   x: 286,
-  y: 110,
+  y: 100,
   w: 28,
-  h: 60,
+  h: 90,
 } as const;
 
 // Door for Office 2 — on the LEFT wall (x = 900), mirrored
 export const DOOR_2 = {
   x: 886,
-  y: 110,
+  y: 100,
   w: 28,
-  h: 60,
+  h: 90,
 } as const;
 
 // Big double door — War Room TOP wall (y = 240), centered in x = 440..760
